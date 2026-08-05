@@ -466,12 +466,7 @@
 
   <!-- ===================== ABA: HISTÓRICO DE COBRANÇAS ===================== -->
   <div class="tab-panel" id="tabHistorico" style="display:none;">
-    <p class="subtitle" style="margin-bottom:14px;">Registre cada contato de cobrança feito com uma franquia — data, canal e observação ficam salvos permanentemente.</p>
-
-    <div class="card" style="margin-bottom:18px; border-color:rgba(224,99,122,0.35);">
-      <div class="card-label" style="color:var(--rose);">⚠️ Vencidas há mais de 60 dias, sem nenhum contato registrado</div>
-      <div id="alertaSemContato" class="alert-list" style="margin-top:10px;">Carregando...</div>
-    </div>
+    <p class="subtitle" style="margin-bottom:14px;">Registre cada contato de cobrança feito com uma franquia — data, canal e observação ficam salvos permanentemente. <span style="color:var(--muted);">(O alerta de "vencidas sem contato" agora vive só na aba 🚨 Central de Alertas.)</span></p>
 
     <div class="toolbar">
       <select id="historicoFranquiaSelect"><option value="">Selecione uma franquia...</option></select>
@@ -1522,101 +1517,260 @@ async function exportRelatorioExecutivo(){
   const OURO = [255,192,0];
   const OURO_CLARO = [255,239,128];
   const PRETO = [30,30,30];
+  const CINZA = [110,110,110];
 
   try{
     await renderDashboard(); // garante gráficos atualizados nos canvas antes de capturar
 
     const hojeStr = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
-    const totalVencido = DATA.filter(d=>effectiveStatus(d)==='EM ABERTO').reduce((s,d)=>s+d.total,0);
-    const totalNegociacao = DATA.filter(d=>d.categoria==='NEGOCIAÇÃO').reduce((s,d)=>s+d.total,0);
-    const totalAVencer = DATA.filter(d=>effectiveStatus(d)==='A VENCER').reduce((s,d)=>s+d.total,0);
-    const franquiasComPendencia = new Set(DATA.filter(d=>effectiveStatus(d)==='EM ABERTO').map(d=>d.franquia)).size;
+    const abertosRows = DATA.filter(d=>effectiveStatus(d)==='EM ABERTO');
+    const avencerRows = DATA.filter(d=>effectiveStatus(d)==='A VENCER');
+    const baixadosRows = DATA.filter(d=>effectiveStatus(d)==='BAIXADO');
+    const negociacaoRows = DATA.filter(d=>d.categoria==='NEGOCIAÇÃO');
+
+    const totalVencido = abertosRows.reduce((s,d)=>s+d.total,0);
+    const totalNegociacao = negociacaoRows.reduce((s,d)=>s+d.total,0);
+    const totalAVencer = avencerRows.reduce((s,d)=>s+d.total,0);
+    const totalBaixado = baixadosRows.reduce((s,d)=>s+d.total,0);
+    const totalPendente = totalVencido + totalAVencer;
+    const franquiasComPendencia = new Set(abertosRows.map(d=>d.franquia)).size;
+    const franquiasAtivasComPendencia = new Set(abertosRows.filter(d=>d.statusFranquia==='ATIVA').map(d=>d.franquia)).size;
+    const franquiasInativasComPendencia = franquiasComPendencia - franquiasAtivasComPendencia;
+    const ticketMedioVencido = abertosRows.length ? totalVencido/abertosRows.length : 0;
+    const totalEncargosVencidos = abertosRows.reduce((s,d)=>s+d.multa+d.juros+d.igpm,0);
+    let maiorAtrasoGeral = 0, franquiaMaiorAtraso = '';
+    abertosRows.forEach(d=>{ const dd = diasEmAtraso(d.vencimento); if(dd>maiorAtrasoGeral){ maiorAtrasoGeral=dd; franquiaMaiorAtraso=d.franquia; } });
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit:'mm', format:'a4' });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 14;
+    let y = margin;
 
-    // Cabeçalho
-    doc.setFillColor(...OURO_CLARO);
-    doc.rect(0,0,pageWidth,26,'F');
-    doc.setFillColor(...OURO);
-    doc.rect(0,26,pageWidth,1.5,'F');
-    doc.setTextColor(...PRETO);
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(15);
-    doc.text('Relatório Executivo Mensal — Carteira de Cobrança', margin, 13);
-    doc.setFont('helvetica','normal');
-    doc.setFontSize(9.5);
-    doc.text(`Data de emissão: ${hojeStr} | Setor Financeiro — Bee Delivery`, margin, 21);
+    function cabecalhoPagina(subtitulo){
+      doc.setFillColor(...OURO_CLARO);
+      doc.rect(0,0,pageWidth,22,'F');
+      doc.setFillColor(...OURO);
+      doc.rect(0,22,pageWidth,1.2,'F');
+      doc.setTextColor(...PRETO);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(12.5);
+      doc.text('Relatório Executivo Mensal — Carteira de Cobrança', margin, 11);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8.5);
+      doc.text(subtitulo, margin, 17.5);
+      return 30;
+    }
+    function novaPagina(subtitulo){
+      doc.addPage();
+      return cabecalhoPagina(subtitulo);
+    }
+    function garantirEspaco(alturaNecessaria){
+      if(y + alturaNecessaria > pageHeight - 18){ y = novaPagina(`Data de emissão: ${hojeStr} | Setor Financeiro — Bee Delivery (continuação)`); }
+    }
+    function tituloSecao(texto){
+      garantirEspaco(14);
+      doc.setFont('helvetica','bold'); doc.setFontSize(11.5); doc.setTextColor(...PRETO);
+      doc.text(texto, margin, y);
+      y += 3;
+      doc.setDrawColor(...OURO); doc.setLineWidth(0.6);
+      doc.line(margin, y, pageWidth-margin, y);
+      y += 6;
+    }
+    function paragrafo(texto, tamanho){
+      doc.setFont('helvetica','normal'); doc.setFontSize(tamanho||9.5); doc.setTextColor(...PRETO);
+      const linhas = doc.splitTextToSize(texto, pageWidth-2*margin);
+      garantirEspaco(linhas.length*4.6+2);
+      doc.text(linhas, margin, y);
+      y += linhas.length*4.6 + 5;
+    }
 
-    let y = 36;
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(11);
-    doc.text('1. Resumo Geral', margin, y);
-    y += 7;
+    y = cabecalhoPagina(`Data de emissão: ${hojeStr} | Setor Financeiro — Bee Delivery`);
+
+    // ---- 1. SUMÁRIO EXECUTIVO ----
+    tituloSecao('1. Sumário Executivo');
+    paragrafo(`A carteira de cobrança da rede totaliza atualmente ${fmtMoney(totalPendente)} em pendências (soma de valores vencidos e a vencer). Desse montante, ${fmtMoney(totalVencido)} já estão vencidos e sem pagamento, distribuídos em ${abertosRows.length} título(s) referentes a ${franquiasComPendencia} unidade(s) — sendo ${franquiasAtivasComPendencia} unidade(s) ativa(s) e ${franquiasInativasComPendencia} unidade(s) já inativa(s) na rede. Adicionalmente, ${fmtMoney(totalAVencer)} estão programados para vencimento futuro. Do total vencido, ${fmtMoney(totalEncargosVencidos)} correspondem a encargos acumulados (multa, juros e correção monetária).`);
 
     doc.autoTable({
       startY: y,
       head: [['Indicador','Valor']],
       body: [
         ['Total Vencido', fmtMoney(totalVencido)],
-        ['Total Negociação (subconjunto)', fmtMoney(totalNegociacao)],
         ['Total A Vencer', fmtMoney(totalAVencer)],
-        ['Total Pendente (Vencido + A Vencer)', fmtMoney(totalVencido + totalAVencer)],
-        ['Franquias com Pendência', franquiasComPendencia],
+        ['Total Pendente (Vencido + A Vencer)', fmtMoney(totalPendente)],
+        ['Total em Negociação (subconjunto, não somado ao pendente)', fmtMoney(totalNegociacao)],
+        ['Total já Baixado (histórico)', fmtMoney(totalBaixado)],
+        ['Encargos acumulados nos vencidos (multa+juros+IGP-M)', fmtMoney(totalEncargosVencidos)],
+        ['Ticket médio por título vencido', fmtMoney(ticketMedioVencido)],
+        ['Franquias com pendência (total / ativas / inativas)', `${franquiasComPendencia} / ${franquiasAtivasComPendencia} / ${franquiasInativasComPendencia}`],
+        ['Maior atraso individual', `${maiorAtrasoGeral} dia(s) — ${franquiaMaiorAtraso||'—'}`],
       ],
       theme: 'grid',
       headStyles: { fillColor: PRETO, textColor: OURO, fontStyle:'bold', fontSize:9 },
-      styles: { fontSize: 9, cellPadding: 2.5 },
+      styles: { fontSize: 8.7, cellPadding: 2.3 },
       margin: { left: margin, right: margin },
     });
     y = doc.lastAutoTable.finalY + 10;
 
-    // Gráficos (capturados dos canvas já renderizados no Dashboard)
+    // ---- 2. DETALHAMENTO POR CATEGORIA ----
+    tituloSecao('2. Detalhamento por Categoria');
+    const categorias = [...new Set([...abertosRows, ...avencerRows].map(d=>d.categoria))].sort();
+    const linhasCategoria = categorias.map(cat=>{
+      const vencidoCat = abertosRows.filter(d=>d.categoria===cat).reduce((s,d)=>s+d.total,0);
+      const avencerCat = avencerRows.filter(d=>d.categoria===cat).reduce((s,d)=>s+d.total,0);
+      const qtdCat = abertosRows.filter(d=>d.categoria===cat).length + avencerRows.filter(d=>d.categoria===cat).length;
+      return [cat, fmtMoney(vencidoCat), fmtMoney(avencerCat), fmtMoney(vencidoCat+avencerCat), qtdCat];
+    }).sort((a,b)=>{
+      const va = parseFloat(a[3].replace(/[^\d,-]/g,'').replace(',','.'));
+      const vb = parseFloat(b[3].replace(/[^\d,-]/g,'').replace(',','.'));
+      return vb-va;
+    });
+    doc.autoTable({
+      startY: y,
+      head: [['Categoria','Vencido','A Vencer','Total','Qtde.']],
+      body: linhasCategoria,
+      theme: 'grid',
+      headStyles: { fillColor: OURO, textColor: PRETO, fontStyle:'bold', fontSize:9 },
+      styles: { fontSize: 8.7, cellPadding: 2.3 },
+      margin: { left: margin, right: margin },
+    });
+    y = doc.lastAutoTable.finalY + 10;
+
+    // ---- 3. FAIXAS DE ATRASO (AGING) ----
+    tituloSecao('3. Faixas de Atraso (Aging) — Detalhado');
+    const faixasRel = [
+      { label: '0 a 30 dias', min:0, max:30 },
+      { label: '31 a 60 dias', min:31, max:60 },
+      { label: '61 a 90 dias', min:61, max:90 },
+      { label: 'Mais de 90 dias', min:91, max:Infinity },
+    ];
+    const linhasAging = faixasRel.map(f=>{
+      const doFaixa = abertosRows.filter(d=>{ const dd = diasEmAtraso(d.vencimento); return dd>=f.min && dd<=f.max; });
+      const total = doFaixa.reduce((s,d)=>s+d.total,0);
+      const pct = totalVencido ? (total/totalVencido*100) : 0;
+      return [f.label, doFaixa.length, fmtMoney(total), pct.toFixed(1)+'%'];
+    });
+    doc.autoTable({
+      startY: y,
+      head: [['Faixa','Qtde. Títulos','Valor','% do Total Vencido']],
+      body: linhasAging,
+      theme: 'grid',
+      headStyles: { fillColor: PRETO, textColor: OURO, fontStyle:'bold', fontSize:9 },
+      styles: { fontSize: 8.7, cellPadding: 2.3 },
+      margin: { left: margin, right: margin },
+    });
+    y = doc.lastAutoTable.finalY + 10;
+
+    // ---- 4. GRÁFICOS DA CARTEIRA ----
+    tituloSecao('4. Gráficos da Carteira');
     function addChartImage(canvasId, titulo, larguraMM, alturaMM){
       const canvas = document.getElementById(canvasId);
-      if(y + alturaMM + 10 > pageHeight - 18){ doc.addPage(); y = margin; }
-      doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...PRETO);
+      garantirEspaco(alturaMM+10);
+      doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(...PRETO);
       doc.text(titulo, margin, y);
       y += 4;
       try{
         const img = canvas.toDataURL('image/png');
         doc.addImage(img, 'PNG', margin, y, larguraMM, alturaMM);
       }catch(e){ console.error('Erro ao capturar gráfico', canvasId, e); }
-      y += alturaMM + 10;
+      y += alturaMM + 8;
     }
+    addChartImage('chartStatus', 'Distribuição por status', 85, 60);
+    addChartImage('chartCategoria', 'Distribuição por categoria (vencido + a vencer)', pageWidth-2*margin, 60);
+    addChartImage('chartAging', 'Faixas de atraso (aging)', pageWidth-2*margin, 42);
+    addChartImage('chartEvolucao', 'Evolução mensal', pageWidth-2*margin, 52);
 
-    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...PRETO);
-    doc.text('2. Gráficos da Carteira', margin, y);
-    y += 7;
-    addChartImage('chartStatus', 'Distribuição por status', 85, 65);
-    addChartImage('chartCategoria', 'Distribuição por categoria (vencido + a vencer)', pageWidth-2*margin, 65);
-    addChartImage('chartAging', 'Faixas de atraso (aging)', pageWidth-2*margin, 45);
-    addChartImage('chartEvolucao', 'Evolução mensal', pageWidth-2*margin, 55);
-
-    // Ranking Top 10 maiores devedores
-    if(y + 20 > pageHeight - 18){ doc.addPage(); y = margin; }
-    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...PRETO);
-    doc.text('3. Top 10 Maiores Devedores (Vencido)', margin, y);
-    y += 6;
-
+    // ---- 5. TOP 15 MAIORES DEVEDORES ----
+    tituloSecao('5. Top 15 Maiores Devedores (Vencido)');
     const porFranquia = {};
-    DATA.filter(d=>effectiveStatus(d)==='EM ABERTO').forEach(d=>{
-      porFranquia[d.franquia] = (porFranquia[d.franquia]||0) + d.total;
+    abertosRows.forEach(d=>{
+      if(!porFranquia[d.franquia]) porFranquia[d.franquia] = { total:0, qtd:0, dias:0, status: d.statusFranquia };
+      porFranquia[d.franquia].total += d.total;
+      porFranquia[d.franquia].qtd += 1;
+      const dd = diasEmAtraso(d.vencimento);
+      if(dd > porFranquia[d.franquia].dias) porFranquia[d.franquia].dias = dd;
     });
-    const top10 = Object.entries(porFranquia).sort((a,b)=>b[1]-a[1]).slice(0,10);
-
+    const top15 = Object.entries(porFranquia).sort((a,b)=>b[1].total-a[1].total).slice(0,15);
     doc.autoTable({
       startY: y,
-      head: [['#','Franquia','Total Vencido']],
-      body: top10.map(([f,v],i)=>[i+1, f, fmtMoney(v)]),
+      head: [['#','Franquia','Status','Qtde.','Maior Atraso','Total Vencido']],
+      body: top15.map(([f,v],i)=>[i+1, f, v.status==='ATIVA'?'Ativa':'Inativa', v.qtd, v.dias+'d', fmtMoney(v.total)]),
       theme: 'grid',
       headStyles: { fillColor: OURO, textColor: PRETO, fontStyle:'bold', fontSize:9 },
-      styles: { fontSize: 8.5, cellPadding: 2 },
+      styles: { fontSize: 8.3, cellPadding: 2 },
       margin: { left: margin, right: margin },
     });
+    y = doc.lastAutoTable.finalY + 10;
+
+    // ---- 6. FRANQUIAS INATIVAS COM DÉBITO ----
+    tituloSecao('6. Franquias Inativas com Débito em Aberto');
+    const inativasRows = DATA.filter(d=>d.statusFranquia==='INATIVA' && (effectiveStatus(d)==='EM ABERTO' || effectiveStatus(d)==='A VENCER'));
+    const porFranquiaInativa = {};
+    inativasRows.forEach(d=>{ porFranquiaInativa[d.franquia] = (porFranquiaInativa[d.franquia]||0)+d.total; });
+    const listaInativasRel = Object.entries(porFranquiaInativa).sort((a,b)=>b[1]-a[1]).slice(0,15);
+    if(listaInativasRel.length === 0){
+      paragrafo('Nenhuma franquia inativa com débito em aberto identificada no momento.');
+    } else {
+      doc.autoTable({
+        startY: y,
+        head: [['#','Franquia','Total em Aberto']],
+        body: listaInativasRel.map(([f,v],i)=>[i+1, f, fmtMoney(v)]),
+        theme: 'grid',
+        headStyles: { fillColor: PRETO, textColor: OURO, fontStyle:'bold', fontSize:9 },
+        styles: { fontSize: 8.5, cellPadding: 2.2 },
+        margin: { left: margin, right: margin },
+      });
+      y = doc.lastAutoTable.finalY + 10;
+      const totalInativasGeral = Object.values(porFranquiaInativa).reduce((s,v)=>s+v,0);
+      paragrafo(`O total de débito residual em franquias já inativas na rede soma ${fmtMoney(totalInativasGeral)}, distribuído em ${Object.keys(porFranquiaInativa).length} unidade(s). Esses casos costumam exigir tratamento diferenciado (jurídico/recuperação de crédito), já que o vínculo comercial ativo não está mais em vigor.`, 9);
+    }
+
+    // ---- 7. PIPELINE DE NEGOCIAÇÃO ----
+    tituloSecao('7. Pipeline de Negociação');
+    let snapAcordos;
+    try{ snapAcordos = await acordosCollection.get(); }catch(e){ snapAcordos = { docs: [] }; }
+    const contagemEtapas = {}; KANBAN_ETAPAS.forEach(e=>contagemEtapas[e.key]=0);
+    snapAcordos.docs.forEach(d=>{ const est = d.data().estagio; if(est && contagemEtapas[est]!==undefined) contagemEtapas[est]++; });
+    doc.autoTable({
+      startY: y,
+      head: [['Etapa','Franquias']],
+      body: KANBAN_ETAPAS.map(e=>[e.label, contagemEtapas[e.key]]),
+      theme: 'grid',
+      headStyles: { fillColor: OURO, textColor: PRETO, fontStyle:'bold', fontSize:9 },
+      styles: { fontSize: 8.7, cellPadding: 2.3 },
+      margin: { left: margin, right: margin },
+    });
+    y = doc.lastAutoTable.finalY + 10;
+
+    // ---- 8. ALERTAS E PONTOS DE ATENÇÃO ----
+    tituloSecao('8. Alertas e Pontos de Atenção');
+    const franquias90 = new Set();
+    abertosRows.forEach(d=>{ if(diasEmAtraso(d.vencimento)>90) franquias90.add(d.franquia); });
+    const semContatoRel = await calcularFranquiasSemContato(60);
+    doc.autoTable({
+      startY: y,
+      head: [['Indicador','Quantidade']],
+      body: [
+        ['Franquias vencidas há mais de 90 dias', franquias90.size],
+        ['Franquias vencidas há mais de 60 dias sem nenhum contato registrado', semContatoRel.length],
+        ['Franquias inativas com débito em aberto', Object.keys(porFranquiaInativa).length],
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: PRETO, textColor: OURO, fontStyle:'bold', fontSize:9 },
+      styles: { fontSize: 8.7, cellPadding: 2.3 },
+      margin: { left: margin, right: margin },
+    });
+    y = doc.lastAutoTable.finalY + 10;
+
+    // ---- 9. CONSIDERAÇÕES FINAIS ----
+    tituloSecao('9. Considerações Finais');
+    let nivelGeral = 'Estável';
+    const pctVencidoSobreTotal = totalPendente ? (totalVencido/totalPendente*100) : 0;
+    if(pctVencidoSobreTotal > 60 || franquias90.size > 10) nivelGeral = 'Atenção Elevada';
+    else if(pctVencidoSobreTotal > 35 || franquias90.size > 3) nivelGeral = 'Atenção Moderada';
+    paragrafo(`O nível geral de atenção da carteira neste período é classificado como "${nivelGeral}". Os valores vencidos representam ${pctVencidoSobreTotal.toFixed(1)}% do total pendente da rede. Identificam-se ${franquias90.size} unidade(s) com atraso superior a 90 dias e ${semContatoRel.length} unidade(s) vencidas há mais de 60 dias sem qualquer contato de cobrança registrado — essas duas frentes representam a maior prioridade operacional para o próximo ciclo. O pipeline de negociação conta atualmente com ${snapAcordos.docs.filter(d=>d.data().estagio).length} unidade(s) em acompanhamento ativo, das quais ${contagemEtapas['FECHADO']||0} já com acordo fechado e ${contagemEtapas['QUITADO']||0} já quitadas neste ciclo.`);
+    paragrafo('Recomenda-se priorizar o contato com as unidades listadas na seção de Alertas, formalizar acordos para os casos já em etapa avançada do pipeline de negociação, e avaliar tratamento jurídico específico para o débito residual das franquias inativas.', 9);
 
     // Rodapé institucional
     const totalPaginas = doc.internal.getNumberOfPages();
@@ -1783,7 +1937,7 @@ document.getElementById('kanbanAddBtn').addEventListener('click', async ()=>{
     const doc = await acordosCollection.doc(key).get();
     const dados = doc.exists ? doc.data() : {};
     if(dados.estagio){ showToast('Essa franquia já está no quadro'); return; }
-    await acordosCollection.doc(key).set({ ...dados, estagio: 'CONTATO' }, { merge: true });
+    await acordosCollection.doc(key).set({ ...dados, estagio: 'CONTATO', removidoQuadro: firebase.firestore.FieldValue.delete() }, { merge: true });
     sel.value = '';
     showToast('Franquia adicionada ao quadro');
     await renderKanban();
@@ -1798,7 +1952,8 @@ async function renderKanban(){
   const board = document.getElementById('kanbanBoard');
   board.innerHTML = '<p style="color:var(--muted); padding:20px;">Carregando...</p>';
 
-  // Membros do quadro = franquias com categoria Negociação OU adicionadas manualmente (têm doc com "estagio")
+  // Membros do quadro = franquias com categoria Negociação OU adicionadas manualmente (têm doc com "estagio"),
+  // EXCETO as que foram explicitamente removidas (removidoQuadro === true) — isso tem prioridade sobre tudo.
   const negociacaoFranquias = new Set(DATA.filter(d=>d.categoria==='NEGOCIAÇÃO').map(d=>d.franquia));
   let snap;
   try{
@@ -1807,15 +1962,19 @@ async function renderKanban(){
     snap = { docs: [] };
   }
   const etapaPorKey = {};
+  const removidoPorKey = {};
   snap.docs.forEach(doc=>{
     if(doc.data().estagio) etapaPorKey[doc.id] = doc.data().estagio;
+    if(doc.data().removidoQuadro) removidoPorKey[doc.id] = true;
   });
 
   const franquiasNoQuadro = new Set();
-  negociacaoFranquias.forEach(f=>franquiasNoQuadro.add(f));
+  negociacaoFranquias.forEach(f=>{ if(!removidoPorKey[franquiaKey(f)]) franquiasNoQuadro.add(f); });
   // adiciona também as que têm doc com estagio mas talvez não sejam categoria negociação
   const todasFranquias = [...new Set(DATA.map(d=>d.franquia))];
-  todasFranquias.forEach(f=>{ if(etapaPorKey[franquiaKey(f)]) franquiasNoQuadro.add(f); });
+  todasFranquias.forEach(f=>{
+    if(etapaPorKey[franquiaKey(f)] && !removidoPorKey[franquiaKey(f)]) franquiasNoQuadro.add(f);
+  });
 
   const franquias = [...franquiasNoQuadro];
   if(franquias.length === 0){
@@ -1858,7 +2017,14 @@ async function renderKanban(){
       const franquia = btn.dataset.remover;
       if(!confirm(`Remover "${franquia}" do quadro de negociação? (não apaga o histórico, só tira do quadro)`)) return;
       try{
-        await acordosCollection.doc(franquiaKey(franquia)).set({ estagio: firebase.firestore.FieldValue.delete() }, { merge: true });
+        const key = franquiaKey(franquia);
+        const doc = await acordosCollection.doc(key).get();
+        const dados = doc.exists ? doc.data() : {};
+        await acordosCollection.doc(key).set({
+          ...dados,
+          estagio: firebase.firestore.FieldValue.delete(),
+          removidoQuadro: true
+        }, { merge: true });
         showToast('Removida do quadro');
         await renderKanban();
       }catch(err){
@@ -2210,33 +2376,7 @@ async function calcularFranquiasSemContato(diasMin){
   return semContato;
 }
 
-async function renderAlertaSemContato(){
-  const el = document.getElementById('alertaSemContato');
-  el.innerHTML = '<div class="alert-empty">Verificando...</div>';
-  const semContato = await calcularFranquiasSemContato(60);
-
-  if(semContato.length === 0){
-    el.innerHTML = '<div class="alert-empty">Todas as franquias vencidas há mais de 60 dias já têm pelo menos um contato registrado (ou nenhuma está nessa faixa). ✅</div>';
-    return;
-  }
-
-  el.innerHTML = semContato.map(f=>`
-    <div class="alert-item clickable" data-ir="${f.replace(/"/g,'&quot;')}">
-      <div class="alert-item-left">
-        <span class="alert-item-nome">${f}</span>${badgeAtivaInativa(statusFranquiaDe(f))}
-      </div>
-      <span class="alert-item-sub">clique para registrar contato →</span>
-    </div>
-  `).join('');
-
-  el.querySelectorAll('[data-ir]').forEach(el2=>{
-    el2.addEventListener('click', ()=>{
-      document.getElementById('historicoFranquiaSelect').value = el2.dataset.ir;
-      renderHistorico(el2.dataset.ir);
-      document.getElementById('historicoObservacao').focus();
-    });
-  });
-}
+// (função renderAlertaSemContato removida — esse alerta agora vive só na Central de Alertas)
 function statusFranquiaDe(franquia){
   const r = DATA.find(d=>d.franquia===franquia);
   return r ? r.statusFranquia : 'ATIVA';
@@ -2613,7 +2753,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     else if(tab === 'ranking'){ renderRanking(); }
     else if(tab === 'dashboard'){ await renderDashboard(); }
     else if(tab === 'auditoria'){ await renderAuditoria(); }
-    else if(tab === 'historico'){ await renderAlertaSemContato(); }
+    else if(tab === 'historico'){ /* alerta de sem contato agora só na Central de Alertas */ }
     else if(tab === 'alertas'){ await renderCentralAlertas(); }
     else if(tab === 'inativas'){ renderInativasComDebito(); }
     else if(tab === 'negociacao'){ await renderKanban(); }
