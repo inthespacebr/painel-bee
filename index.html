@@ -99,6 +99,24 @@
   }
   .kanban-move-btn:hover{border-color:var(--amber);}
   .kanban-move-btn:disabled{opacity:0.25; cursor:default;}
+  .alert-list{display:flex; flex-direction:column; gap:6px;}
+  .alert-item{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--surface-alt); border:1px solid var(--border); border-radius:8px;
+    padding:8px 12px; font-size:12.5px;
+  }
+  .alert-item.clickable{cursor:pointer;}
+  .alert-item.clickable:hover{border-color:var(--amber);}
+  .alert-item-left{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .alert-item-nome{font-weight:600;}
+  .alert-item-sub{color:var(--muted); font-size:11.5px;}
+  .alert-item-value{font-family:'IBM Plex Mono', monospace; font-weight:600; white-space:nowrap; color:var(--text);}
+  .alert-empty{color:var(--muted); font-size:13px; padding:6px 2px;}
+  .kanban-card{cursor:grab;}
+  .kanban-card.dragging{opacity:0.4;}
+  .kanban-col.drag-over{border-color:var(--amber); background:rgba(217,164,65,0.06);}
+  .kanban-card-remove{background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; float:right;}
+  .kanban-card-remove:hover{color:var(--rose);}
   .fav-star{cursor:pointer; margin-right:6px; color:var(--muted); font-size:14px;}
   .fav-star.active{color:var(--amber);}
   .aging-dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px;}
@@ -452,7 +470,7 @@
 
     <div class="card" style="margin-bottom:18px; border-color:rgba(224,99,122,0.35);">
       <div class="card-label" style="color:var(--rose);">⚠️ Vencidas há mais de 60 dias, sem nenhum contato registrado</div>
-      <div id="alertaSemContato" style="margin-top:10px; font-size:13px; color:var(--muted);">Carregando...</div>
+      <div id="alertaSemContato" class="alert-list" style="margin-top:10px;">Carregando...</div>
     </div>
 
     <div class="toolbar">
@@ -530,26 +548,34 @@
 
   <!-- ===================== ABA: CENTRAL DE ALERTAS ===================== -->
   <div class="tab-panel" id="tabAlertas" style="display:none;">
-    <p class="subtitle" style="margin-bottom:14px;">Tudo que precisa da sua atenção hoje, num lugar só.</p>
+    <p class="subtitle" style="margin-bottom:10px;">Tudo que precisa da sua atenção hoje, num lugar só.</p>
+    <div class="toolbar" style="margin-bottom:16px;">
+      <select id="alertasFiltroAtiva">
+        <option value="">Ativas e inativas</option>
+        <option value="ATIVA">Somente ativas</option>
+        <option value="INATIVA">Somente inativas</option>
+      </select>
+      <span class="count" id="alertasFiltroHint">O filtro vale para as seções "vencidas 90+", "sem contato" e "promessas".</span>
+    </div>
 
     <div class="card" style="margin-bottom:16px; border-color:rgba(224,99,122,0.35);">
       <div class="card-label" style="color:var(--rose);">🔴 Vencidas há mais de 90 dias</div>
-      <div id="alertaCentral90" style="margin-top:10px; font-size:13px; color:var(--muted);">Carregando...</div>
+      <div id="alertaCentral90" class="alert-list" style="margin-top:10px;">Carregando...</div>
     </div>
 
     <div class="card" style="margin-bottom:16px; border-color:rgba(224,99,122,0.35);">
       <div class="card-label" style="color:var(--rose);">📵 Vencidas há mais de 60 dias, sem nenhum contato registrado</div>
-      <div id="alertaCentralSemContato" style="margin-top:10px; font-size:13px; color:var(--muted);">Carregando...</div>
+      <div id="alertaCentralSemContato" class="alert-list" style="margin-top:10px;">Carregando...</div>
     </div>
 
     <div class="card" style="margin-bottom:16px; border-color:rgba(217,164,65,0.35);">
       <div class="card-label" style="color:var(--amber);">📌 Promessas de hoje, atrasadas ou desta semana</div>
-      <div id="alertaCentralPromessas" style="margin-top:10px; font-size:13px; color:var(--muted);">Carregando...</div>
+      <div id="alertaCentralPromessas" class="alert-list" style="margin-top:10px;">Carregando...</div>
     </div>
 
     <div class="card" style="border-color:rgba(155,127,232,0.35);">
       <div class="card-label" style="color:var(--violet);">🏚️ Franquias inativas com débito ainda em aberto</div>
-      <div id="alertaCentralInativas" style="margin-top:10px; font-size:13px; color:var(--muted);">Carregando...</div>
+      <div id="alertaCentralInativas" class="alert-list" style="margin-top:10px;">Carregando...</div>
     </div>
   </div>
 
@@ -568,7 +594,11 @@
 
   <!-- ===================== ABA: FLUXO DE NEGOCIAÇÃO (KANBAN) ===================== -->
   <div class="tab-panel" id="tabNegociacao" style="display:none;">
-    <p class="subtitle" style="margin-bottom:14px;">Franquias com lançamentos de Negociação, organizadas por etapa. Use as setinhas de cada cartão para mover entre etapas.</p>
+    <p class="subtitle" style="margin-bottom:10px;">Organize qualquer franquia por etapa de negociação. Arraste os cartões entre as colunas para mover.</p>
+    <div class="toolbar" style="margin-bottom:16px;">
+      <select id="kanbanAddSelect"><option value="">Adicionar franquia ao quadro...</option></select>
+      <button class="btn btn-export" id="kanbanAddBtn">+ Adicionar</button>
+    </div>
     <div class="kanban-board" id="kanbanBoard"></div>
   </div>
 
@@ -1734,78 +1764,150 @@ const KANBAN_ETAPAS = [
   { key: 'QUITADO', label: 'Quitado' },
 ];
 
+function populateKanbanAddSelect(){
+  const sel = document.getElementById('kanbanAddSelect');
+  if(sel.dataset.pronto) return; // só popula uma vez
+  const franquias = [...new Set(DATA.map(d=>d.franquia))].sort();
+  franquias.forEach(f=>{
+    const o = document.createElement('option'); o.value=f; o.textContent=f; sel.appendChild(o);
+  });
+  sel.dataset.pronto = '1';
+}
+
+document.getElementById('kanbanAddBtn').addEventListener('click', async ()=>{
+  const sel = document.getElementById('kanbanAddSelect');
+  const franquia = sel.value;
+  if(!franquia){ alert('Escolha uma franquia para adicionar ao quadro.'); return; }
+  const key = franquiaKey(franquia);
+  try{
+    const doc = await acordosCollection.doc(key).get();
+    const dados = doc.exists ? doc.data() : {};
+    if(dados.estagio){ showToast('Essa franquia já está no quadro'); return; }
+    await acordosCollection.doc(key).set({ ...dados, estagio: 'CONTATO' }, { merge: true });
+    sel.value = '';
+    showToast('Franquia adicionada ao quadro');
+    await renderKanban();
+  }catch(e){
+    console.error('Erro ao adicionar franquia ao kanban:', e);
+    showToast('Erro ao adicionar');
+  }
+});
+
 async function renderKanban(){
+  populateKanbanAddSelect();
   const board = document.getElementById('kanbanBoard');
   board.innerHTML = '<p style="color:var(--muted); padding:20px;">Carregando...</p>';
 
-  const negociacaoRows = DATA.filter(d=>d.categoria==='NEGOCIAÇÃO');
-  const porFranquia = {};
-  negociacaoRows.forEach(d=>{
-    porFranquia[d.franquia] = (porFranquia[d.franquia]||0) + d.total;
+  // Membros do quadro = franquias com categoria Negociação OU adicionadas manualmente (têm doc com "estagio")
+  const negociacaoFranquias = new Set(DATA.filter(d=>d.categoria==='NEGOCIAÇÃO').map(d=>d.franquia));
+  let snap;
+  try{
+    snap = await acordosCollection.get();
+  }catch(e){
+    snap = { docs: [] };
+  }
+  const etapaPorKey = {};
+  snap.docs.forEach(doc=>{
+    if(doc.data().estagio) etapaPorKey[doc.id] = doc.data().estagio;
   });
-  const franquias = Object.keys(porFranquia);
 
+  const franquiasNoQuadro = new Set();
+  negociacaoFranquias.forEach(f=>franquiasNoQuadro.add(f));
+  // adiciona também as que têm doc com estagio mas talvez não sejam categoria negociação
+  const todasFranquias = [...new Set(DATA.map(d=>d.franquia))];
+  todasFranquias.forEach(f=>{ if(etapaPorKey[franquiaKey(f)]) franquiasNoQuadro.add(f); });
+
+  const franquias = [...franquiasNoQuadro];
   if(franquias.length === 0){
-    board.innerHTML = '<p style="color:var(--muted); padding:20px;">Nenhuma franquia com lançamento de Negociação no momento.</p>';
+    board.innerHTML = '<p style="color:var(--muted); padding:20px;">Nenhuma franquia no quadro ainda. Use "Adicionar franquia ao quadro" acima para começar.</p>';
     return;
   }
 
-  // busca a etapa salva de cada franquia (default: primeira etapa)
-  const etapaPorFranquia = {};
-  for(const franquia of franquias){
-    try{
-      const doc = await acordosCollection.doc(franquiaKey(franquia)).get();
-      etapaPorFranquia[franquia] = (doc.exists && doc.data().estagio) ? doc.data().estagio : 'CONTATO';
-    }catch(e){
-      etapaPorFranquia[franquia] = 'CONTATO';
+  const porFranquiaValor = {};
+  DATA.forEach(d=>{
+    if(franquiasNoQuadro.has(d.franquia) && (effectiveStatus(d)==='EM ABERTO' || effectiveStatus(d)==='A VENCER' || d.categoria==='NEGOCIAÇÃO')){
+      porFranquiaValor[d.franquia] = (porFranquiaValor[d.franquia]||0) + d.total;
     }
-  }
+  });
+
+  const etapaPorFranquia = {};
+  franquias.forEach(f=>{ etapaPorFranquia[f] = etapaPorKey[franquiaKey(f)] || 'CONTATO'; });
 
   board.innerHTML = KANBAN_ETAPAS.map(etapa=>{
     const cardsDaEtapa = franquias.filter(f=>etapaPorFranquia[f]===etapa.key);
     return `
-      <div class="kanban-col">
+      <div class="kanban-col" data-etapa="${etapa.key}">
         <div class="kanban-col-title"><span>${etapa.label}</span><span>${cardsDaEtapa.length}</span></div>
-        ${cardsDaEtapa.map(f=>{
-          const idx = KANBAN_ETAPAS.findIndex(e=>e.key===etapa.key);
-          return `
-            <div class="kanban-card">
+        <div class="kanban-col-body" data-etapa="${etapa.key}" style="min-height:60px;">
+        ${cardsDaEtapa.map(f=>`
+            <div class="kanban-card" draggable="true" data-franquia="${f.replace(/"/g,'&quot;')}">
+              <button class="kanban-card-remove" data-remover="${f.replace(/"/g,'&quot;')}" title="Remover do quadro">✕</button>
               <div class="kanban-card-nome">${f}</div>
-              <div class="kanban-card-valor">${fmtMoney(porFranquia[f])}</div>
-              <div class="kanban-card-actions">
-                <button class="kanban-move-btn" data-franquia="${f.replace(/"/g,'&quot;')}" data-dir="-1" ${idx===0?'disabled':''}>← Voltar</button>
-                <button class="kanban-move-btn" data-franquia="${f.replace(/"/g,'&quot;')}" data-dir="1" ${idx===KANBAN_ETAPAS.length-1?'disabled':''}>Avançar →</button>
-              </div>
+              <div class="kanban-card-valor">${fmtMoney(porFranquiaValor[f]||0)}</div>
             </div>
-          `;
-        }).join('') || '<p style="color:var(--muted); font-size:11.5px; text-align:center; padding:10px 0;">vazio</p>'}
+          `).join('') || '<p style="color:var(--muted); font-size:11.5px; text-align:center; padding:10px 0;">arraste aqui</p>'}
+        </div>
       </div>
     `;
   }).join('');
 
-  board.querySelectorAll('.kanban-move-btn').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      const franquia = btn.dataset.franquia;
-      const dir = parseInt(btn.dataset.dir);
-      const atual = etapaPorFranquia[franquia] || 'CONTATO';
-      const idxAtual = KANBAN_ETAPAS.findIndex(e=>e.key===atual);
-      const novoIdx = idxAtual + dir;
-      if(novoIdx < 0 || novoIdx >= KANBAN_ETAPAS.length) return;
-      const novaEtapa = KANBAN_ETAPAS[novoIdx].key;
-      const key = franquiaKey(franquia);
+  // ---- Remover do quadro ----
+  board.querySelectorAll('.kanban-card-remove').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const franquia = btn.dataset.remover;
+      if(!confirm(`Remover "${franquia}" do quadro de negociação? (não apaga o histórico, só tira do quadro)`)) return;
+      try{
+        await acordosCollection.doc(franquiaKey(franquia)).set({ estagio: firebase.firestore.FieldValue.delete() }, { merge: true });
+        showToast('Removida do quadro');
+        await renderKanban();
+      }catch(err){
+        console.error('Erro ao remover do kanban:', err);
+        showToast('Erro ao remover');
+      }
+    });
+  });
+
+  // ---- Arrastar e soltar ----
+  let franquiaArrastando = null;
+  board.querySelectorAll('.kanban-card').forEach(card=>{
+    card.addEventListener('dragstart', ()=>{
+      franquiaArrastando = card.dataset.franquia;
+      card.classList.add('dragging');
+    });
+    card.addEventListener('dragend', ()=>{
+      card.classList.remove('dragging');
+    });
+  });
+  board.querySelectorAll('.kanban-col').forEach(col=>{
+    col.addEventListener('dragover', (e)=>{
+      e.preventDefault();
+      col.classList.add('drag-over');
+    });
+    col.addEventListener('dragleave', ()=>{
+      col.classList.remove('drag-over');
+    });
+    col.addEventListener('drop', async (e)=>{
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      if(!franquiaArrastando) return;
+      const novaEtapa = col.dataset.etapa;
+      if(etapaPorFranquia[franquiaArrastando] === novaEtapa) return;
+      const key = franquiaKey(franquiaArrastando);
       try{
         const doc = await acordosCollection.doc(key).get();
         const dados = doc.exists ? doc.data() : {};
         await acordosCollection.doc(key).set({ ...dados, estagio: novaEtapa }, { merge: true });
-        showToast(`${franquia} movida para "${KANBAN_ETAPAS[novoIdx].label}"`);
         await renderKanban();
-      }catch(e){
-        console.error('Erro ao mover card no kanban:', e);
+      }catch(err){
+        console.error('Erro ao mover card (drag):', err);
         showToast('Erro ao mover');
       }
+      franquiaArrastando = null;
     });
   });
 }
+
 
 let parcelasAtuais = []; // estado em memória das parcelas enquanto o modal está aberto
 let franquiaModalAtual = null;
@@ -2110,16 +2212,22 @@ async function calcularFranquiasSemContato(diasMin){
 
 async function renderAlertaSemContato(){
   const el = document.getElementById('alertaSemContato');
-  el.textContent = 'Verificando...';
+  el.innerHTML = '<div class="alert-empty">Verificando...</div>';
   const semContato = await calcularFranquiasSemContato(60);
 
   if(semContato.length === 0){
-    el.innerHTML = 'Todas as franquias vencidas há mais de 60 dias já têm pelo menos um contato registrado (ou nenhuma está nessa faixa). ✅';
+    el.innerHTML = '<div class="alert-empty">Todas as franquias vencidas há mais de 60 dias já têm pelo menos um contato registrado (ou nenhuma está nessa faixa). ✅</div>';
     return;
   }
 
-  el.innerHTML = `${semContato.length} franquia(s) precisam de atenção — clique para registrar um contato:<br><br>` +
-    semContato.map(f=>`<span class="fav-star active" style="cursor:pointer; text-decoration:underline; color:var(--rose); background:none;" data-ir="${f}">${f}</span>`).join(' &nbsp;·&nbsp; ');
+  el.innerHTML = semContato.map(f=>`
+    <div class="alert-item clickable" data-ir="${f.replace(/"/g,'&quot;')}">
+      <div class="alert-item-left">
+        <span class="alert-item-nome">${f}</span>${badgeAtivaInativa(statusFranquiaDe(f))}
+      </div>
+      <span class="alert-item-sub">clique para registrar contato →</span>
+    </div>
+  `).join('');
 
   el.querySelectorAll('[data-ir]').forEach(el2=>{
     el2.addEventListener('click', ()=>{
@@ -2129,12 +2237,23 @@ async function renderAlertaSemContato(){
     });
   });
 }
+function statusFranquiaDe(franquia){
+  const r = DATA.find(d=>d.franquia===franquia);
+  return r ? r.statusFranquia : 'ATIVA';
+}
+function badgeAtivaInativa(statusFranquia){
+  return statusFranquia === 'ATIVA'
+    ? '<span class="franquia-badge fr-ativa">ativa</span>'
+    : '<span class="franquia-badge fr-inativa">inativa</span>';
+}
 
-// ===================== CENTRAL DE ALERTAS (unifica tudo) =====================
 async function renderCentralAlertas(){
+  const filtroAtiva = document.getElementById('alertasFiltroAtiva').value; // '', 'ATIVA', 'INATIVA'
+  const passaFiltro = (franquia) => !filtroAtiva || statusFranquiaDe(franquia) === filtroAtiva;
+
   // 1) Vencidas há mais de 90 dias
   const el90 = document.getElementById('alertaCentral90');
-  el90.textContent = 'Verificando...';
+  el90.innerHTML = '<div class="alert-empty">Verificando...</div>';
   const abertos = DATA.filter(d=>effectiveStatus(d)==='EM ABERTO');
   const porFranquia90 = {};
   abertos.forEach(d=>{
@@ -2143,18 +2262,34 @@ async function renderCentralAlertas(){
     if(dias > porFranquia90[d.franquia].dias) porFranquia90[d.franquia].dias = dias;
     porFranquia90[d.franquia].total += d.total;
   });
-  const lista90 = Object.entries(porFranquia90).filter(([f,v])=>v.dias>90).sort((a,b)=>b[1].dias-a[1].dias);
+  const lista90 = Object.entries(porFranquia90).filter(([f,v])=>v.dias>90 && passaFiltro(f)).sort((a,b)=>b[1].dias-a[1].dias);
   el90.innerHTML = lista90.length === 0
-    ? 'Nenhuma franquia vencida há mais de 90 dias. ✅'
-    : lista90.map(([f,v])=>`<b>${f}</b> — ${v.dias} dias, ${fmtMoney(v.total)}`).join('<br>');
+    ? '<div class="alert-empty">Nenhuma franquia vencida há mais de 90 dias. ✅</div>'
+    : lista90.map(([f,v])=>`
+        <div class="alert-item">
+          <div class="alert-item-left">
+            <span class="alert-item-nome">${f}</span>${badgeAtivaInativa(statusFranquiaDe(f))}
+            <span class="alert-item-sub">${v.dias} dias de atraso</span>
+          </div>
+          <div class="alert-item-value">${fmtMoney(v.total)}</div>
+        </div>
+      `).join('');
 
   // 2) Sem contato registrado
   const elSemContato = document.getElementById('alertaCentralSemContato');
-  elSemContato.textContent = 'Verificando...';
-  const semContato = await calcularFranquiasSemContato(60);
+  elSemContato.innerHTML = '<div class="alert-empty">Verificando...</div>';
+  const semContatoTodas = await calcularFranquiasSemContato(60);
+  const semContato = semContatoTodas.filter(passaFiltro);
   elSemContato.innerHTML = semContato.length === 0
-    ? 'Todas em dia com pelo menos um contato registrado. ✅'
-    : semContato.map(f=>`<span class="fav-star active" style="cursor:pointer; text-decoration:underline; color:var(--rose); background:none;" data-ir-hist="${f}">${f}</span>`).join(' &nbsp;·&nbsp; ');
+    ? '<div class="alert-empty">Todas em dia com pelo menos um contato registrado (dentro do filtro atual). ✅</div>'
+    : semContato.map(f=>`
+        <div class="alert-item clickable" data-ir-hist="${f.replace(/"/g,'&quot;')}">
+          <div class="alert-item-left">
+            <span class="alert-item-nome">${f}</span>${badgeAtivaInativa(statusFranquiaDe(f))}
+          </div>
+          <span class="alert-item-sub">clique para registrar contato →</span>
+        </div>
+      `).join('');
   elSemContato.querySelectorAll('[data-ir-hist]').forEach(el2=>{
     el2.addEventListener('click', ()=>{
       document.querySelector('.tab-btn[data-tab="historico"]').click();
@@ -2167,7 +2302,7 @@ async function renderCentralAlertas(){
 
   // 3) Promessas do CRM
   const elPromessas = document.getElementById('alertaCentralPromessas');
-  elPromessas.textContent = 'Verificando...';
+  elPromessas.innerHTML = '<div class="alert-empty">Verificando...</div>';
   if(Object.keys(crmDataCache).length === 0) await loadCrmData();
   const hoje = new Date(); hoje.setHours(0,0,0,0);
   const daqui7 = new Date(hoje); daqui7.setDate(daqui7.getDate()+7);
@@ -2178,15 +2313,23 @@ async function renderCentralAlertas(){
     dt.setHours(0,0,0,0);
     if(dt <= daqui7){
       const franquiaNome = (DATA.find(d=>franquiaKey(d.franquia)===key) || {}).franquia || key;
-      itensPromessa.push({ franquiaNome, dt, proximaAcao: dados.proximaAcao || '(sem descrição)' });
+      if(passaFiltro(franquiaNome)) itensPromessa.push({ franquiaNome, dt, proximaAcao: dados.proximaAcao || '(sem descrição)' });
     }
   });
   itensPromessa.sort((a,b)=>a.dt-b.dt);
   elPromessas.innerHTML = itensPromessa.length === 0
-    ? 'Nenhuma promessa para hoje, atrasada ou nos próximos 7 dias.'
-    : itensPromessa.map(it=>`<b>${it.franquiaNome}</b> — ${it.proximaAcao} <span style="color:var(--muted);">(${it.dt.toLocaleDateString('pt-BR')})</span>`).join('<br>');
+    ? '<div class="alert-empty">Nenhuma promessa para hoje, atrasada ou nos próximos 7 dias (dentro do filtro atual).</div>'
+    : itensPromessa.map(it=>`
+        <div class="alert-item">
+          <div class="alert-item-left">
+            <span class="alert-item-nome">${it.franquiaNome}</span>${badgeAtivaInativa(statusFranquiaDe(it.franquiaNome))}
+            <span class="alert-item-sub">${it.proximaAcao}</span>
+          </div>
+          <div class="alert-item-value" style="color:var(--amber);">${it.dt.toLocaleDateString('pt-BR')}</div>
+        </div>
+      `).join('');
 
-  // 4) Inativas com débito
+  // 4) Inativas com débito (essa seção já é só inativas por natureza)
   const elInativas = document.getElementById('alertaCentralInativas');
   const inativasComDados = DATA.filter(d=>d.statusFranquia==='INATIVA');
   const porFranquiaInativa = {};
@@ -2198,12 +2341,18 @@ async function renderCentralAlertas(){
   });
   const listaInativas = Object.entries(porFranquiaInativa).filter(([f,v])=>v>0).sort((a,b)=>b[1]-a[1]);
   elInativas.innerHTML = listaInativas.length === 0
-    ? 'Nenhuma franquia inativa com débito em aberto. ✅'
-    : listaInativas.slice(0,15).map(([f,v])=>`<b>${f}</b> — ${fmtMoney(v)}`).join('<br>') +
-      (listaInativas.length > 15 ? `<br><br><a href="#" data-ir-tab="inativas" style="color:var(--violet);">Ver todas (${listaInativas.length}) na aba Inativas c/ Débito →</a>` : '');
+    ? '<div class="alert-empty">Nenhuma franquia inativa com débito em aberto. ✅</div>'
+    : listaInativas.slice(0,15).map(([f,v])=>`
+        <div class="alert-item">
+          <div class="alert-item-left"><span class="alert-item-nome">${f}</span></div>
+          <div class="alert-item-value" style="color:var(--violet);">${fmtMoney(v)}</div>
+        </div>
+      `).join('') +
+      (listaInativas.length > 15 ? `<div style="text-align:center; padding-top:6px;"><a href="#" data-ir-tab="inativas" style="color:var(--violet); font-size:12.5px;">Ver todas (${listaInativas.length}) na aba Inativas c/ Débito →</a></div>` : '');
   const linkInativas = elInativas.querySelector('[data-ir-tab]');
   if(linkInativas) linkInativas.addEventListener('click', (e)=>{ e.preventDefault(); document.querySelector('.tab-btn[data-tab="inativas"]').click(); });
 }
+document.getElementById('alertasFiltroAtiva').addEventListener('change', renderCentralAlertas);
 
 async function renderHistorico(franquia){
   const form = document.getElementById('historicoForm');
