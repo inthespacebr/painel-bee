@@ -805,7 +805,10 @@ const fmtMoney = v => 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDig
 const fmtDate = s => { if(!s) return '–'; const [y,m,d] = s.split('-'); return `${d}/${m}/${y}`; };
 
 function effectiveStatus(rec){
-  return overrides[rec.id] || rec.controle;
+  if(overrides[rec.id]) return overrides[rec.id];
+  // Se o boleto estava marcado como "A vencer" mas a data já passou, o painel já mostra como "Vencido" sozinho.
+  if(rec.controle === 'A VENCER' && diasEmAtraso(rec.vencimento) > 0) return 'EM ABERTO';
+  return rec.controle;
 }
 
 // ===================== PERSISTÊNCIA (Firebase Firestore) =====================
@@ -968,6 +971,60 @@ function diasEmAtraso(vencimento){
   const venc = new Date(vencimento + 'T00:00:00');
   return Math.floor((hoje - venc) / (1000*60*60*24));
 }
+// ===================== RECÁLCULO DIÁRIO DE MULTA, JUROS E IGP-M =====================
+// Tabela de índices mensais do IGP-M (FGV). Precisa ser atualizada manualmente todo mês
+// (o índice de cada mês só é divulgado por volta do dia 30 do mês seguinte).
+const IGPM_TABELA = {"2022-01":1.82,"2022-02":1.83,"2022-03":1.74,"2022-04":1.41,"2022-05":0.52,"2022-06":0.59,"2022-07":0.21,"2022-08":-0.7,"2022-09":-0.95,"2022-10":-0.97,"2022-11":-0.56,"2022-12":0.45,"2023-01":0.21,"2023-02":-0.06,"2023-03":0.05,"2023-04":-0.95,"2023-05":-1.84,"2023-06":-1.93,"2023-07":-0.72,"2023-08":-0.14,"2023-09":0.37,"2023-10":0.5,"2023-11":0.59,"2023-12":0.74,"2024-01":0.07,"2024-02":-0.52,"2024-03":-0.47,"2024-04":0.31,"2024-05":0.89,"2024-06":0.81,"2024-07":0.61,"2024-08":0.29,"2024-09":0.62,"2024-10":1.52,"2024-11":1.3,"2024-12":0.94,"2025-01":0.27,"2025-02":1.06,"2025-03":-0.34,"2025-04":0.24,"2025-05":-0.49,"2025-06":-1.67,"2025-07":-0.77,"2025-08":0.36,"2025-09":0.42,"2025-10":-0.36,"2025-11":0.27,"2025-12":-0.01,"2026-01":0.41,"2026-02":-0.73,"2026-03":0.52,"2026-04":2.73,"2026-05":0.84,"2026-06":-0.5,"2026-07":-1.16};
+const ULTIMO_MES_IGPM_PUBLICADO = Object.keys(IGPM_TABELA).sort().pop();
+
+// Taxa de multa contratual conhecida por franquia (a maioria usa 1%, algumas usam 10%).
+// Franquias que não aparecem aqui usam a taxa padrão abaixo.
+const TAXA_MULTA_POR_FRANQUIA = {"MOGI DAS CRUZES - 198":1.0,"ARUJÁ - 187":1.0,"TRÊS LAGOAS - 84":1.0,"PAULINIA - 100":1.0,"ARARAS/SP - 241":1.0,"BARRA MANSA - 96":1.0,"COSMÓPOLIS - 179":1.0,"ANDRADINA - 185":1.0,"CATALÃO - 164":1.0,"BATATAIS - 184":1.0,"NITERÓI - 111":1.0,"VOLTA REDONDA - 51":1.0,"CAPIVARI - 183":1.0,"DOURADOS - 64":10.0,"TERESINA - 26":1.0,"DIVINÓPOLIS - 11":1.0,"JUAZEIRO DO NORTE - 10":1.0,"ILHA SOLTEIRA - 186":1.0,"VALINHOS - 153":1.0,"BEBEDOURO - 230":1.0,"CAXIAS - 219":1.0,"ITABUNA - 95":1.0,"UBATUBA - 82":1.0,"ANÁPOLIS - 41":1.0,"SALTO/SP - 242":1.0,"IBIPORÃ - 224":1.0,"FORTALEZA - 7":1.0,"GUARULHOS - 104":1.0,"TANGARÁ DA SERRA - 146":10.0,"RIO GRANDE - 207":10.0,"LUZIÂNIA - GO-VALPARAÍSO - GO - 196":1.0,"ARAGUARI - 161":10.0,"JOÃO PINHEIRO - 226":1.0,"PRESIDENTE PRUDENTE - 79":1.0,"CAMPO GRANDE - 37":1.0,"CORUMBÁ - 103":1.0,"FOZ DO IGUAÇU - 131":1.0,"PATOS DE MINAS - 128":1.0,"SAQUAREMA - RJ - 132":1.0,"PONTA PORÃ - 75":1.0,"SÃO JOSÉ - 35":1.0,"SANTO ANTONIO DE PADUA - 225":1.0,"CPTA - SOUSA - PB - 202":1.0,"CPTA - PARANAÍBA - MS - 201":1.0,"TATUÍ - 223":1.0,"ERECHIM - 199":1.0,"MARIALVA - 123":1.0,"PRIMAVERA DO LESTE - 197":1.0,"SÃO JOSÉ DO RIO PRETO - 189":1.0,"RIO DAS OSTRAS-RJ - 99":1.0,"ITAPERUNA - 129":1.0,"INDAIATUBA-SP - 106":1.0,"SÃO JOSÉ DOS CAMPOS/SP - 89":1.0,"GUARATINGUETÁ/SP - 58":1.0,"BRAGANÇA PAULISTA - 47":1.0,"TAUBATE - 24":1.0,"ITAJAI/BALNEARIO - 53":1.0,"BLUMENAU - 20":1.0,"MANAUS-AM - 12":1.0,"BAURÚ/SP - 125":1.0,"CACOAL - 43":1.0,"SUL FLUMINENSE - RJ - 25":1.0,"TIMON-MA - novo - 50":1.0,"BARBACENA - MG - 27":1.0,"JUIZ DE FORA - 49":1.0,"BARRA DO PIRAÍ-RJ - 109":1.0,"JABOATÃO DOS GUARARAPES - 83":1.0,"NOVA FRIBURGO-RJ - 66":1.0,"FEIRA DE SANTANA - BA - 86":1.0,"BARREIRAS - BA - 23":1.0,"ARIQUEMES - 44":1.0,"COTIA - 72":1.0};
+const TAXA_MULTA_PADRAO = 1.0;
+
+function proximoMesChave(chave){
+  let [ano, mes] = chave.split('-').map(Number);
+  mes += 1;
+  if(mes > 12){ mes = 1; ano += 1; }
+  return `${ano}-${String(mes).padStart(2,'0')}`;
+}
+
+function calcularIgpmAcumulado(valor, vencimentoStr){
+  const [anoV, mesV] = vencimentoStr.split('-').map(Number);
+  let chave = proximoMesChave(`${anoV}-${String(mesV).padStart(2,'0')}`);
+  let acumulado = 1.0;
+  while(chave <= ULTIMO_MES_IGPM_PUBLICADO){
+    const taxa = IGPM_TABELA[chave];
+    if(taxa !== undefined) acumulado *= (1 + taxa/100);
+    chave = proximoMesChave(chave);
+  }
+  const correcao = valor * (acumulado - 1);
+  return Math.max(correcao, 0);
+}
+
+function calcularEncargosVencido(franquia, valor, vencimentoStr){
+  const dias = diasEmAtraso(vencimentoStr);
+  if(dias <= 0) return { multa:0, juros:0, igpm:0, total: valor };
+  const taxaMulta = TAXA_MULTA_POR_FRANQUIA[franquia] !== undefined ? TAXA_MULTA_POR_FRANQUIA[franquia] : TAXA_MULTA_PADRAO;
+  const multa = Math.round(valor * taxaMulta/100 * 100) / 100;
+  const juros = Math.round(valor * 0.01 * (dias/30) * 100) / 100;
+  const igpm = Math.round(calcularIgpmAcumulado(valor, vencimentoStr) * 100) / 100;
+  const total = Math.round((valor + multa + juros + igpm) * 100) / 100;
+  return { multa, juros, igpm, total };
+}
+
+// Recalcula multa/juros/IGP-M de todos os lançamentos hoje "Vencidos" (considerando status manual também),
+// usando a data de hoje. Roda uma vez a cada carregamento do painel — por isso os valores ficam sempre
+// atualizados "do dia", sem precisar esperar a atualização mensal.
+function recalcularEncargosDoDataset(){
+  DATA.forEach(d=>{
+    if(effectiveStatus(d) === 'EM ABERTO'){
+      const enc = calcularEncargosVencido(d.franquia, d.valor, d.vencimento);
+      d.multa = enc.multa; d.juros = enc.juros; d.igpm = enc.igpm; d.total = enc.total;
+    }
+  });
+}
+
 function corAtraso(dias){
   if(dias >= 365) return '#8B2E3C'; // vermelho escuro
   if(dias >= 180) return '#E0637A'; // vermelho
@@ -1167,6 +1224,7 @@ document.getElementById('tableBody').addEventListener('change', async (e)=>{
   e.target.className = 'status-select ' + STATUS_CLASS[newStatus];
   await persistOverrides();
   await registrarAuditoria(registro, statusAntigo, newStatus);
+  recalcularEncargosDoDataset();
   renderAll();
 });
 
@@ -3098,6 +3156,7 @@ async function startApp(){
   populateHistoricoSelect();
   await loadOverrides();
   await loadFavoritos();
+  recalcularEncargosDoDataset();
   renderAll();
   salvarSnapshotMensal();
 }
