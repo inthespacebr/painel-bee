@@ -677,6 +677,27 @@
         <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:3px;">Detalhamento / condições</label>
         <textarea id="acordoDetalhamento" style="min-height:55px;" placeholder="Condições do acordo, forma de pagamento, observações..."></textarea>
       </div>
+
+      <div style="background:var(--surface-alt); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:14px;">
+        <div style="font-size:11px; text-transform:uppercase; color:var(--amber); font-weight:600; margin-bottom:8px;">⚡ Gerar parcelas automaticamente</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="flex:1; min-width:130px;">
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:3px;">Vencimento da 1ª parcela</label>
+            <input type="text" id="acordoGerarPrimeiraData" class="crm-input" placeholder="dd/mm/aaaa">
+          </div>
+          <div style="flex:1; min-width:110px;">
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:3px;">Valor de cada parcela</label>
+            <input type="text" id="acordoGerarValorParcela" class="crm-input" placeholder="0,00">
+          </div>
+          <div style="flex:1; min-width:90px;">
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:3px;">Nº de parcelas</label>
+            <input type="number" id="acordoGerarQtdParcelas" class="crm-input" min="1" placeholder="ex: 10">
+          </div>
+          <button class="btn btn-export" id="acordoGerarBtn" type="button" style="white-space:nowrap;">Gerar parcelas</button>
+        </div>
+        <div style="font-size:10.5px; color:var(--muted); margin-top:6px;">Gera automaticamente uma parcela por mês, todas com o mesmo dia de vencimento e o mesmo valor. Isso <b>substitui</b> a lista de parcelas atual — você pode ajustar valores/datas individuais depois de gerar.</div>
+      </div>
+
       <div class="table-wrap" style="margin-bottom:10px;">
         <table>
           <thead><tr><th>Parcela</th><th>Vencimento</th><th style="text-align:right">Valor</th><th>Status</th><th></th></tr></thead>
@@ -2214,6 +2235,9 @@ async function carregarInfoAcordo(franquia){
   document.getElementById('acordoValorTotal').value = '';
   document.getElementById('acordoNumParcelas').value = '';
   document.getElementById('acordoDetalhamento').value = '';
+  document.getElementById('acordoGerarPrimeiraData').value = '';
+  document.getElementById('acordoGerarValorParcela').value = '';
+  document.getElementById('acordoGerarQtdParcelas').value = '';
   parcelasAtuais = [];
   try{
     const doc = await acordosCollection.doc(franquiaKey(franquia)).get();
@@ -2230,6 +2254,49 @@ async function carregarInfoAcordo(franquia){
   }
   renderParcelas();
 }
+
+// Gera N parcelas mensais a partir da 1ª data informada, mantendo o mesmo dia e valor.
+function gerarParcelasAutomaticamente(){
+  const dataStr = document.getElementById('acordoGerarPrimeiraData').value.trim();
+  const valorStr = document.getElementById('acordoGerarValorParcela').value.trim();
+  const qtd = parseInt(document.getElementById('acordoGerarQtdParcelas').value);
+
+  const m = dataStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if(!m){ alert('Digite a data da 1ª parcela no formato dd/mm/aaaa.'); return; }
+  if(!valorStr){ alert('Digite o valor de cada parcela.'); return; }
+  if(!qtd || qtd < 1){ alert('Digite a quantidade de parcelas (nº inteiro maior que 0).'); return; }
+
+  let [_, dia, mes, ano] = m;
+  if(ano.length === 2) ano = '20'+ano;
+  dia = parseInt(dia); mes = parseInt(mes); ano = parseInt(ano);
+
+  if(parcelasAtuais.length > 0){
+    if(!confirm('Isso vai substituir as parcelas já cadastradas por uma lista nova, gerada automaticamente. Continuar?')) return;
+  }
+
+  const novasParcelas = [];
+  for(let i=0; i<qtd; i++){
+    // usa new Date com dia fixo e mês incrementando — o próprio JS "rola" o ano quando o mês passa de 12
+    const dt = new Date(ano, mes-1+i, dia);
+    const venc = `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()}`;
+    novasParcelas.push({ vencimento: venc, valor: valorStr, status: 'PENDENTE' });
+  }
+
+  parcelasAtuais = novasParcelas;
+  renderParcelas();
+
+  // preenche também o "Nº de parcelas" e "Valor total" do resumo, se estiverem vazios
+  const numParcelasInput = document.getElementById('acordoNumParcelas');
+  if(!numParcelasInput.value) numParcelasInput.value = qtd;
+  const valorNum = parseFloat(valorStr.replace(/\./g,'').replace(',','.'));
+  if(!isNaN(valorNum)){
+    const valorTotalInput = document.getElementById('acordoValorTotal');
+    if(!valorTotalInput.value) valorTotalInput.value = (valorNum*qtd).toFixed(2).replace('.',',');
+  }
+
+  showToast(`${qtd} parcela(s) gerada(s)`);
+}
+document.getElementById('acordoGerarBtn').addEventListener('click', gerarParcelasAutomaticamente);
 
 function renderParcelas(){
   const tbody = document.getElementById('acordoParcelasBody');
