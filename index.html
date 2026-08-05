@@ -871,19 +871,36 @@ function showToast(msg){
 }
 
 // ===================== FILTROS =====================
-function populateFilterOptions(){
-  const franquias = [...new Set(DATA.map(d=>d.franquia))].sort();
-  const franqueados = [...new Set(DATA.map(d=>d.nome))].sort((a,b)=>a.localeCompare(b));
-  const categorias = [...new Set(DATA.map(d=>d.categoria))].sort();
+function atualizarOpcoesFranquiaFranqueado(){
+  const fAtivaInativa = document.getElementById('filterAtivaInativa').value;
+  const fPropria = document.getElementById('filterPropria').value;
+  const dadosFiltrados = DATA.filter(d=>{
+    if(fAtivaInativa && d.statusFranquia !== fAtivaInativa) return false;
+    if(fPropria && d.operacaoPropria !== fPropria) return false;
+    return true;
+  });
+  const franquias = [...new Set(dadosFiltrados.map(d=>d.franquia))].sort();
+  const franqueados = [...new Set(dadosFiltrados.map(d=>d.nome))].sort((a,b)=>a.localeCompare(b));
+
   const selF = document.getElementById('filterFranquia');
   const selN = document.getElementById('filterFranqueado');
-  franquias.forEach(f=>{
-    const o = document.createElement('option'); o.value=f; o.textContent=f; selF.appendChild(o);
-  });
-  franqueados.forEach(n=>{
-    const o = document.createElement('option'); o.value=n; o.textContent=n; selN.appendChild(o);
-  });
+  const valorAtualF = selF.value;
+  const valorAtualN = selN.value;
 
+  selF.innerHTML = '<option value="">Todas as franquias</option>' +
+    franquias.map(f=>`<option value="${f.replace(/"/g,'&quot;')}">${f}</option>`).join('');
+  selN.innerHTML = '<option value="">Todos os franqueados</option>' +
+    franqueados.map(n=>`<option value="${n.replace(/"/g,'&quot;')}">${n}</option>`).join('');
+
+  // mantém a seleção anterior se ela ainda for válida dentro do novo filtro; senão, limpa
+  selF.value = franquias.includes(valorAtualF) ? valorAtualF : '';
+  selN.value = franqueados.includes(valorAtualN) ? valorAtualN : '';
+}
+
+function populateFilterOptions(){
+  atualizarOpcoesFranquiaFranqueado();
+
+  const categorias = [...new Set(DATA.map(d=>d.categoria))].sort();
   const selCatRegra = document.getElementById('regraCategoriaSelect');
   categorias.forEach(c=>{
     const o = document.createElement('option'); o.value=c; o.textContent=c; selCatRegra.appendChild(o);
@@ -1124,8 +1141,8 @@ function renderAll(){
 document.getElementById('searchInput').addEventListener('input', ()=>{ currentPage=1; renderAll(); });
 document.getElementById('filterFranquia').addEventListener('change', ()=>{ currentPage=1; renderAll(); });
 document.getElementById('filterFranqueado').addEventListener('change', ()=>{ currentPage=1; renderAll(); });
-document.getElementById('filterAtivaInativa').addEventListener('change', ()=>{ currentPage=1; renderAll(); });
-document.getElementById('filterPropria').addEventListener('change', ()=>{ currentPage=1; renderAll(); });
+document.getElementById('filterAtivaInativa').addEventListener('change', ()=>{ atualizarOpcoesFranquiaFranqueado(); currentPage=1; renderAll(); });
+document.getElementById('filterPropria').addEventListener('change', ()=>{ atualizarOpcoesFranquiaFranqueado(); currentPage=1; renderAll(); });
 
 // ---- Construtor de regras combinadas (Categoria + Status + Vencimento) ----
 function renderRegrasChips(){
@@ -1186,10 +1203,11 @@ document.getElementById('addRegraBtn').addEventListener('click', ()=>{
 
 document.getElementById('clearFilters').addEventListener('click', ()=>{
   document.getElementById('searchInput').value='';
-  document.getElementById('filterFranquia').value='';
-  document.getElementById('filterFranqueado').value='';
   document.getElementById('filterAtivaInativa').value='';
   document.getElementById('filterPropria').value='';
+  atualizarOpcoesFranquiaFranqueado();
+  document.getElementById('filterFranquia').value='';
+  document.getElementById('filterFranqueado').value='';
   regrasCombinadas = [];
   renderRegrasChips();
   atualizarLabelRegras();
