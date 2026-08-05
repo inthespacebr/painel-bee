@@ -80,6 +80,17 @@
   }
   .modal-tab-btn:hover{color:var(--text);}
   .modal-tab-btn.active{color:var(--amber); border-bottom-color:var(--amber); font-weight:600;}
+  .alerta-tab-btn{
+    background:none; border:none; color:var(--muted); padding:8px 12px; font-size:12.5px;
+    cursor:pointer; border-radius:7px 7px 0 0; font-family:inherit; border-bottom:2px solid transparent;
+  }
+  .alerta-tab-btn:hover{color:var(--text);}
+  .alerta-tab-btn.active{color:var(--amber); border-bottom-color:var(--amber); font-weight:600;}
+  .count-pill{
+    display:inline-block; background:var(--surface-alt); border-radius:10px; padding:1px 6px;
+    font-size:10.5px; margin-left:3px; color:var(--muted);
+  }
+  .alerta-tab-btn.active .count-pill{background:var(--amber); color:#1a1305;}
   .kanban-board{display:flex; gap:14px; overflow-x:auto; padding-bottom:10px;}
   .kanban-col{
     background:var(--surface); border:1px solid var(--border); border-radius:10px;
@@ -547,7 +558,7 @@
   <!-- ===================== ABA: CENTRAL DE ALERTAS ===================== -->
   <div class="tab-panel" id="tabAlertas" style="display:none;">
     <p class="subtitle" style="margin-bottom:10px;">Tudo que precisa da sua atenção hoje, num lugar só.</p>
-    <div class="toolbar" style="margin-bottom:16px;">
+    <div class="toolbar" style="margin-bottom:6px;">
       <select id="alertasFiltroAtiva">
         <option value="">Ativas e inativas</option>
         <option value="ATIVA">Somente ativas</option>
@@ -556,22 +567,29 @@
       <span class="count" id="alertasFiltroHint">O filtro vale para as seções "vencidas 90+", "sem contato" e "promessas".</span>
     </div>
 
-    <div class="card" style="margin-bottom:16px; border-color:rgba(224,99,122,0.35);">
+    <div class="modal-tab-btn-row" id="alertasSubTabs" style="display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; border-bottom:1px solid var(--border); padding-bottom:0;">
+      <button class="alerta-tab-btn active" data-alertatab="90dias">🔴 Vencidas 90+ dias <span id="contagem90" class="count-pill"></span></button>
+      <button class="alerta-tab-btn" data-alertatab="semcontato">📵 Sem contato <span id="contagemSemContato" class="count-pill"></span></button>
+      <button class="alerta-tab-btn" data-alertatab="promessas">📌 Promessas <span id="contagemPromessas" class="count-pill"></span></button>
+      <button class="alerta-tab-btn" data-alertatab="inativas">🏚️ Inativas c/ débito <span id="contagemInativasAlerta" class="count-pill"></span></button>
+    </div>
+
+    <div class="card" id="alertaCard90" style="border-color:rgba(224,99,122,0.35);">
       <div class="card-label" style="color:var(--rose);">🔴 Vencidas há mais de 90 dias</div>
       <div id="alertaCentral90" class="alert-list" style="margin-top:10px;">Carregando...</div>
     </div>
 
-    <div class="card" style="margin-bottom:16px; border-color:rgba(224,99,122,0.35);">
+    <div class="card" id="alertaCardSemContato" style="border-color:rgba(224,99,122,0.35); display:none;">
       <div class="card-label" style="color:var(--rose);">📵 Vencidas há mais de 60 dias, sem nenhum contato registrado</div>
       <div id="alertaCentralSemContato" class="alert-list" style="margin-top:10px;">Carregando...</div>
     </div>
 
-    <div class="card" style="margin-bottom:16px; border-color:rgba(217,164,65,0.35);">
+    <div class="card" id="alertaCardPromessas" style="border-color:rgba(217,164,65,0.35); display:none;">
       <div class="card-label" style="color:var(--amber);">📌 Promessas de hoje, atrasadas ou desta semana</div>
       <div id="alertaCentralPromessas" class="alert-list" style="margin-top:10px;">Carregando...</div>
     </div>
 
-    <div class="card" style="border-color:rgba(155,127,232,0.35);">
+    <div class="card" id="alertaCardInativas" style="border-color:rgba(155,127,232,0.35); display:none;">
       <div class="card-label" style="color:var(--violet);">🏚️ Franquias inativas com débito ainda em aberto</div>
       <div id="alertaCentralInativas" class="alert-list" style="margin-top:10px;">Carregando...</div>
     </div>
@@ -2565,6 +2583,7 @@ async function renderCentralAlertas(){
     porFranquia90[d.franquia].total += d.total;
   });
   const lista90 = Object.entries(porFranquia90).filter(([f,v])=>v.dias>90 && passaFiltro(f)).sort((a,b)=>b[1].dias-a[1].dias);
+  document.getElementById('contagem90').textContent = lista90.length;
   el90.innerHTML = lista90.length === 0
     ? '<div class="alert-empty">Nenhuma franquia vencida há mais de 90 dias. ✅</div>'
     : lista90.map(([f,v])=>`
@@ -2582,6 +2601,7 @@ async function renderCentralAlertas(){
   elSemContato.innerHTML = '<div class="alert-empty">Verificando...</div>';
   const semContatoTodas = await calcularFranquiasSemContato(60);
   const semContato = semContatoTodas.filter(passaFiltro);
+  document.getElementById('contagemSemContato').textContent = semContato.length;
   elSemContato.innerHTML = semContato.length === 0
     ? '<div class="alert-empty">Todas em dia com pelo menos um contato registrado (dentro do filtro atual). ✅</div>'
     : semContato.map(f=>`
@@ -2619,6 +2639,7 @@ async function renderCentralAlertas(){
     }
   });
   itensPromessa.sort((a,b)=>a.dt-b.dt);
+  document.getElementById('contagemPromessas').textContent = itensPromessa.length;
   elPromessas.innerHTML = itensPromessa.length === 0
     ? '<div class="alert-empty">Nenhuma promessa para hoje, atrasada ou nos próximos 7 dias (dentro do filtro atual).</div>'
     : itensPromessa.map(it=>`
@@ -2642,6 +2663,7 @@ async function renderCentralAlertas(){
     }
   });
   const listaInativas = Object.entries(porFranquiaInativa).filter(([f,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('contagemInativasAlerta').textContent = listaInativas.length;
   elInativas.innerHTML = listaInativas.length === 0
     ? '<div class="alert-empty">Nenhuma franquia inativa com débito em aberto. ✅</div>'
     : listaInativas.slice(0,15).map(([f,v])=>`
@@ -2655,6 +2677,20 @@ async function renderCentralAlertas(){
   if(linkInativas) linkInativas.addEventListener('click', (e)=>{ e.preventDefault(); document.querySelector('.tab-btn[data-tab="inativas"]').click(); });
 }
 document.getElementById('alertasFiltroAtiva').addEventListener('change', renderCentralAlertas);
+
+// ---- Sub-abas dentro da Central de Alertas ----
+const ALERTA_TAB_CARDS = {
+  '90dias': 'alertaCard90', 'semcontato': 'alertaCardSemContato',
+  'promessas': 'alertaCardPromessas', 'inativas': 'alertaCardInativas'
+};
+document.querySelectorAll('.alerta-tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.alerta-tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    Object.values(ALERTA_TAB_CARDS).forEach(id=>document.getElementById(id).style.display='none');
+    document.getElementById(ALERTA_TAB_CARDS[btn.dataset.alertatab]).style.display='block';
+  });
+});
 
 async function renderHistorico(franquia){
   const form = document.getElementById('historicoForm');
