@@ -230,6 +230,7 @@
   .franquia-badge{font-size:10.5px; padding:2px 7px; border-radius:4px; margin-left:8px; font-weight:600;}
   .fr-ativa{background:rgba(79,174,138,0.14); color:var(--green);}
   .fr-inativa{background:rgba(138,148,172,0.15); color:var(--muted);}
+  .fr-distrato{background:rgba(217,164,65,0.16); color:var(--amber);}
 
   .status-select{
     font-size:12px; font-weight:600; border-radius:6px; padding:6px 10px; border:1px solid transparent;
@@ -358,9 +359,10 @@
     <select id="filterFranquia"><option value="">Todas as franquias</option></select>
     <select id="filterFranqueado"><option value="">Todos os franqueados</option></select>
     <select id="filterAtivaInativa">
-      <option value="">Ativas e inativas</option>
+      <option value="">Ativas, inativas e em distrato</option>
       <option value="ATIVA">Somente ativas</option>
       <option value="INATIVA">Somente inativas</option>
+      <option value="EM PROCESSO DE DISTRATO">Somente em processo de distrato</option>
     </select>
     <select id="filterPropria">
       <option value="">Próprias e franqueadas</option>
@@ -567,9 +569,10 @@
     <p class="subtitle" style="margin-bottom:10px;">Tudo que precisa da sua atenção hoje, num lugar só.</p>
     <div class="toolbar" style="margin-bottom:6px;">
       <select id="alertasFiltroAtiva">
-        <option value="">Ativas e inativas</option>
+        <option value="">Ativas, inativas e em distrato</option>
         <option value="ATIVA">Somente ativas</option>
         <option value="INATIVA">Somente inativas</option>
+        <option value="EM PROCESSO DE DISTRATO">Somente em processo de distrato</option>
       </select>
       <span class="count" id="alertasFiltroHint">O filtro vale para as seções "vencidas 90+", "sem contato" e "promessas".</span>
     </div>
@@ -654,6 +657,16 @@
 <div class="modal-overlay" id="obsModal" style="display:none;">
   <div class="modal-box" style="max-width:680px;">
     <h3 id="obsModalTitle">Franquia</h3>
+
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+      <label style="font-size:11px; color:var(--muted); white-space:nowrap;">Status da franquia:</label>
+      <select id="obsModalStatusFranquiaSelect" class="crm-input" style="flex:1; max-width:260px;">
+        <option value="ATIVA">Ativa</option>
+        <option value="INATIVA">Inativa</option>
+        <option value="EM PROCESSO DE DISTRATO">Em processo de distrato</option>
+      </select>
+      <button class="btn btn-export" id="obsModalStatusFranquiaSalvarBtn" type="button" style="white-space:nowrap;">Salvar status</button>
+    </div>
 
     <div class="tabs-nav" style="margin-top:0; margin-bottom:14px;">
       <button class="modal-tab-btn active" data-obstab="observacao" type="button">📝 Observação</button>
@@ -815,9 +828,17 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const overridesDocRef = db.collection('painel-inadimplencia').doc('overrides');
+const statusFranquiaOverridesDocRef = db.collection('painel-inadimplencia').doc('statusFranquiaOverrides');
 
 const STORAGE_KEY = 'status-overrides';
 let overrides = {}; // { id: 'NOVO_STATUS' }
+let statusFranquiaOverrides = {}; // { franquia: 'ATIVA' | 'INATIVA' | 'EM PROCESSO DE DISTRATO' }
+const STATUS_FRANQUIA_OPCOES = ['ATIVA', 'INATIVA', 'EM PROCESSO DE DISTRATO'];
+const STATUS_FRANQUIA_LABELS = {
+  'ATIVA': 'Ativa',
+  'INATIVA': 'Inativa',
+  'EM PROCESSO DE DISTRATO': 'Em processo de distrato'
+};
 let favoritos = []; // lista de nomes de franquia fixados
 let somenteFavoritos = false;
 let regrasCombinadas = []; // [{categoria:'', status:'', temporal:'TODOS'}] — combinações Categoria+Status+Vencimento, somadas (OR)
@@ -869,6 +890,30 @@ async function persistOverrides(){
   }
 }
 
+async function loadStatusFranquiaOverrides(){
+  try{
+    const doc = await statusFranquiaOverridesDocRef.get();
+    if(doc.exists){
+      statusFranquiaOverrides = doc.data().valores ? JSON.parse(doc.data().valores) : {};
+    } else {
+      statusFranquiaOverrides = {};
+    }
+  }catch(e){
+    console.error('Erro ao carregar status manuais de franquia:', e);
+    statusFranquiaOverrides = {};
+  }
+}
+
+async function persistStatusFranquiaOverrides(){
+  try{
+    await statusFranquiaOverridesDocRef.set({ valores: JSON.stringify(statusFranquiaOverrides), atualizadoEm: new Date().toISOString() });
+    showToast('Status da franquia salvo');
+  }catch(e){
+    console.error('Erro ao salvar status manual de franquia:', e);
+    showToast('Não foi possível salvar o status da franquia.');
+  }
+}
+
 function showToast(msg){
   const t = document.getElementById('toast');
   document.getElementById('toastText').textContent = msg;
@@ -882,7 +927,7 @@ function atualizarOpcoesFranquiaFranqueado(){
   const fAtivaInativa = document.getElementById('filterAtivaInativa').value;
   const fPropria = document.getElementById('filterPropria').value;
   const dadosFiltrados = DATA.filter(d=>{
-    if(fAtivaInativa && d.statusFranquia !== fAtivaInativa) return false;
+    if(fAtivaInativa && statusFranquiaDe(d.franquia) !== fAtivaInativa) return false;
     if(fPropria && d.operacaoPropria !== fPropria) return false;
     return true;
   });
@@ -934,7 +979,7 @@ function getFiltered(){
   let rows = DATA.filter(d=>{
     if(fFranquia && d.franquia !== fFranquia) return false;
     if(fFranqueado && d.nome !== fFranqueado) return false;
-    if(fAtivaInativa && d.statusFranquia !== fAtivaInativa) return false;
+    if(fAtivaInativa && statusFranquiaDe(d.franquia) !== fAtivaInativa) return false;
     if(fPropria && d.operacaoPropria !== fPropria) return false;
     if(somenteFavoritos && !favoritos.includes(d.franquia)) return false;
     if(regrasCombinadas.length > 0){
@@ -1088,9 +1133,7 @@ function renderTable(rows){
     empty.style.display = 'none';
     tbody.innerHTML = pageRows.map(d=>{
       const st = effectiveStatus(d);
-      const frBadge = d.statusFranquia === 'ATIVA'
-        ? '<span class="franquia-badge fr-ativa">ativa</span>'
-        : '<span class="franquia-badge fr-inativa">inativa</span>';
+      const frBadge = badgeAtivaInativa(statusFranquiaDe(d.franquia));
       const propriaBadge = d.operacaoPropria === 'PRÓPRIA'
         ? '<span class="franquia-badge" style="background:rgba(155,127,232,0.16); color:var(--violet);">própria</span>'
         : '';
@@ -1300,7 +1343,7 @@ function exportToExcel(){
   const data = rows.map(d=>({
     'Franquia': d.franquia,
     'Franqueado': d.nome,
-    'Status Franquia': d.statusFranquia === 'ATIVA' ? 'Ativa' : 'Inativa',
+    'Status Franquia': STATUS_FRANQUIA_LABELS[statusFranquiaDe(d.franquia)] || statusFranquiaDe(d.franquia),
     'Operação': d.operacaoPropria === 'PRÓPRIA' ? 'Própria' : 'Franqueada',
     'Categoria': d.categoria,
     'Vencimento': fmtDate(d.vencimento),
@@ -1371,7 +1414,7 @@ function gerarConsideracoes(rows, franquiaSel){
   const totalAberto = abertos.reduce((s,d)=>s+d.total,0);
   const acordos = rows.filter(d=>d.categoria==='NEGOCIAÇÃO');
   const indevidas = rows.filter(d=>effectiveStatus(d)==='COBRANÇA INDEVIDA');
-  const franquiaAtiva = rows[0].statusFranquia === 'ATIVA';
+  const franquiaAtiva = statusFranquiaDe(rows[0].franquia) === 'ATIVA';
 
   let diasAtrasoMax = 0;
   abertos.forEach(d=>{
@@ -1693,7 +1736,7 @@ async function exportRelatorioExecutivo(){
     const totalBaixado = baixadosRows.reduce((s,d)=>s+d.total,0);
     const totalPendente = totalVencido + totalAVencer;
     const franquiasComPendencia = new Set(abertosRows.map(d=>d.franquia)).size;
-    const franquiasAtivasComPendencia = new Set(abertosRows.filter(d=>d.statusFranquia==='ATIVA').map(d=>d.franquia)).size;
+    const franquiasAtivasComPendencia = new Set(abertosRows.filter(d=>statusFranquiaDe(d.franquia)==='ATIVA').map(d=>d.franquia)).size;
     const franquiasInativasComPendencia = franquiasComPendencia - franquiasAtivasComPendencia;
     const ticketMedioVencido = abertosRows.length ? totalVencido/abertosRows.length : 0;
     const totalEncargosVencidos = abertosRows.reduce((s,d)=>s+d.multa+d.juros+d.igpm,0);
@@ -1844,7 +1887,7 @@ async function exportRelatorioExecutivo(){
     tituloSecao('5. Top 15 Maiores Devedores (Vencido)');
     const porFranquia = {};
     abertosRows.forEach(d=>{
-      if(!porFranquia[d.franquia]) porFranquia[d.franquia] = { total:0, qtd:0, dias:0, status: d.statusFranquia };
+      if(!porFranquia[d.franquia]) porFranquia[d.franquia] = { total:0, qtd:0, dias:0, status: statusFranquiaDe(d.franquia) };
       porFranquia[d.franquia].total += d.total;
       porFranquia[d.franquia].qtd += 1;
       const dd = diasEmAtraso(d.vencimento);
@@ -1864,7 +1907,7 @@ async function exportRelatorioExecutivo(){
 
     // ---- 6. FRANQUIAS INATIVAS COM DÉBITO ----
     tituloSecao('6. Franquias Inativas com Débito em Aberto');
-    const inativasRows = DATA.filter(d=>d.statusFranquia==='INATIVA' && (effectiveStatus(d)==='EM ABERTO' || effectiveStatus(d)==='A VENCER'));
+    const inativasRows = DATA.filter(d=>statusFranquiaDe(d.franquia)==='INATIVA' && (effectiveStatus(d)==='EM ABERTO' || effectiveStatus(d)==='A VENCER'));
     const porFranquiaInativa = {};
     inativasRows.forEach(d=>{ porFranquiaInativa[d.franquia] = (porFranquiaInativa[d.franquia]||0)+d.total; });
     const listaInativasRel = Object.entries(porFranquiaInativa).sort((a,b)=>b[1]-a[1]).slice(0,15);
@@ -2312,6 +2355,9 @@ async function abrirObsModal(franquia){
 
   document.getElementById('obsModal').style.display = 'flex';
 
+  const statusSelect = document.getElementById('obsModalStatusFranquiaSelect');
+  statusSelect.value = statusFranquiaDe(franquia);
+
   const ta = document.getElementById('obsModalTextarea');
   ta.value = 'Carregando...';
   try{
@@ -2348,6 +2394,21 @@ document.getElementById('obsModalSalvarBtn').addEventListener('click', async ()=
 });
 document.getElementById('obsModalCloseBtn').addEventListener('click', ()=>{
   document.getElementById('obsModal').style.display = 'none';
+});
+
+document.getElementById('obsModalStatusFranquiaSalvarBtn').addEventListener('click', async ()=>{
+  if(!franquiaModalAtual) return;
+  const novoStatus = document.getElementById('obsModalStatusFranquiaSelect').value;
+  const statusBase = statusFranquiaBaseDe(franquiaModalAtual);
+  if(novoStatus === statusBase){
+    // Igual ao status original da planilha: remove o override (não precisa mais dele)
+    delete statusFranquiaOverrides[franquiaModalAtual];
+  } else {
+    statusFranquiaOverrides[franquiaModalAtual] = novoStatus;
+  }
+  await persistStatusFranquiaOverrides();
+  atualizarOpcoesFranquiaFranqueado();
+  renderAll();
 });
 
 // ---- Aba: Registro de Acordo (histórico de andamento) ----
@@ -2644,14 +2705,24 @@ async function calcularFranquiasSemContato(diasMin){
 }
 
 // (função renderAlertaSemContato removida — esse alerta agora vive só na Central de Alertas)
-function statusFranquiaDe(franquia){
+function statusFranquiaBaseDe(franquia){
   const r = DATA.find(d=>d.franquia===franquia);
   return r ? r.statusFranquia : 'ATIVA';
 }
+// statusFranquiaDe agora retorna o status EFETIVO: usa o override manual (ATIVA/INATIVA/EM PROCESSO DE DISTRATO)
+// se existir para a franquia, senão cai no status que veio da planilha (ATIVA/INATIVA).
+function statusFranquiaDe(franquia){
+  if(statusFranquiaOverrides[franquia]) return statusFranquiaOverrides[franquia];
+  return statusFranquiaBaseDe(franquia);
+}
 function badgeAtivaInativa(statusFranquia){
-  return statusFranquia === 'ATIVA'
-    ? '<span class="franquia-badge fr-ativa">ativa</span>'
-    : '<span class="franquia-badge fr-inativa">inativa</span>';
+  if(statusFranquia === 'ATIVA'){
+    return '<span class="franquia-badge fr-ativa">ativa</span>';
+  }
+  if(statusFranquia === 'EM PROCESSO DE DISTRATO'){
+    return '<span class="franquia-badge fr-distrato">em distrato</span>';
+  }
+  return '<span class="franquia-badge fr-inativa">inativa</span>';
 }
 
 async function renderCentralAlertas(){
@@ -2741,7 +2812,7 @@ async function renderCentralAlertas(){
 
   // 4) Inativas com débito (essa seção já é só inativas por natureza)
   const elInativas = document.getElementById('alertaCentralInativas');
-  const inativasComDados = DATA.filter(d=>d.statusFranquia==='INATIVA');
+  const inativasComDados = DATA.filter(d=>statusFranquiaDe(d.franquia)==='INATIVA');
   const porFranquiaInativa = {};
   inativasComDados.forEach(d=>{
     const st = effectiveStatus(d);
@@ -2839,7 +2910,7 @@ document.getElementById('historicoSalvarBtn').addEventListener('click', async ()
 // ===================== RANKING =====================
 // ===================== INATIVAS COM DÉBITO =====================
 function renderInativasComDebito(){
-  const inativasComDados = DATA.filter(d=>d.statusFranquia==='INATIVA');
+  const inativasComDados = DATA.filter(d=>statusFranquiaDe(d.franquia)==='INATIVA');
   const porFranquia = {};
   inativasComDados.forEach(d=>{
     if(!porFranquia[d.franquia]) porFranquia[d.franquia] = { nome:d.nome, vencido:0, avencer:0 };
@@ -3278,6 +3349,7 @@ async function startApp(){
   populateFilterOptions();
   populateHistoricoSelect();
   await loadOverrides();
+  await loadStatusFranquiaOverrides();
   await loadFavoritos();
   recalcularEncargosDoDataset();
   renderAll();
