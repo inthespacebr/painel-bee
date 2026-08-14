@@ -335,10 +335,7 @@
   <div class="health-legend" id="healthLegend"></div>
   <div class="tabs-nav" id="tabsNav">
     <button class="tab-btn active" data-tab="painel">📋 Painel</button>
-    <button class="tab-btn" data-tab="alertas">🚨 Central de Alertas</button>
-    <button class="tab-btn" data-tab="crm">🗂️ CRM Financeiro</button>
     <button class="tab-btn" data-tab="historico">📞 Histórico de Cobranças</button>
-    <button class="tab-btn" data-tab="inativas">🏚️ Inativas c/ Débito</button>
     <button class="tab-btn" data-tab="negociacao">🗂️ Fluxo de Negociação</button>
     <button class="tab-btn" data-tab="ranking">🏆 Ranking</button>
     <button class="tab-btn" data-tab="dashboard">📈 Dashboard Executivo</button>
@@ -444,72 +441,75 @@
 
   </div><!-- fim tab-painel -->
 
-  <!-- ===================== ABA: CRM FINANCEIRO ===================== -->
-  <div class="tab-panel" id="tabCrm" style="display:none;">
-    <p class="subtitle" style="margin-bottom:14px;">Cada franquia funciona como um "cliente": contato, responsável comercial, próxima ação e observações. Clique em uma linha para editar.</p>
-
-    <div class="card" style="margin-bottom:18px; border-color:rgba(217,164,65,0.35);">
-      <div class="card-label" style="color:var(--amber);">📌 Central de próximas ações — promessas de hoje, atrasadas ou desta semana</div>
-      <div id="centralAcoes" style="margin-top:10px; font-size:13px; color:var(--muted);">Carregando...</div>
-    </div>
-
-    <div class="toolbar">
-      <input type="text" id="crmSearch" placeholder="Buscar franquia...">
-      <span class="count" id="crmCount"></span>
-    </div>
-    <div class="table-wrap">
-      <table class="table-wide">
-        <thead>
-          <tr>
-            <th>Franquia</th>
-            <th>Franqueado</th>
-            <th>Contato</th>
-            <th>Telefone</th>
-            <th>E-mail</th>
-            <th>Responsável</th>
-            <th>Última conversa</th>
-            <th>Próxima ação</th>
-            <th>Data prometida</th>
-            <th>Observações</th>
-            <th>Notif. Extrajudicial</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="crmBody"></tbody>
-      </table>
-    </div>
-  </div>
-
   <!-- ===================== ABA: HISTÓRICO DE COBRANÇAS ===================== -->
   <div class="tab-panel" id="tabHistorico" style="display:none;">
-    <p class="subtitle" style="margin-bottom:14px;">Registre cada contato de cobrança feito com uma franquia — data, canal e observação ficam salvos permanentemente. <span style="color:var(--muted);">(O alerta de "vencidas sem contato" agora vive só na aba 🚨 Central de Alertas.)</span></p>
+    <p class="subtitle" style="margin-bottom:14px;">Escolha uma franquia para ver seus dados de contato e registrar cada interação de cobrança — canal, data e observação ficam salvos permanentemente.</p>
 
-    <div class="toolbar">
-      <select id="historicoFranquiaSelect"><option value="">Selecione uma franquia...</option></select>
+    <div class="toolbar" style="margin-bottom:16px;">
+      <select id="historicoFranquiaSelect" style="min-width:260px;"><option value="">Selecione uma franquia...</option></select>
+      <span class="count" id="historicoUltimoContato"></span>
     </div>
-    <div id="historicoForm" style="display:none; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px;">
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-        <select id="historicoCanal">
-          <option value="WhatsApp">WhatsApp</option>
-          <option value="E-mail">E-mail</option>
-          <option value="Telefone">Telefone</option>
-        </select>
-        <input type="text" id="historicoObservacao" placeholder="Observação do contato..." style="flex:1; min-width:220px;">
-        <button class="btn btn-export" id="historicoSalvarBtn">Registrar contato</button>
+
+    <div id="historicoConteudo" style="display:none;">
+      <div class="cards" style="grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:18px;">
+        <div class="card">
+          <div class="card-label">👤 Contato / Responsável</div>
+          <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+            <input type="text" id="histContato" class="crm-input" placeholder="Nome do contato">
+            <input type="text" id="histResponsavel" class="crm-input" placeholder="Responsável interno">
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-label">☎️ Telefone / WhatsApp</div>
+          <input type="text" id="histTelefone" class="crm-input" placeholder="(00) 00000-0000" style="margin-top:8px;">
+        </div>
+        <div class="card">
+          <div class="card-label">✉️ E-mail</div>
+          <input type="text" id="histEmail" class="crm-input" placeholder="email@..." style="margin-top:8px;">
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin:-10px 0 18px;">
+        <button class="btn" id="histContatoSalvarBtn" style="font-size:12px;">Salvar dados de contato</button>
+      </div>
+
+      <div class="card" style="margin-bottom:18px;">
+        <div class="card-label">➕ Registrar novo contato de cobrança</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+          <select id="historicoCanal">
+            <option value="WhatsApp">📱 WhatsApp</option>
+            <option value="Yungas">☎️ Yungas</option>
+            <option value="E-mail">✉️ E-mail</option>
+            <option value="Telefone">📞 Telefone</option>
+          </select>
+          <input type="text" id="historicoObservacao" placeholder="O que foi tratado nesse contato..." style="flex:1; min-width:220px;">
+          <button class="btn btn-export" id="historicoSalvarBtn">Registrar contato</button>
+        </div>
+      </div>
+
+      <p style="font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin:0 0 8px;">Linha do tempo de contatos</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Data</th><th>Quem</th><th>Canal</th><th>Observação</th></tr></thead>
+          <tbody id="historicoBody"></tbody>
+        </table>
+        <div class="empty" id="historicoEmpty" style="display:none;">Nenhum contato registrado ainda para essa franquia.</div>
       </div>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Data</th><th>Quem</th><th>Canal</th><th>Observação</th></tr></thead>
-        <tbody id="historicoBody"></tbody>
-      </table>
-      <div class="empty" id="historicoEmpty" style="display:none;">Selecione uma franquia para ver o histórico de cobranças.</div>
-    </div>
+    <div class="empty" id="historicoSemFranquia">Selecione uma franquia acima para ver e registrar o histórico de cobranças.</div>
   </div>
 
   <!-- ===================== ABA: RANKING ===================== -->
   <div class="tab-panel" id="tabRanking" style="display:none;">
     <p class="subtitle" style="margin-bottom:14px;">Top 15 franquias por diferentes critérios (com base nos dados atuais).</p>
+    <div class="toolbar" style="margin-bottom:16px;">
+      <select id="rankingFiltroAtiva">
+        <option value="">Ativas, inativas e em distrato</option>
+        <option value="ATIVA">Somente ativas</option>
+        <option value="INATIVA">Somente inativas</option>
+        <option value="EM PROCESSO DE DISTRATO">Somente em processo de distrato</option>
+      </select>
+      <span class="count">Filtra os três rankings abaixo pelo status da franquia.</span>
+    </div>
     <div class="cards" style="grid-template-columns:1fr 1fr; gap:20px;">
       <div>
         <h3 style="font-size:14px; margin-bottom:10px;">💰 Maiores devedores (total vencido)</h3>
@@ -561,60 +561,6 @@
         <tbody id="auditoriaBody"></tbody>
       </table>
       <div class="empty" id="auditoriaEmpty" style="display:none;">Nenhuma alteração registrada ainda.</div>
-    </div>
-  </div>
-
-  <!-- ===================== ABA: CENTRAL DE ALERTAS ===================== -->
-  <div class="tab-panel" id="tabAlertas" style="display:none;">
-    <p class="subtitle" style="margin-bottom:10px;">Tudo que precisa da sua atenção hoje, num lugar só.</p>
-    <div class="toolbar" style="margin-bottom:6px;">
-      <select id="alertasFiltroAtiva">
-        <option value="">Ativas, inativas e em distrato</option>
-        <option value="ATIVA">Somente ativas</option>
-        <option value="INATIVA">Somente inativas</option>
-        <option value="EM PROCESSO DE DISTRATO">Somente em processo de distrato</option>
-      </select>
-      <span class="count" id="alertasFiltroHint">O filtro vale para as seções "vencidas 90+", "sem contato" e "promessas".</span>
-    </div>
-
-    <div class="modal-tab-btn-row" id="alertasSubTabs" style="display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; border-bottom:1px solid var(--border); padding-bottom:0;">
-      <button class="alerta-tab-btn active" data-alertatab="90dias">🔴 Vencidas 90+ dias <span id="contagem90" class="count-pill"></span></button>
-      <button class="alerta-tab-btn" data-alertatab="semcontato">📵 Sem contato <span id="contagemSemContato" class="count-pill"></span></button>
-      <button class="alerta-tab-btn" data-alertatab="promessas">📌 Promessas <span id="contagemPromessas" class="count-pill"></span></button>
-      <button class="alerta-tab-btn" data-alertatab="inativas">🏚️ Inativas c/ débito <span id="contagemInativasAlerta" class="count-pill"></span></button>
-    </div>
-
-    <div class="card" id="alertaCard90" style="border-color:rgba(224,99,122,0.35);">
-      <div class="card-label" style="color:var(--rose);">🔴 Vencidas há mais de 90 dias</div>
-      <div id="alertaCentral90" class="alert-list" style="margin-top:10px;">Carregando...</div>
-    </div>
-
-    <div class="card" id="alertaCardSemContato" style="border-color:rgba(224,99,122,0.35); display:none;">
-      <div class="card-label" style="color:var(--rose);">📵 Vencidas há mais de 60 dias, sem nenhum contato registrado</div>
-      <div id="alertaCentralSemContato" class="alert-list" style="margin-top:10px;">Carregando...</div>
-    </div>
-
-    <div class="card" id="alertaCardPromessas" style="border-color:rgba(217,164,65,0.35); display:none;">
-      <div class="card-label" style="color:var(--amber);">📌 Promessas de hoje, atrasadas ou desta semana</div>
-      <div id="alertaCentralPromessas" class="alert-list" style="margin-top:10px;">Carregando...</div>
-    </div>
-
-    <div class="card" id="alertaCardInativas" style="border-color:rgba(155,127,232,0.35); display:none;">
-      <div class="card-label" style="color:var(--violet);">🏚️ Franquias inativas com débito ainda em aberto</div>
-      <div id="alertaCentralInativas" class="alert-list" style="margin-top:10px;">Carregando...</div>
-    </div>
-  </div>
-
-  <!-- ===================== ABA: INATIVAS COM DÉBITO ===================== -->
-  <div class="tab-panel" id="tabInativas" style="display:none;">
-    <p class="subtitle" style="margin-bottom:14px;">Unidades que já saíram da rede (inativas), mas ainda possuem débito vencido ou a vencer. Tratamento e prioridade costumam ser diferentes de uma franquia ativa.</p>
-    <div class="cards" id="cardsInativas" style="margin-bottom:18px;"></div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Franquia</th><th>Franqueado</th><th style="text-align:right">Total vencido</th><th style="text-align:right">Total a vencer</th><th style="text-align:right">Total geral</th></tr></thead>
-        <tbody id="inativasBody"></tbody>
-      </table>
-      <div class="empty" id="inativasEmpty" style="display:none;">Nenhuma franquia inativa com débito em aberto no momento. ✅</div>
     </div>
   </div>
 
@@ -676,7 +622,7 @@
 
     <!-- ABA: OBSERVAÇÃO -->
     <div id="obsTabObservacao">
-      <textarea id="obsModalTextarea" placeholder="Escreva aqui qualquer observação sobre essa franquia (fica salvo permanentemente e também aparece no CRM Financeiro)..."></textarea>
+      <textarea id="obsModalTextarea" placeholder="Escreva aqui qualquer observação sobre essa franquia (fica salvo permanentemente)..."></textarea>
       <div class="modal-actions">
         <button class="btn btn-export" id="obsModalSalvarBtn">Salvar Observação</button>
       </div>
@@ -2596,83 +2542,6 @@ function parseDataPrometida(texto){
   return isNaN(dt.getTime()) ? null : dt;
 }
 
-function renderCentralAcoes(){
-  const el = document.getElementById('centralAcoes');
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const daqui7dias = new Date(hoje); daqui7dias.setDate(daqui7dias.getDate()+7);
-
-  const itens = [];
-  Object.entries(crmDataCache).forEach(([key, dados])=>{
-    const dt = parseDataPrometida(dados.dataPrometida);
-    if(!dt) return;
-    dt.setHours(0,0,0,0);
-    let situacao = null;
-    if(dt < hoje) situacao = 'atrasada';
-    else if(dt.getTime() === hoje.getTime()) situacao = 'hoje';
-    else if(dt <= daqui7dias) situacao = 'semana';
-    if(situacao) itens.push({ key, dt, situacao, proximaAcao: dados.proximaAcao || '(sem descrição)' });
-  });
-
-  if(itens.length === 0){
-    el.innerHTML = 'Nenhuma promessa registrada para hoje, atrasada ou nos próximos 7 dias.';
-    return;
-  }
-
-  itens.sort((a,b)=>a.dt-b.dt);
-  const rotulo = { atrasada: ['ATRASADA', 'var(--rose)'], hoje: ['HOJE', 'var(--amber)'], semana: ['ESTA SEMANA', 'var(--blue)'] };
-
-  el.innerHTML = itens.map(it=>{
-    const franquiaNome = Object.keys(crmDataCache).length ? (DATA.find(d=>franquiaKey(d.franquia)===it.key) || {}).franquia : it.key;
-    const [texto, cor] = rotulo[it.situacao];
-    return `<div style="margin-bottom:6px;">
-      <span style="color:${cor}; font-weight:600; font-size:11px;">[${texto}]</span>
-      <b>${franquiaNome || it.key}</b> — ${it.proximaAcao}
-      <span style="color:var(--muted);">(${it.dt.toLocaleDateString('pt-BR')})</span>
-    </div>`;
-  }).join('');
-}
-
-function renderCrm(){
-  const search = document.getElementById('crmSearch').value.trim().toLowerCase();
-  const franquias = [...new Set(DATA.map(d=>d.franquia))].sort();
-  const filtradas = franquias.filter(f=>!search || f.toLowerCase().includes(search));
-  document.getElementById('crmCount').textContent = filtradas.length + ' franquias';
-
-  const camposEditaveis = ['contato','telefone','email','responsavel','ultimaConversa','proximaAcao','dataPrometida','observacoes','notificacaoSolicitadaEm'];
-
-  document.getElementById('crmBody').innerHTML = filtradas.map(franquia=>{
-    const nome = (DATA.find(d=>d.franquia===franquia) || {}).nome || '';
-    const key = franquiaKey(franquia);
-    const dados = crmDataCache[key] || {};
-    const campoInput = (campo, placeholder) => `<input class="crm-input" data-franquia="${franquia}" data-campo="${campo}" value="${(dados[campo]||'').replace(/"/g,'&quot;')}" placeholder="${placeholder}">`;
-    return `<tr>
-      <td>${franquia}</td>
-      <td>${nome}</td>
-      <td>${campoInput('contato','Nome contato')}</td>
-      <td>${campoInput('telefone','(00) 00000-0000')}</td>
-      <td>${campoInput('email','email@...')}</td>
-      <td>${campoInput('responsavel','Quem cuida')}</td>
-      <td>${campoInput('ultimaConversa','dd/mm/aaaa')}</td>
-      <td>${campoInput('proximaAcao','Ex: ligar')}</td>
-      <td>${campoInput('dataPrometida','dd/mm/aaaa')}</td>
-      <td>${campoInput('observacoes','Observações')}</td>
-      <td>${campoInput('notificacaoSolicitadaEm','—')}</td>
-      <td><button class="btn crm-save-btn" data-franquia="${franquia}" style="font-size:11px; padding:5px 8px;">Salvar</button></td>
-    </tr>`;
-  }).join('');
-}
-
-document.getElementById('crmSearch').addEventListener('input', renderCrm);
-document.getElementById('crmBody').addEventListener('click', async (e)=>{
-  if(!e.target.classList.contains('crm-save-btn')) return;
-  const franquia = e.target.dataset.franquia;
-  const row = e.target.closest('tr');
-  const inputs = row.querySelectorAll('.crm-input');
-  for(const input of inputs){
-    await salvarCrmCampo(franquia, input.dataset.campo, input.value);
-  }
-});
-
 // ===================== HISTÓRICO DE COBRANÇAS =====================
 const historicoCollection = db.collection('historico-cobranca');
 
@@ -2725,156 +2594,53 @@ function badgeAtivaInativa(statusFranquia){
   return '<span class="franquia-badge fr-inativa">inativa</span>';
 }
 
-async function renderCentralAlertas(){
-  const filtroAtiva = document.getElementById('alertasFiltroAtiva').value; // '', 'ATIVA', 'INATIVA'
-  const passaFiltro = (franquia) => !filtroAtiva || statusFranquiaDe(franquia) === filtroAtiva;
-
-  // 1) Vencidas há mais de 90 dias
-  const el90 = document.getElementById('alertaCentral90');
-  el90.innerHTML = '<div class="alert-empty">Verificando...</div>';
-  const abertos = DATA.filter(d=>effectiveStatus(d)==='EM ABERTO');
-  const porFranquia90 = {};
-  abertos.forEach(d=>{
-    const dias = diasEmAtraso(d.vencimento);
-    if(!porFranquia90[d.franquia]) porFranquia90[d.franquia] = { dias:0, total:0 };
-    if(dias > porFranquia90[d.franquia].dias) porFranquia90[d.franquia].dias = dias;
-    porFranquia90[d.franquia].total += d.total;
-  });
-  const lista90 = Object.entries(porFranquia90).filter(([f,v])=>v.dias>90 && passaFiltro(f)).sort((a,b)=>b[1].dias-a[1].dias);
-  document.getElementById('contagem90').textContent = lista90.length;
-  el90.innerHTML = lista90.length === 0
-    ? '<div class="alert-empty">Nenhuma franquia vencida há mais de 90 dias. ✅</div>'
-    : lista90.map(([f,v])=>`
-        <div class="alert-item">
-          <div class="alert-item-left">
-            <span class="alert-item-nome">${f}</span>${badgeAtivaInativa(statusFranquiaDe(f))}
-            <span class="alert-item-sub">${v.dias} dias de atraso</span>
-          </div>
-          <div class="alert-item-value">${fmtMoney(v.total)}</div>
-        </div>
-      `).join('');
-
-  // 2) Sem contato registrado
-  const elSemContato = document.getElementById('alertaCentralSemContato');
-  elSemContato.innerHTML = '<div class="alert-empty">Verificando...</div>';
-  const semContatoTodas = await calcularFranquiasSemContato(60);
-  const semContato = semContatoTodas.filter(passaFiltro);
-  document.getElementById('contagemSemContato').textContent = semContato.length;
-  elSemContato.innerHTML = semContato.length === 0
-    ? '<div class="alert-empty">Todas em dia com pelo menos um contato registrado (dentro do filtro atual). ✅</div>'
-    : semContato.map(f=>`
-        <div class="alert-item clickable" data-ir-hist="${f.replace(/"/g,'&quot;')}">
-          <div class="alert-item-left">
-            <span class="alert-item-nome">${f}</span>${badgeAtivaInativa(statusFranquiaDe(f))}
-          </div>
-          <span class="alert-item-sub">clique para registrar contato →</span>
-        </div>
-      `).join('');
-  elSemContato.querySelectorAll('[data-ir-hist]').forEach(el2=>{
-    el2.addEventListener('click', ()=>{
-      document.querySelector('.tab-btn[data-tab="historico"]').click();
-      setTimeout(()=>{
-        document.getElementById('historicoFranquiaSelect').value = el2.dataset.irHist;
-        renderHistorico(el2.dataset.irHist);
-      }, 150);
-    });
-  });
-
-  // 3) Promessas do CRM
-  const elPromessas = document.getElementById('alertaCentralPromessas');
-  elPromessas.innerHTML = '<div class="alert-empty">Verificando...</div>';
-  if(Object.keys(crmDataCache).length === 0) await loadCrmData();
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const daqui7 = new Date(hoje); daqui7.setDate(daqui7.getDate()+7);
-  const itensPromessa = [];
-  Object.entries(crmDataCache).forEach(([key, dados])=>{
-    const dt = parseDataPrometida(dados.dataPrometida);
-    if(!dt) return;
-    dt.setHours(0,0,0,0);
-    if(dt <= daqui7){
-      const franquiaNome = (DATA.find(d=>franquiaKey(d.franquia)===key) || {}).franquia || key;
-      if(passaFiltro(franquiaNome)) itensPromessa.push({ franquiaNome, dt, proximaAcao: dados.proximaAcao || '(sem descrição)' });
-    }
-  });
-  itensPromessa.sort((a,b)=>a.dt-b.dt);
-  document.getElementById('contagemPromessas').textContent = itensPromessa.length;
-  elPromessas.innerHTML = itensPromessa.length === 0
-    ? '<div class="alert-empty">Nenhuma promessa para hoje, atrasada ou nos próximos 7 dias (dentro do filtro atual).</div>'
-    : itensPromessa.map(it=>`
-        <div class="alert-item">
-          <div class="alert-item-left">
-            <span class="alert-item-nome">${it.franquiaNome}</span>${badgeAtivaInativa(statusFranquiaDe(it.franquiaNome))}
-            <span class="alert-item-sub">${it.proximaAcao}</span>
-          </div>
-          <div class="alert-item-value" style="color:var(--amber);">${it.dt.toLocaleDateString('pt-BR')}</div>
-        </div>
-      `).join('');
-
-  // 4) Inativas com débito (essa seção já é só inativas por natureza)
-  const elInativas = document.getElementById('alertaCentralInativas');
-  const inativasComDados = DATA.filter(d=>statusFranquiaDe(d.franquia)==='INATIVA');
-  const porFranquiaInativa = {};
-  inativasComDados.forEach(d=>{
-    const st = effectiveStatus(d);
-    if(st==='EM ABERTO' || st==='A VENCER'){
-      porFranquiaInativa[d.franquia] = (porFranquiaInativa[d.franquia]||0) + d.total;
-    }
-  });
-  const listaInativas = Object.entries(porFranquiaInativa).filter(([f,v])=>v>0).sort((a,b)=>b[1]-a[1]);
-  document.getElementById('contagemInativasAlerta').textContent = listaInativas.length;
-  elInativas.innerHTML = listaInativas.length === 0
-    ? '<div class="alert-empty">Nenhuma franquia inativa com débito em aberto. ✅</div>'
-    : listaInativas.slice(0,15).map(([f,v])=>`
-        <div class="alert-item">
-          <div class="alert-item-left"><span class="alert-item-nome">${f}</span></div>
-          <div class="alert-item-value" style="color:var(--violet);">${fmtMoney(v)}</div>
-        </div>
-      `).join('') +
-      (listaInativas.length > 15 ? `<div style="text-align:center; padding-top:6px;"><a href="#" data-ir-tab="inativas" style="color:var(--violet); font-size:12.5px;">Ver todas (${listaInativas.length}) na aba Inativas c/ Débito →</a></div>` : '');
-  const linkInativas = elInativas.querySelector('[data-ir-tab]');
-  if(linkInativas) linkInativas.addEventListener('click', (e)=>{ e.preventDefault(); document.querySelector('.tab-btn[data-tab="inativas"]').click(); });
-}
-document.getElementById('alertasFiltroAtiva').addEventListener('change', renderCentralAlertas);
-
-// ---- Sub-abas dentro da Central de Alertas ----
-const ALERTA_TAB_CARDS = {
-  '90dias': 'alertaCard90', 'semcontato': 'alertaCardSemContato',
-  'promessas': 'alertaCardPromessas', 'inativas': 'alertaCardInativas'
-};
-document.querySelectorAll('.alerta-tab-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.alerta-tab-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    Object.values(ALERTA_TAB_CARDS).forEach(id=>document.getElementById(id).style.display='none');
-    document.getElementById(ALERTA_TAB_CARDS[btn.dataset.alertatab]).style.display='block';
-  });
-});
+const HIST_CAMPOS_CONTATO = ['contato','telefone','email','responsavel'];
 
 async function renderHistorico(franquia){
-  const form = document.getElementById('historicoForm');
+  const conteudo = document.getElementById('historicoConteudo');
+  const semFranquia = document.getElementById('historicoSemFranquia');
   const tbody = document.getElementById('historicoBody');
   const empty = document.getElementById('historicoEmpty');
+  const ultimoHint = document.getElementById('historicoUltimoContato');
+
   if(!franquia){
-    form.style.display = 'none';
-    tbody.innerHTML = '';
-    empty.style.display = 'block';
-    empty.textContent = 'Selecione uma franquia para ver o histórico de cobranças.';
+    conteudo.style.display = 'none';
+    semFranquia.style.display = 'block';
+    ultimoHint.textContent = '';
     return;
   }
-  form.style.display = 'block';
+  conteudo.style.display = 'block';
+  semFranquia.style.display = 'none';
+
+  if(Object.keys(crmDataCache).length === 0) await loadCrmData();
+  const key = franquiaKey(franquia);
+  const dadosContato = crmDataCache[key] || {};
+  document.getElementById('histContato').value = dadosContato.contato || '';
+  document.getElementById('histTelefone').value = dadosContato.telefone || '';
+  document.getElementById('histEmail').value = dadosContato.email || '';
+  document.getElementById('histResponsavel').value = dadosContato.responsavel || '';
+
   try{
-    const key = franquiaKey(franquia);
     const doc = await historicoCollection.doc(key).get();
     const entradas = (doc.exists && doc.data().entradas) ? doc.data().entradas : [];
     if(entradas.length === 0){
       tbody.innerHTML = '';
       empty.style.display = 'block';
-      empty.textContent = 'Nenhum contato registrado ainda para essa franquia.';
+      ultimoHint.textContent = 'Nenhum contato registrado ainda.';
     } else {
       empty.style.display = 'none';
-      tbody.innerHTML = entradas.slice().reverse().map(en=>`
-        <tr><td>${new Date(en.data).toLocaleString('pt-BR')}</td><td>${en.quem}</td><td>${en.canal}</td><td>${en.observacao}</td></tr>
+      const ordenadas = entradas.slice().reverse();
+      const CANAL_ICON = { 'WhatsApp':'📱', 'Yungas':'☎️', 'E-mail':'✉️', 'Telefone':'📞' };
+      tbody.innerHTML = ordenadas.map(en=>`
+        <tr>
+          <td>${new Date(en.data).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
+          <td>${en.quem}</td>
+          <td>${CANAL_ICON[en.canal]||''} ${en.canal}</td>
+          <td>${en.observacao}</td>
+        </tr>
       `).join('');
+      const ultima = ordenadas[0];
+      ultimoHint.textContent = `Último contato: ${new Date(ultima.data).toLocaleDateString('pt-BR')} · ${ultima.canal}`;
     }
   }catch(e){
     console.error('Erro ao carregar histórico:', e);
@@ -2883,6 +2649,16 @@ async function renderHistorico(franquia){
 
 document.getElementById('historicoFranquiaSelect').addEventListener('change', (e)=>{
   renderHistorico(e.target.value);
+});
+
+document.getElementById('histContatoSalvarBtn').addEventListener('click', async ()=>{
+  const franquia = document.getElementById('historicoFranquiaSelect').value;
+  if(!franquia) return;
+  await salvarCrmCampo(franquia, 'contato', document.getElementById('histContato').value.trim());
+  await salvarCrmCampo(franquia, 'telefone', document.getElementById('histTelefone').value.trim());
+  await salvarCrmCampo(franquia, 'email', document.getElementById('histEmail').value.trim());
+  await salvarCrmCampo(franquia, 'responsavel', document.getElementById('histResponsavel').value.trim());
+  showToast('Dados de contato salvos');
 });
 
 document.getElementById('historicoSalvarBtn').addEventListener('click', async ()=>{
@@ -2908,55 +2684,11 @@ document.getElementById('historicoSalvarBtn').addEventListener('click', async ()
 });
 
 // ===================== RANKING =====================
-// ===================== INATIVAS COM DÉBITO =====================
-function renderInativasComDebito(){
-  const inativasComDados = DATA.filter(d=>statusFranquiaDe(d.franquia)==='INATIVA');
-  const porFranquia = {};
-  inativasComDados.forEach(d=>{
-    if(!porFranquia[d.franquia]) porFranquia[d.franquia] = { nome:d.nome, vencido:0, avencer:0 };
-    const st = effectiveStatus(d);
-    if(st === 'EM ABERTO') porFranquia[d.franquia].vencido += d.total;
-    if(st === 'A VENCER') porFranquia[d.franquia].avencer += d.total;
-  });
-
-  const lista = Object.entries(porFranquia)
-    .map(([franquia, v])=>({ franquia, ...v, total: v.vencido + v.avencer }))
-    .filter(x=>x.total > 0)
-    .sort((a,b)=>b.total - a.total);
-
-  const totalGeral = lista.reduce((s,x)=>s+x.total,0);
-  const totalVencido = lista.reduce((s,x)=>s+x.vencido,0);
-  const totalAVencer = lista.reduce((s,x)=>s+x.avencer,0);
-
-  document.getElementById('cardsInativas').innerHTML = `
-    <div class="card"><div class="card-label">Franquias inativas com débito</div><div class="card-value">${lista.length}</div></div>
-    <div class="card"><div class="card-label">Total vencido (inativas)</div><div class="card-value" style="color:var(--amber)">${fmtMoney(totalVencido)}</div></div>
-    <div class="card"><div class="card-label">Total a vencer (inativas)</div><div class="card-value" style="color:var(--violet)">${fmtMoney(totalAVencer)}</div></div>
-    <div class="card"><div class="card-label">Total geral (inativas)</div><div class="card-value">${fmtMoney(totalGeral)}</div></div>
-  `;
-
-  const tbody = document.getElementById('inativasBody');
-  const empty = document.getElementById('inativasEmpty');
-  if(lista.length === 0){
-    tbody.innerHTML = '';
-    empty.style.display = 'block';
-  } else {
-    empty.style.display = 'none';
-    tbody.innerHTML = lista.map(x=>`
-      <tr>
-        <td>${x.franquia}</td>
-        <td>${x.nome}</td>
-        <td class="num">${fmtMoney(x.vencido)}</td>
-        <td class="num">${fmtMoney(x.avencer)}</td>
-        <td class="num total">${fmtMoney(x.total)}</td>
-      </tr>
-    `).join('');
-  }
-}
-
 function renderRanking(){
+  const filtroAtiva = document.getElementById('rankingFiltroAtiva').value; // '', 'ATIVA', 'INATIVA', 'EM PROCESSO DE DISTRATO'
   const porFranquia = {};
   DATA.forEach(d=>{
+    if(filtroAtiva && statusFranquiaDe(d.franquia) !== filtroAtiva) return;
     if(!porFranquia[d.franquia]) porFranquia[d.franquia] = { totalAberto:0, qtdAberto:0, maxDias:0 };
     if(effectiveStatus(d) === 'EM ABERTO'){
       porFranquia[d.franquia].totalAberto += d.total;
@@ -2983,6 +2715,7 @@ function renderRanking(){
     <tr><td>${i+1}</td><td>${r.franquia}</td><td class="num">${r.maxDias}</td></tr>
   `).join('') || '<tr><td colspan="3" style="text-align:center; color:var(--muted);">Sem dados</td></tr>';
 }
+document.getElementById('rankingFiltroAtiva').addEventListener('change', renderRanking);
 
 // ===================== DASHBOARD EXECUTIVO =====================
 let chartStatusInstance = null, chartCategoriaInstance = null, chartEvolucaoInstance = null, chartAgingInstance = null;
@@ -3010,37 +2743,150 @@ async function salvarSnapshotMensal(){
   }
 }
 
+// ---- Estilo compartilhado dos gráficos do Dashboard Executivo ----
+// Aumenta a resolução de renderização dos canvases (mais nítido tanto na tela quanto
+// quando capturado como PNG para o Relatório Executivo em PDF).
+Chart.defaults.devicePixelRatio = Math.max(2, window.devicePixelRatio || 1) * 1.5;
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.font.size = 12;
+
+function chartTheme(){
+  const css = getComputedStyle(document.body);
+  return {
+    text: css.getPropertyValue('--text').trim() || '#E8ECF4',
+    muted: css.getPropertyValue('--muted').trim() || '#8A94AC',
+    surface: css.getPropertyValue('--surface').trim() || '#131B2E',
+    surfaceAlt: css.getPropertyValue('--surface-alt').trim() || '#1B2740',
+    border: css.getPropertyValue('--border').trim() || '#2A3652',
+    bg: css.getPropertyValue('--bg').trim() || '#0B1220',
+  };
+}
+function tooltipStyle(t){
+  return {
+    backgroundColor: t.surfaceAlt, titleColor: t.text, bodyColor: t.text,
+    borderColor: t.border, borderWidth: 1, padding: 10, cornerRadius: 8,
+    titleFont: { weight: '600', family: "'Inter', sans-serif" },
+    bodyFont: { family: "'IBM Plex Mono', monospace", size: 11.5 },
+    displayColors: true, boxPadding: 4,
+  };
+}
+function fmtMoneyCompacto(v){
+  if(Math.abs(v) >= 1000) return 'R$ ' + (v/1000).toLocaleString('pt-BR',{maximumFractionDigits:1}) + 'mil';
+  return fmtMoney(v);
+}
+
+// Plugin: escreve o total no centro do doughnut de status.
+const centerTextPlugin = {
+  id: 'centerText',
+  afterDraw(chart){
+    if(chart.config.type !== 'doughnut' || !chart.options.plugins?.centerText?.enabled) return;
+    const { ctx, chartArea } = chart;
+    const total = chart.data.datasets[0].data.reduce((s,v)=>s+v,0);
+    const cx = (chartArea.left + chartArea.right)/2, cy = (chartArea.top + chartArea.bottom)/2;
+    const t = chartTheme();
+    ctx.save();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = t.muted; ctx.font = "11px 'Inter', sans-serif";
+    ctx.fillText('TOTAL', cx, cy - 12);
+    ctx.fillStyle = t.text; ctx.font = "600 15px 'IBM Plex Mono', monospace";
+    ctx.fillText(fmtMoneyCompacto(total), cx, cy + 8);
+    ctx.restore();
+  }
+};
+// Plugin: escreve o valor ao final de cada barra (bar/horizontalBar).
+const barValueLabelPlugin = {
+  id: 'barValueLabel',
+  afterDatasetsDraw(chart){
+    if(!chart.options.plugins?.barValueLabel?.enabled) return;
+    const { ctx } = chart;
+    const t = chartTheme();
+    chart.data.datasets.forEach((ds, dsIndex)=>{
+      const meta = chart.getDatasetMeta(dsIndex);
+      meta.data.forEach((bar, i)=>{
+        const valor = ds.data[i];
+        if(!valor) return;
+        ctx.save();
+        ctx.fillStyle = t.text;
+        ctx.font = "600 11px 'IBM Plex Mono', monospace";
+        if(chart.options.indexAxis === 'y'){
+          ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+          ctx.fillText(fmtMoneyCompacto(valor), bar.x + 8, bar.y);
+        } else {
+          ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+          ctx.fillText(fmtMoneyCompacto(valor), bar.x, bar.y - 6);
+        }
+        ctx.restore();
+      });
+    });
+  }
+};
+Chart.register(centerTextPlugin, barValueLabelPlugin);
+
 async function renderDashboard(){
+  const t = chartTheme();
   const porStatus = {};
   Object.keys(STATUS_LABELS).forEach(k=>porStatus[k]=0);
   DATA.forEach(d=>{ const st = effectiveStatus(d); porStatus[st] = (porStatus[st]||0) + d.total; });
+
+  // "Cobrança indevida" fica de fora dessa visão executiva (é tratada caso a caso,
+  // não como parte da distribuição normal da carteira) — o status continua disponível
+  // por lançamento na tabela principal.
+  const statusKeysChart = Object.keys(STATUS_LABELS).filter(k=>k !== 'COBRANÇA INDEVIDA');
 
   const ctxStatus = document.getElementById('chartStatus').getContext('2d');
   if(chartStatusInstance) chartStatusInstance.destroy();
   chartStatusInstance = new Chart(ctxStatus, {
     type: 'doughnut',
     data: {
-      labels: Object.keys(STATUS_LABELS).map(k=>STATUS_LABELS[k]),
-      datasets: [{ data: Object.keys(STATUS_LABELS).map(k=>porStatus[k]), backgroundColor: Object.keys(STATUS_LABELS).map(k=>STATUS_COLOR[k]) }]
+      labels: statusKeysChart.map(k=>STATUS_LABELS[k]),
+      datasets: [{
+        data: statusKeysChart.map(k=>porStatus[k]),
+        backgroundColor: statusKeysChart.map(k=>STATUS_COLOR[k]),
+        borderColor: t.surface, borderWidth: 3, hoverOffset: 8, spacing: 2,
+      }]
     },
-    options: { plugins: { legend: { labels: { color: getComputedStyle(document.body).getPropertyValue('--text') } } } }
+    options: {
+      cutout: '70%',
+      plugins: {
+        legend: { position: 'bottom', labels: { color: t.text, usePointStyle: true, pointStyle: 'circle', padding: 14, font: { size: 12 } } },
+        tooltip: { ...tooltipStyle(t), callbacks: { label: (ctx)=> ` ${ctx.label}: ${fmtMoney(ctx.parsed)}` } },
+        centerText: { enabled: true },
+      }
+    },
   });
 
   const pendentes = DATA.filter(d=>['EM ABERTO','A VENCER'].includes(effectiveStatus(d)));
   const categorias = [...new Set(pendentes.map(d=>d.categoria))];
-  const totaisCategoria = categorias.map(c=>pendentes.filter(d=>d.categoria===c).reduce((s,d)=>s+d.total,0));
+  const dadosCategoria = categorias
+    .map(c=>({ categoria: c, total: pendentes.filter(d=>d.categoria===c).reduce((s,d)=>s+d.total,0) }))
+    .sort((a,b)=>b.total-a.total);
 
   const ctxCat = document.getElementById('chartCategoria').getContext('2d');
   if(chartCategoriaInstance) chartCategoriaInstance.destroy();
   chartCategoriaInstance = new Chart(ctxCat, {
     type: 'bar',
-    data: { labels: categorias, datasets: [{ label: 'Total pendente (vencido + a vencer)', data: totaisCategoria, backgroundColor: '#D9A441' }] },
-    options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { color: getComputedStyle(document.body).getPropertyValue('--muted') } }, y: { ticks: { color: getComputedStyle(document.body).getPropertyValue('--muted') } } } }
+    data: {
+      labels: dadosCategoria.map(d=>d.categoria),
+      datasets: [{ label: 'Total pendente', data: dadosCategoria.map(d=>d.total), backgroundColor: '#D9A441', borderRadius: 6, borderSkipped: false, maxBarThickness: 34 }]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...tooltipStyle(t), callbacks: { label: (ctx)=> ` ${fmtMoney(ctx.parsed.x)}` } },
+        barValueLabel: { enabled: true },
+      },
+      scales: {
+        x: { grid: { color: t.border, display: false }, ticks: { color: t.muted, callback: v=>fmtMoneyCompacto(v) } },
+        y: { grid: { display: false }, ticks: { color: t.muted } }
+      },
+      layout: { padding: { right: 60 } },
+    },
   });
 
   // ---- Aging: faixas de atraso ----
   const faixas = [
-    { label: '0-30 dias', min: 0, max: 30, cor: '#8A94AC' },
+    { label: '0-30 dias', min: 0, max: 30, cor: t.muted },
     { label: '31-60 dias', min: 31, max: 60, cor: '#D9A441' },
     { label: '61-90 dias', min: 61, max: 90, cor: '#E0637A' },
     { label: '90+ dias', min: 91, max: Infinity, cor: '#8B2E3C' },
@@ -3057,16 +2903,21 @@ async function renderDashboard(){
     type: 'bar',
     data: {
       labels: faixas.map(f=>f.label),
-      datasets: [{ label: 'Total vencido por faixa', data: totaisAging, backgroundColor: faixas.map(f=>f.cor) }]
+      datasets: [{ label: 'Total vencido por faixa', data: totaisAging, backgroundColor: faixas.map(f=>f.cor), borderRadius: 6, borderSkipped: false, maxBarThickness: 30 }]
     },
     options: {
       indexAxis: 'y',
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...tooltipStyle(t), callbacks: { label: (ctx)=> ` ${fmtMoney(ctx.parsed.x)}` } },
+        barValueLabel: { enabled: true },
+      },
       scales: {
-        x: { ticks: { color: getComputedStyle(document.body).getPropertyValue('--muted') } },
-        y: { ticks: { color: getComputedStyle(document.body).getPropertyValue('--muted') } }
-      }
-    }
+        x: { grid: { color: t.border, display: false }, ticks: { color: t.muted, callback: v=>fmtMoneyCompacto(v) } },
+        y: { grid: { display: false }, ticks: { color: t.text, font: { weight: '600' } } }
+      },
+      layout: { padding: { right: 60 } },
+    },
   });
 
   try{
@@ -3079,12 +2930,22 @@ async function renderDashboard(){
       data: {
         labels: meses.map(m=>m.mes),
         datasets: [
-          { label: 'Vencido', data: meses.map(m=>m.totalAberto), borderColor: '#D9A441', backgroundColor: 'transparent' },
-          { label: 'Negociação', data: meses.map(m=>m.totalNegociacao||0), borderColor: '#5B8DEF', backgroundColor: 'transparent' },
-          { label: 'Baixado', data: meses.map(m=>m.totalBaixado), borderColor: '#4FAE8A', backgroundColor: 'transparent' },
+          { label: 'Vencido', data: meses.map(m=>m.totalAberto), borderColor: '#D9A441', backgroundColor: 'rgba(217,164,65,0.12)', fill: true, tension: 0.35, borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#D9A441', pointBorderColor: t.surface, pointBorderWidth: 2 },
+          { label: 'Negociação', data: meses.map(m=>m.totalNegociacao||0), borderColor: '#5B8DEF', backgroundColor: 'rgba(91,141,239,0.10)', fill: true, tension: 0.35, borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#5B8DEF', pointBorderColor: t.surface, pointBorderWidth: 2 },
+          { label: 'Baixado', data: meses.map(m=>m.totalBaixado), borderColor: '#4FAE8A', backgroundColor: 'rgba(79,174,138,0.10)', fill: true, tension: 0.35, borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#4FAE8A', pointBorderColor: t.surface, pointBorderWidth: 2 },
         ]
       },
-      options: { plugins: { legend: { labels: { color: getComputedStyle(document.body).getPropertyValue('--text') } } } }
+      options: {
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { color: t.text, usePointStyle: true, pointStyle: 'circle', padding: 14 } },
+          tooltip: { ...tooltipStyle(t), callbacks: { label: (ctx)=> ` ${ctx.dataset.label}: ${fmtMoney(ctx.parsed.y)}` } },
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: t.muted } },
+          y: { grid: { color: t.border }, ticks: { color: t.muted, callback: v=>fmtMoneyCompacto(v) } }
+        },
+      }
     });
   }catch(e){
     console.error('Erro ao carregar histórico mensal:', e);
@@ -3093,9 +2954,9 @@ async function renderDashboard(){
 
 // ===================== NAVEGAÇÃO POR ABAS =====================
 const TAB_PANELS = {
-  painel: 'tabPainel', crm: 'tabCrm', historico: 'tabHistorico',
+  painel: 'tabPainel', historico: 'tabHistorico',
   ranking: 'tabRanking', dashboard: 'tabDashboard', auditoria: 'tabAuditoria',
-  alertas: 'tabAlertas', inativas: 'tabInativas', negociacao: 'tabNegociacao'
+  negociacao: 'tabNegociacao'
 };
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', async ()=>{
@@ -3105,13 +2966,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const tab = btn.dataset.tab;
     document.getElementById(TAB_PANELS[tab]).style.display = 'block';
 
-    if(tab === 'crm'){ await loadCrmData(); renderCrm(); renderCentralAcoes(); }
-    else if(tab === 'ranking'){ renderRanking(); }
+    if(tab === 'ranking'){ renderRanking(); }
     else if(tab === 'dashboard'){ await renderDashboard(); }
     else if(tab === 'auditoria'){ await renderAuditoria(); }
-    else if(tab === 'historico'){ /* alerta de sem contato agora só na Central de Alertas */ }
-    else if(tab === 'alertas'){ await renderCentralAlertas(); }
-    else if(tab === 'inativas'){ renderInativasComDebito(); }
+    else if(tab === 'historico'){ await renderHistorico(document.getElementById('historicoFranquiaSelect').value); }
     else if(tab === 'negociacao'){ await renderKanban(); }
   });
 });
