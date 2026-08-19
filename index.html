@@ -789,6 +789,17 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="corrigirOverridesModal" style="display:none;">
+  <div class="modal-box" style="max-width:420px; text-align:center;">
+    <h3 style="color:var(--amber);">🔄 Corrigir status para bater com a planilha</h3>
+    <p id="corrigirOverridesTexto" style="font-size:12.5px; color:var(--muted); margin-bottom:16px;"></p>
+    <div class="modal-actions" style="justify-content:center;">
+      <button class="btn reset" id="corrigirOverridesConfirmarBtn">Sim, corrigir agora</button>
+      <button class="btn" id="corrigirOverridesCancelarBtn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="detalheAjusteModal" style="display:none;">
   <div class="modal-box" style="max-width:600px;">
     <h3>🔍 Detalhe do Ajuste Manual</h3>
@@ -1201,13 +1212,22 @@ function renderOverrideNotice(rows){
   notice.innerHTML = `⚠️ ${linhasComOverride.length} lançamento(s) no filtro atual têm status alterado manualmente no painel `
     + `(diferente do que está na planilha do Asaas), somando ${fmtMoney(valorAfetado)}. `
     + `Por isso os totais acima podem não bater exatamente com a planilha crua. `
-    + `<a href="#" id="verDetalhesOverrides" style="color:inherit; text-decoration:underline; font-weight:600;">Ver quais lançamentos</a>`;
+    + `<a href="#" id="verDetalhesOverrides" style="color:inherit; text-decoration:underline; font-weight:600;">Ver quais lançamentos</a>`
+    + ` &nbsp;·&nbsp; `
+    + `<a href="#" id="corrigirOverridesLink" style="color:inherit; text-decoration:underline; font-weight:600;">🔄 Corrigir para bater com a planilha</a>`;
 
   const link = document.getElementById('verDetalhesOverrides');
   if(link){
     link.addEventListener('click', (e)=>{
       e.preventDefault();
       mostrarDetalhesOverrides();
+    });
+  }
+  const corrigirLink = document.getElementById('corrigirOverridesLink');
+  if(corrigirLink){
+    corrigirLink.addEventListener('click', (e)=>{
+      e.preventDefault();
+      abrirConfirmacaoCorrigirOverrides();
     });
   }
 }
@@ -1223,10 +1243,59 @@ function mostrarDetalhesOverrides(){
   });
   texto += '\nEsses status foram alterados manualmente dentro do próprio painel (ex.: marcados como '
     + 'renegociados, contestados ou baixados fora do Asaas) e ficam salvos no banco de dados, independente '
-    + 'da planilha do Asaas. Para que um lançamento volte a refletir exatamente a planilha, o status manual '
-    + 'precisa ser removido/ajustado na própria linha da tabela.';
+    + 'da planilha do Asaas. Use o botão "🔄 Corrigir para bater com a planilha", ao lado do aviso, para '
+    + 'reverter esses lançamentos ao status original do Asaas de uma vez.';
   abrirModal('Lançamentos com ajuste manual de status', texto, false);
 }
+
+// Reverte, de uma vez, todos os lançamentos do filtro atual cujo status manual (override)
+// diverge do que está na planilha do Asaas — ou seja, apaga só os overrides "conflitantes"
+// exibidos no aviso, sem mexer em nenhum outro dado do painel (favoritos, CRM, Kanban, etc.)
+// e sem apagar overrides de outros lançamentos que não estão em conflito com a planilha.
+function abrirConfirmacaoCorrigirOverrides(){
+  const linhas = window.ultimosOverridesDoFiltro || [];
+  if(linhas.length === 0) return;
+  const valor = linhas.reduce((s,d)=>s+d.total, 0);
+  document.getElementById('corrigirOverridesTexto').innerHTML =
+    `Isso vai apagar o status manual de <b>${linhas.length} lançamento(s)</b> (somando ${fmtMoney(valor)}), `
+    + `fazendo cada um voltar a refletir exatamente o status da planilha do Asaas (<i>${[...new Set(linhas.map(d=>d.controle))].join(', ')}</i>). `
+    + `A ação fica registrada na Auditoria e pode ser desfeita reaplicando o status manualmente na tabela, se precisar.`;
+  document.getElementById('corrigirOverridesModal').style.display = 'flex';
+}
+
+document.getElementById('corrigirOverridesCancelarBtn').addEventListener('click', ()=>{
+  document.getElementById('corrigirOverridesModal').style.display = 'none';
+});
+
+document.getElementById('corrigirOverridesConfirmarBtn').addEventListener('click', async ()=>{
+  const linhas = window.ultimosOverridesDoFiltro || [];
+  if(linhas.length === 0){
+    document.getElementById('corrigirOverridesModal').style.display = 'none';
+    return;
+  }
+  const btn = document.getElementById('corrigirOverridesConfirmarBtn');
+  btn.disabled = true;
+  btn.textContent = 'Corrigindo...';
+
+  const corrigidos = [];
+  for(const d of linhas){
+    const statusAntigo = overrides[d.id];
+    delete overrides[d.id];
+    corrigidos.push({ registro: d, statusAntigo });
+  }
+
+  await persistOverrides();
+  for(const c of corrigidos){
+    await registrarAuditoria(c.registro, c.statusAntigo, c.registro.controle);
+  }
+  recalcularEncargosDoDataset();
+
+  btn.disabled = false;
+  btn.textContent = 'Sim, corrigir agora';
+  document.getElementById('corrigirOverridesModal').style.display = 'none';
+  renderAll();
+  showToast(`${corrigidos.length} lançamento(s) corrigido(s) para bater com a planilha`);
+});
 
 function renderHealthStrip(){
   const metrica = [
