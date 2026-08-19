@@ -384,6 +384,8 @@
   <p style="font-size:11.5px; color:var(--muted); margin:-8px 0 18px;">
     ℹ️ "Total Pendente" = Total Vencido + Total A Vencer. "Total Negociação" é um subconjunto que já está contido nesses dois valores (não é somado à parte).
   </p>
+  <div id="overrideNotice" style="display:none; font-size:12px; background:rgba(217,164,65,0.12); border:1px solid rgba(217,164,65,0.35); color:var(--text); border-radius:8px; padding:8px 12px; margin:-8px 0 18px;">
+  </div>
 
   <div class="toolbar">
     <input type="text" id="searchInput" placeholder="Buscar por franqueado ou franquia...">
@@ -1169,6 +1171,61 @@ function renderCards(rows){
       <div class="card-sub">${c.sub}</div>
     </div>
   `).join('');
+
+  renderOverrideNotice(rows);
+}
+
+// ===================== TRANSPARÊNCIA DE AJUSTES MANUAIS (overrides) =====================
+// Os totais acima usam effectiveStatus(), que aplica por cima do dataset bruto do Asaas
+// qualquer status alterado manualmente no painel (overrides salvos no Firebase). Isso é
+// intencional — é o que permite registrar "essa cobrança já foi renegociada/contestada"
+// sem perder essa informação a cada atualização mensal — mas pode fazer os totais aqui
+// divergirem levemente do que está na planilha crua do Asaas. Este aviso deixa isso visível
+// na hora, em vez de precisar investigar depois.
+window.ultimosOverridesDoFiltro = [];
+function renderOverrideNotice(rows){
+  const notice = document.getElementById('overrideNotice');
+  if(!notice) return;
+
+  const linhasComOverride = rows.filter(d => overrides[d.id] && overrides[d.id] !== d.controle);
+  window.ultimosOverridesDoFiltro = linhasComOverride;
+
+  if(linhasComOverride.length === 0){
+    notice.style.display = 'none';
+    notice.innerHTML = '';
+    return;
+  }
+
+  const valorAfetado = linhasComOverride.reduce((s,d)=>s+d.total, 0);
+  notice.style.display = 'block';
+  notice.innerHTML = `⚠️ ${linhasComOverride.length} lançamento(s) no filtro atual têm status alterado manualmente no painel `
+    + `(diferente do que está na planilha do Asaas), somando ${fmtMoney(valorAfetado)}. `
+    + `Por isso os totais acima podem não bater exatamente com a planilha crua. `
+    + `<a href="#" id="verDetalhesOverrides" style="color:inherit; text-decoration:underline; font-weight:600;">Ver quais lançamentos</a>`;
+
+  const link = document.getElementById('verDetalhesOverrides');
+  if(link){
+    link.addEventListener('click', (e)=>{
+      e.preventDefault();
+      mostrarDetalhesOverrides();
+    });
+  }
+}
+
+function mostrarDetalhesOverrides(){
+  const linhas = window.ultimosOverridesDoFiltro || [];
+  if(linhas.length === 0) return;
+  let texto = `${linhas.length} lançamento(s) com status alterado manualmente no filtro atual:\n\n`;
+  texto += 'FRANQUIA | VENCIMENTO | VALOR | STATUS NA PLANILHA (Asaas) | STATUS APLICADO NO PAINEL\n';
+  texto += '-'.repeat(90) + '\n';
+  linhas.forEach(d=>{
+    texto += `${d.franquia} | ${d.vencimento} | ${fmtMoney(d.total)} | ${d.controle} | ${overrides[d.id]}\n`;
+  });
+  texto += '\nEsses status foram alterados manualmente dentro do próprio painel (ex.: marcados como '
+    + 'renegociados, contestados ou baixados fora do Asaas) e ficam salvos no banco de dados, independente '
+    + 'da planilha do Asaas. Para que um lançamento volte a refletir exatamente a planilha, o status manual '
+    + 'precisa ser removido/ajustado na própria linha da tabela.';
+  abrirModal('Lançamentos com ajuste manual de status', texto, false);
 }
 
 function renderHealthStrip(){
