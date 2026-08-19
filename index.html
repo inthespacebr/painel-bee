@@ -917,6 +917,11 @@ const DATA = RAW.map((r) => {
   return obj;
 });
 
+// Data/hora em que este dataset (RAW) foi gerado a partir das planilhas do Asaas.
+// Usado só para saber se um status manual (override) é anterior ou posterior à
+// atualização mensal mais recente — ver seção "TRANSPARÊNCIA DE AJUSTES MANUAIS" abaixo.
+const RAW_ATUALIZADO_EM = '2026-08-19T00:00:00-03:00';
+
 const STATUS_LABELS = {
   'EM ABERTO': 'Vencido',
   'BAIXADO': 'Baixado',
@@ -956,7 +961,24 @@ const statusFranquiaOverridesDocRef = db.collection('painel-inadimplencia').doc(
 const detalhesAjusteObsDocRef = db.collection('painel-inadimplencia').doc('detalhesAjusteObs');
 
 const STORAGE_KEY = 'status-overrides';
-let overrides = {}; // { id: 'NOVO_STATUS' }
+// Cada entrada pode estar em formato antigo (string 'NOVO_STATUS', sem data) ou novo
+// ({status:'NOVO_STATUS', quando: isoString}) — o formato novo permite saber se o
+// ajuste manual é anterior ou posterior à última atualização mensal do RAW (ver
+// RAW_ATUALIZADO_EM e as funções getOverrideStatus/getOverrideQuando/setOverride abaixo).
+let overrides = {}; // { id: 'NOVO_STATUS' | {status:'NOVO_STATUS', quando:'ISO'} }
+function getOverrideStatus(id){
+  const ov = overrides[id];
+  if(!ov) return undefined;
+  return (typeof ov === 'string') ? ov : ov.status;
+}
+function getOverrideQuando(id){
+  const ov = overrides[id];
+  if(!ov || typeof ov === 'string') return null; // formato antigo: data desconhecida
+  return ov.quando || null;
+}
+function setOverride(id, status){
+  overrides[id] = { status: status, quando: new Date().toISOString() };
+}
 let statusFranquiaOverrides = {}; // { franquia: 'ATIVA' | 'INATIVA' | 'EM PROCESSO DE DISTRATO' }
 let detalhesAjusteObs = {}; // { id_do_lancamento: 'observação adicional escrita pelo usuário' }
 let detalheAjusteModalAtualId = null;
@@ -978,7 +1000,8 @@ const fmtMoney = v => 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDig
 const fmtDate = s => { if(!s) return '–'; const [y,m,d] = s.split('-'); return `${d}/${m}/${y}`; };
 
 function effectiveStatus(rec){
-  if(overrides[rec.id]) return overrides[rec.id];
+  const statusManual = getOverrideStatus(rec.id);
+  if(statusManual) return statusManual;
   // Se o boleto estava marcado como "A vencer" mas a data já passou, o painel já mostra como "Vencido" sozinho.
   if(rec.controle === 'A VENCER' && diasEmAtraso(rec.vencimento) > 0) return 'EM ABERTO';
   return rec.controle;
@@ -1189,16 +1212,27 @@ function renderCards(rows){
 // ===================== TRANSPARÊNCIA DE AJUSTES MANUAIS (overrides) =====================
 // Os totais acima usam effectiveStatus(), que aplica por cima do dataset bruto do Asaas
 // qualquer status alterado manualmente no painel (overrides salvos no Firebase). Isso é
-// intencional — é o que permite registrar "essa cobrança já foi renegociada/contestada"
-// sem perder essa informação a cada atualização mensal — mas pode fazer os totais aqui
-// divergirem levemente do que está na planilha crua do Asaas. Este aviso deixa isso visível
-// na hora, em vez de precisar investigar depois.
+// intencional e é o uso normal do dia a dia — ex.: você resolve algo direto no Asaas e já
+// marca aqui no painel, sem esperar a próxima planilha mensal. Por isso este aviso NÃO
+// aparece toda vez que existe uma divergência (isso seria o tempo todo, por design).
+// Ele só aparece para overrides feitos ANTES da última atualização mensal do RAW
+// (RAW_ATUALIZADO_EM) e que agora conflitam com o dataset novo — ou seja, ajustes que
+// podem ter ficado "esquecidos" de uma atualização para a próxima e vale a pena revisar.
+// Overrides feitos hoje, no uso normal, têm `quando` posterior a RAW_ATUALIZADO_EM e não
+// disparam o aviso.
 window.ultimosOverridesDoFiltro = [];
+function isOverrideObsoleto(d){
+  const status = getOverrideStatus(d.id);
+  if(!status || status === d.controle) return false;
+  const quando = getOverrideQuando(d.id);
+  if(!quando) return true; // formato antigo sem data — trata como anterior à atualização
+  return quando < RAW_ATUALIZADO_EM;
+}
 function renderOverrideNotice(rows){
   const notice = document.getElementById('overrideNotice');
   if(!notice) return;
 
-  const linhasComOverride = rows.filter(d => overrides[d.id] && overrides[d.id] !== d.controle);
+  const linhasComOverride = rows.filter(isOverrideObsoleto);
   window.ultimosOverridesDoFiltro = linhasComOverride;
 
   if(linhasComOverride.length === 0){
@@ -1209,12 +1243,13 @@ function renderOverrideNotice(rows){
 
   const valorAfetado = linhasComOverride.reduce((s,d)=>s+d.total, 0);
   notice.style.display = 'block';
-  notice.innerHTML = `⚠️ ${linhasComOverride.length} lançamento(s) no filtro atual têm status alterado manualmente no painel `
-    + `(diferente do que está na planilha do Asaas), somando ${fmtMoney(valorAfetado)}. `
-    + `Por isso os totais acima podem não bater exatamente com a planilha crua. `
+  notice.innerHTML = `⚠️ ${linhasComOverride.length} lançamento(s) têm status manual aplicado <b>antes</b> da última atualização da planilha `
+    + `(somando ${fmtMoney(valorAfetado)}) e hoje conflitam com o dataset novo — vale revisar se ainda fazem sentido. `
     + `<a href="#" id="verDetalhesOverrides" style="color:inherit; text-decoration:underline; font-weight:600;">Ver quais lançamentos</a>`
     + ` &nbsp;·&nbsp; `
-    + `<a href="#" id="corrigirOverridesLink" style="color:inherit; text-decoration:underline; font-weight:600;">🔄 Corrigir para bater com a planilha</a>`;
+    + `<a href="#" id="corrigirOverridesLink" style="color:inherit; text-decoration:underline; font-weight:600;">🔄 Corrigir para bater com a planilha</a>`
+    + ` &nbsp;·&nbsp; `
+    + `<a href="#" id="manterOverridesLink" style="color:inherit; text-decoration:underline; font-weight:600;">✔️ Manter assim (não avisar de novo)</a>`;
 
   const link = document.getElementById('verDetalhesOverrides');
   if(link){
@@ -1230,28 +1265,34 @@ function renderOverrideNotice(rows){
       abrirConfirmacaoCorrigirOverrides();
     });
   }
+  const manterLink = document.getElementById('manterOverridesLink');
+  if(manterLink){
+    manterLink.addEventListener('click', (e)=>{
+      e.preventDefault();
+      manterOverridesComoEstao();
+    });
+  }
 }
 
 function mostrarDetalhesOverrides(){
   const linhas = window.ultimosOverridesDoFiltro || [];
   if(linhas.length === 0) return;
-  let texto = `${linhas.length} lançamento(s) com status alterado manualmente no filtro atual:\n\n`;
+  let texto = `${linhas.length} lançamento(s) com status manual anterior à última atualização da planilha:\n\n`;
   texto += 'FRANQUIA | VENCIMENTO | VALOR | STATUS NA PLANILHA (Asaas) | STATUS APLICADO NO PAINEL\n';
   texto += '-'.repeat(90) + '\n';
   linhas.forEach(d=>{
-    texto += `${d.franquia} | ${d.vencimento} | ${fmtMoney(d.total)} | ${d.controle} | ${overrides[d.id]}\n`;
+    texto += `${d.franquia} | ${d.vencimento} | ${fmtMoney(d.total)} | ${d.controle} | ${getOverrideStatus(d.id)}\n`;
   });
-  texto += '\nEsses status foram alterados manualmente dentro do próprio painel (ex.: marcados como '
-    + 'renegociados, contestados ou baixados fora do Asaas) e ficam salvos no banco de dados, independente '
-    + 'da planilha do Asaas. Use o botão "🔄 Corrigir para bater com a planilha", ao lado do aviso, para '
-    + 'reverter esses lançamentos ao status original do Asaas de uma vez.';
-  abrirModal('Lançamentos com ajuste manual de status', texto, false);
+  texto += '\nEsses status foram alterados manualmente dentro do próprio painel antes da atualização mais '
+    + 'recente da planilha do Asaas (ex.: marcados como renegociados, contestados ou baixados fora do Asaas). '
+    + 'Use "🔄 Corrigir para bater com a planilha" para reverter ao status do Asaas, ou "✔️ Manter assim" se '
+    + 'o ajuste continua válido e você só quer parar de ver este aviso sobre ele.';
+  abrirModal('Lançamentos com ajuste manual anterior à atualização', texto, false);
 }
 
-// Reverte, de uma vez, todos os lançamentos do filtro atual cujo status manual (override)
-// diverge do que está na planilha do Asaas — ou seja, apaga só os overrides "conflitantes"
-// exibidos no aviso, sem mexer em nenhum outro dado do painel (favoritos, CRM, Kanban, etc.)
-// e sem apagar overrides de outros lançamentos que não estão em conflito com a planilha.
+// Reverte, de uma vez, todos os lançamentos sinalizados no aviso — apaga o override,
+// voltando a valer exatamente o status da planilha do Asaas. Não mexe em overrides
+// recentes (feitos após a última atualização), nem em nenhum outro dado do painel.
 function abrirConfirmacaoCorrigirOverrides(){
   const linhas = window.ultimosOverridesDoFiltro || [];
   if(linhas.length === 0) return;
@@ -1279,7 +1320,7 @@ document.getElementById('corrigirOverridesConfirmarBtn').addEventListener('click
 
   const corrigidos = [];
   for(const d of linhas){
-    const statusAntigo = overrides[d.id];
+    const statusAntigo = getOverrideStatus(d.id);
     delete overrides[d.id];
     corrigidos.push({ registro: d, statusAntigo });
   }
@@ -1296,6 +1337,21 @@ document.getElementById('corrigirOverridesConfirmarBtn').addEventListener('click
   renderAll();
   showToast(`${corrigidos.length} lançamento(s) corrigido(s) para bater com a planilha`);
 });
+
+// "Manter assim": não muda o status nenhum, só atualiza a data do override para agora —
+// deixa de ser "anterior à atualização" e para de aparecer no aviso, até a próxima
+// atualização mensal trazer um dataset novo que volte a conflitar com ele.
+async function manterOverridesComoEstao(){
+  const linhas = window.ultimosOverridesDoFiltro || [];
+  if(linhas.length === 0) return;
+  for(const d of linhas){
+    const status = getOverrideStatus(d.id);
+    if(status) setOverride(d.id, status);
+  }
+  await persistOverrides();
+  renderAll();
+  showToast(`${linhas.length} lançamento(s) marcados como revisados`);
+}
 
 function renderHealthStrip(){
   const metrica = [
@@ -1570,7 +1626,7 @@ document.getElementById('tableBody').addEventListener('change', async (e)=>{
   const statusAntigo = e.target.dataset.old;
   const newStatus = e.target.value;
   const registro = DATA.find(d=>d.id === id);
-  overrides[id] = newStatus;
+  setOverride(id, newStatus);
   e.target.className = 'status-select ' + STATUS_CLASS[newStatus];
   await persistOverrides();
   await registrarAuditoria(registro, statusAntigo, newStatus);
