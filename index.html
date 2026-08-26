@@ -486,6 +486,22 @@
       <span class="count" id="historicoUltimoContato"></span>
     </div>
 
+    <div class="card" style="margin-bottom:22px; border:1px dashed var(--border);">
+      <div class="card-label">📥 Registro em lote (várias unidades de uma vez)</div>
+      <p style="font-size:12px; color:var(--muted); margin:6px 0 10px;">
+        Para não precisar abrir unidade por unidade: cole abaixo (ou envie um arquivo .csv/.txt) uma linha por unidade, no formato
+        <code>Unidade;Canal;Observação</code>. Canal deve ser exatamente um de: <code>WhatsApp</code>, <code>Yungas</code>, <code>E-mail</code> ou <code>Telefone</code>.
+        O nome da unidade deve bater (mesmo que parcialmente) com o nome da franquia como aparece no painel. Exemplo:<br>
+        <code>Catalão/GO;Yungas;Aviso de atualização de contrato enviado, assinatura até 28/08/2026</code>
+      </p>
+      <textarea id="loteTexto" rows="5" style="width:100%; font-family:monospace; font-size:12px; box-sizing:border-box;" placeholder="Unidade;Canal;Observação"></textarea>
+      <div style="display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;">
+        <input type="file" id="loteArquivo" accept=".csv,.txt">
+        <button class="btn btn-export" id="loteProcessarBtn">Processar lote e registrar</button>
+      </div>
+      <div id="loteResultado" style="margin-top:12px; font-size:13px; line-height:1.6;"></div>
+    </div>
+
     <div id="historicoConteudo" style="display:none;">
       <div class="cards" style="grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:18px;">
         <div class="card">
@@ -3081,6 +3097,107 @@ document.getElementById('historicoSalvarBtn').addEventListener('click', async ()
   }catch(e){
     console.error('Erro ao salvar histórico:', e);
     showToast('Erro ao registrar contato');
+  }
+});
+
+// ===================== REGISTRO EM LOTE (HISTÓRICO DE COBRANÇAS) =====================
+// Permite colar/enviar várias linhas "Unidade;Canal;Observação" e registrar de uma vez,
+// sem precisar abrir cada franquia individualmente na aba Histórico de Cobranças.
+const CANAIS_VALIDOS_LOTE = ['WhatsApp', 'Yungas', 'E-mail', 'Telefone'];
+
+function normalizarTextoLote(s){
+  return (s || '').toString().trim().toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+function encontrarFranquiaPorNomeLote(nomeDigitado){
+  const franquias = [...new Set(DATA.map(d => d.franquia))];
+  const alvo = normalizarTextoLote(nomeDigitado);
+  if(!alvo) return null;
+  let achado = franquias.find(f => normalizarTextoLote(f) === alvo);
+  if(achado) return achado;
+  achado = franquias.find(f => normalizarTextoLote(f).includes(alvo) || alvo.includes(normalizarTextoLote(f)));
+  return achado || null;
+}
+
+document.getElementById('loteArquivo').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => { document.getElementById('loteTexto').value = ev.target.result; };
+  reader.readAsText(file, 'utf-8');
+});
+
+document.getElementById('loteProcessarBtn').addEventListener('click', async () => {
+  const texto = document.getElementById('loteTexto').value;
+  const linhas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const resDiv = document.getElementById('loteResultado');
+  if(linhas.length === 0){
+    alert('Cole ou envie ao menos uma linha no formato Unidade;Canal;Observação.');
+    return;
+  }
+
+  const usuario = (auth.currentUser && auth.currentUser.email) ? auth.currentUser.email : 'desconhecido';
+  const resultados = { sucesso: [], naoEncontrada: [], canalInvalido: [], formatoInvalido: [] };
+  const btn = document.getElementById('loteProcessarBtn');
+  const textoOriginalBtn = btn.textContent;
+  btn.disabled = true;
+
+  for(let i = 0; i < linhas.length; i++){
+    btn.textContent = `Processando ${i + 1}/${linhas.length}...`;
+    const partes = linhas[i].split(';').map(p => p.trim());
+    if(partes.length < 3 || !partes[0] || !partes[1] || !partes[2]){
+      resultados.formatoInvalido.push(linhas[i]);
+      continue;
+    }
+    const unidadeDigitada = partes[0];
+    const canal = partes[1];
+    const observacao = partes.slice(2).join(';').trim();
+
+    if(!CANAIS_VALIDOS_LOTE.includes(canal)){
+      resultados.canalInvalido.push(`${unidadeDigitada} (canal "${canal}")`);
+      continue;
+    }
+    const franquia = encontrarFranquiaPorNomeLote(unidadeDigitada);
+    if(!franquia){
+      resultados.naoEncontrada.push(unidadeDigitada);
+      continue;
+    }
+    try{
+      const key = franquiaKey(franquia);
+      const doc = await historicoCollection.doc(key).get();
+      const entradas = (doc.exists && doc.data().entradas) ? doc.data().entradas : [];
+      entradas.push({ data: new Date().toISOString(), quem: usuario, canal, observacao });
+      await historicoCollection.doc(key).set({ entradas });
+      resultados.sucesso.push(franquia);
+    }catch(e){
+      console.error('Erro ao registrar lote para', unidadeDigitada, e);
+      resultados.naoEncontrada.push(`${unidadeDigitada} (erro ao salvar — tente novamente)`);
+    }
+  }
+
+  btn.disabled = false;
+  btn.textContent = textoOriginalBtn;
+
+  let html = '';
+  if(resultados.sucesso.length){
+    html += `<p style="color:var(--emerald,#0a7a3d);">✅ ${resultados.sucesso.length} unidade(s) registrada(s): ${resultados.sucesso.join(', ')}</p>`;
+  }
+  if(resultados.naoEncontrada.length){
+    html += `<p style="color:var(--rose,#c0392b);">⚠️ Não encontrada(s) no painel — confira o nome exato da unidade: ${resultados.naoEncontrada.join(', ')}</p>`;
+  }
+  if(resultados.canalInvalido.length){
+    html += `<p style="color:var(--rose,#c0392b);">⚠️ Canal inválido (use WhatsApp, Yungas, E-mail ou Telefone): ${resultados.canalInvalido.join(', ')}</p>`;
+  }
+  if(resultados.formatoInvalido.length){
+    html += `<p style="color:var(--muted);">Linha(s) ignorada(s) por formato incompleto (esperado Unidade;Canal;Observação): ${resultados.formatoInvalido.join(' | ')}</p>`;
+  }
+  resDiv.innerHTML = html;
+
+  if(resultados.sucesso.length){
+    showToast(`${resultados.sucesso.length} unidade(s) registradas em lote`);
+    const franquiaAtual = document.getElementById('historicoFranquiaSelect').value;
+    if(franquiaAtual && resultados.sucesso.includes(franquiaAtual)) renderHistorico(franquiaAtual);
   }
 });
 
