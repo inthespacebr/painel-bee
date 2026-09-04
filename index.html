@@ -36,7 +36,17 @@
     --border: #DCE1EE;
     --text: #1B2740;
     --muted: #667088;
+    /* VIS-04: no tema claro os acentos precisam de tons mais escuros para ficarem
+       legíveis sobre fundo branco (o #D9A441 original tem contraste ~2:1). */
+    --amber: #A67908;
+    --green: #21785B;
+    --blue: #2B5FB8;
+    --rose: #B33A50;
+    --violet: #6142B0;
   }
+  body.theme-light .topbar{ background:rgba(243,245,250,0.92); }
+  body.theme-light .btn-export{ background:#1B1B1B; color:#F5C518; border-color:#1B1B1B; }
+  body.theme-light tbody tr:hover{ background:rgba(27,39,64,0.035); }
   body{ transition: background-color 0.2s ease, color 0.2s ease; }
   *{box-sizing:border-box;}
   body{
@@ -104,6 +114,18 @@
   .kanban-card-nome{font-weight:600; margin-bottom:4px;}
   .kanban-card-valor{color:var(--blue); font-family:'IBM Plex Mono', monospace; font-size:12px; margin-bottom:6px;}
   .kanban-card-actions{display:flex; justify-content:space-between; gap:4px;}
+  /* FUN-07 — o quadro passa a mostrar dinheiro e tempo, não só nomes. */
+  .kanban-col-total{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--amber);
+    display:block; margin:-6px 0 10px; padding:0 4px; font-weight:600;
+  }
+  .kanban-card-meta{
+    display:flex; align-items:center; justify-content:space-between; gap:6px;
+    font-size:10.5px; color:var(--muted); margin-top:5px;
+  }
+  .kanban-card.parado{ border-color:rgba(224,99,122,0.5); }
+  .kanban-card.parado .kanban-card-meta{ color:var(--rose); }
+  .kanban-card-atraso{ font-family:'IBM Plex Mono', monospace; }
   .kanban-move-btn{
     background:var(--surface); border:1px solid var(--border); color:var(--text);
     border-radius:5px; padding:3px 8px; font-size:11px; cursor:pointer; flex:1;
@@ -129,6 +151,15 @@
   .kanban-card-remove{background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; float:right;}
   .kanban-card-remove:hover{color:var(--rose);}
   .fav-star{cursor:pointer; margin-right:6px; color:var(--muted); font-size:14px;}
+  .franquia-nome-click{ white-space:nowrap; }
+  /* a tabela principal ganhou a coluna de ações; para não empurrar a rolagem lateral,
+     o respiro horizontal das células diminui um pouco e o franqueado pode quebrar. */
+  #tabPainel thead th, #tabPainel tbody td{ padding-left:10px; padding-right:10px; }
+  #tabPainel td[data-label="Franqueado"]{ max-width:150px; }
+  #tabPainel td[data-label="Categoria"]{ max-width:130px; }
+  #tabPainel .status-select{ padding:5px 8px; font-size:11.5px; }
+  #tabPainel .franquia-badge{ margin-left:5px; }
+  .container{ max-width:1560px; }
   .fav-star.active{color:var(--amber);}
   .aging-dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px;}
   .crm-input{
@@ -190,6 +221,76 @@
   .card-value{font-size:22px; font-weight:600; font-family:'IBM Plex Mono', monospace;}
   .card-sub{font-size:12px; color:var(--muted); margin-top:4px;}
 
+  /* ===== INT-01 / VIS-02 — hierarquia: um número manda, o resto apoia =====
+     Antes os cinco indicadores tinham exatamente o mesmo peso e era preciso uma nota de
+     rodapé para não somar errado. Agora o total vencido é a manchete, os outros são
+     leitura de apoio, e a ressalva do Negociação virou dica no próprio indicador. */
+  .kpi-linha{
+    display:grid; grid-template-columns:minmax(240px,1.25fr) repeat(auto-fit, minmax(150px,1fr));
+    gap:0; margin-bottom:24px; background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; overflow:hidden;
+  }
+  .kpi-principal{
+    padding:20px 24px; border-right:1px solid var(--border);
+    background:linear-gradient(135deg, rgba(217,164,65,0.10), transparent 70%);
+  }
+  .kpi-principal .kpi-k{ font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); }
+  .kpi-principal .kpi-v{
+    font-family:'IBM Plex Mono', monospace; font-size:clamp(22px, 2.1vw, 32px); font-weight:600;
+    color:var(--amber); line-height:1.15; margin-top:6px; letter-spacing:-0.02em; white-space:nowrap;
+  }
+  .kpi-principal .kpi-s{ font-size:12.5px; color:var(--muted); margin-top:5px; }
+  .kpi-apoio{ padding:16px 18px; border-right:1px solid var(--border); display:flex; flex-direction:column; justify-content:center; }
+  .kpi-apoio:last-child{ border-right:none; }
+  .kpi-apoio .kpi-k{ font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); display:flex; align-items:center; gap:5px; }
+  .kpi-apoio .kpi-v{ font-family:'IBM Plex Mono', monospace; font-size:18px; font-weight:600; margin-top:4px; }
+  .kpi-apoio .kpi-s{ font-size:11px; color:var(--muted); margin-top:2px; }
+  .kpi-dica{
+    display:inline-flex; align-items:center; justify-content:center; width:13px; height:13px;
+    border-radius:50%; border:1px solid var(--border); color:var(--muted); font-size:9px;
+    cursor:help; flex:none; font-family:'Inter', sans-serif;
+  }
+  .kpi-dica:hover{ border-color:var(--amber); color:var(--amber); }
+  @media (max-width:720px){
+    .kpi-linha{ grid-template-columns:1fr 1fr; }
+    .kpi-principal{ grid-column:1 / -1; border-right:none; border-bottom:1px solid var(--border); }
+    .kpi-apoio:nth-child(even){ border-right:none; }
+    .kpi-apoio{ border-bottom:1px solid var(--border); }
+  }
+
+  /* VIS-02 — blocos que são aviso ou ação destrutiva deixam de parecer indicador */
+  .card.card-aviso{ border-left:3px solid var(--amber); border-radius:0 10px 10px 0; }
+  .card.card-perigo{ border-left:3px solid var(--rose); border-radius:0 10px 10px 0; }
+  .card.card-plano{ background:none; border:1px dashed var(--border); }
+
+  /* FUN-06 — a taxa de inadimplência deixa de ser calculada fora do painel. */
+  .taxa-linha{
+    display:grid; grid-template-columns:minmax(220px,1fr) repeat(auto-fit,minmax(140px,1fr));
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    overflow:hidden; margin-bottom:20px;
+  }
+  .taxa-destaque{
+    padding:20px 24px; border-right:1px solid var(--border);
+    background:linear-gradient(135deg, rgba(224,99,122,0.10), transparent 70%);
+  }
+  .taxa-destaque .kpi-v{ font-size:38px; color:var(--rose); }
+  .taxa-item{ padding:16px 18px; border-right:1px solid var(--border); }
+  .taxa-item:last-child{ border-right:none; }
+  .taxa-barra{ height:7px; border-radius:4px; background:var(--surface-alt); overflow:hidden; display:flex; margin-top:10px; }
+  .taxa-barra span{ height:100%; }
+
+  /* FUN-05 — o que mudou desde a carga anterior */
+  .mudou-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px; margin-top:14px; }
+  .mudou-item{
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    padding:7px 10px; border-radius:7px; background:var(--surface-alt);
+    border:1px solid var(--border); margin-bottom:6px; font-size:12.5px; cursor:pointer;
+  }
+  .mudou-item:hover{ border-color:var(--amber); }
+  .mudou-delta{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; white-space:nowrap; }
+  .mudou-delta.baixa{ color:var(--green); }
+  .mudou-delta.alta{ color:var(--rose); }
+
   .toolbar{
     display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px;
     background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 14px;
@@ -222,6 +323,174 @@
     white-space:nowrap;
   }
   thead th:hover{color:var(--text);}
+  /* INT-04 — a ordenação por coluna existe desde sempre; agora ela aparece. */
+  thead th[data-key]{ cursor:pointer; user-select:none; padding-right:26px; position:relative; }
+  thead th[data-key]::after{
+    content:'↕'; position:absolute; right:10px; top:50%; transform:translateY(-50%);
+    font-size:10px; opacity:0.25;
+  }
+  thead th[data-key][data-sort="asc"]::after{ content:'↑'; opacity:1; color:var(--amber); }
+  thead th[data-key][data-sort="desc"]::after{ content:'↓'; opacity:1; color:var(--amber); }
+  thead th[data-key][data-sort]{ color:var(--text); background:var(--surface); }
+  thead th:not([data-key]){ cursor:default; }
+
+  /* VIS-03 — multa, juros e IGP-M viram uma coluna só; a composição abre no clique. */
+  .encargos-cell{ cursor:pointer; }
+  .encargos-cell:hover .encargos-valor{ text-decoration:underline dotted; }
+  .encargos-detalhe{
+    display:block; font-size:10.5px; color:var(--muted); line-height:1.5; margin-top:3px;
+    font-family:'IBM Plex Mono', monospace; white-space:nowrap;
+  }
+  .num, td.num, .card-value{ font-variant-numeric: tabular-nums; }
+
+  /* FUN-04 — agir sobre a unidade sem sair da tabela. */
+  td.acoes{ white-space:nowrap; text-align:right; }
+  .acao-btn{
+    background:var(--surface-alt); border:1px solid var(--border); color:var(--muted);
+    border-radius:5px; padding:3px 7px; font-size:11px; cursor:pointer; font-family:inherit;
+    margin-left:3px; line-height:1.5;
+  }
+  .acao-btn:hover{ border-color:var(--amber); color:var(--text); }
+  .acao-btn.zap:hover{ border-color:var(--green); color:var(--green); }
+  /* na tabela as ações são só ícones (o nome vem no tooltip), para não roubar largura */
+  td.acoes .acao-btn{ padding:3px 5px; margin-left:2px; display:inline-flex; }
+  td.acoes .acao-btn .ic{ margin-right:0; width:14px; height:14px; }
+  @media (max-width:720px){
+    td.acoes{ text-align:left; }
+    td.acoes .acao-btn{ margin-left:0; margin-right:6px; }
+  }
+
+  /* VIS-03 — faixa de severidade: o atraso vira forma, não só um pontinho. */
+  tbody tr td:first-child{ position:relative; }
+  tbody tr.sev-1 td:first-child::before,
+  tbody tr.sev-2 td:first-child::before,
+  tbody tr.sev-3 td:first-child::before{
+    content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  }
+  tbody tr.sev-1 td:first-child::before{ background:var(--amber); }
+  tbody tr.sev-2 td:first-child::before{ background:var(--rose); }
+  tbody tr.sev-3 td:first-child::before{ background:#8B2E3C; }
+
+  /* VIS-05 — linhas-fantasma enquanto os dados são montados */
+  .skeleton-cell{
+    display:block; height:11px; border-radius:4px;
+    background:linear-gradient(90deg, var(--surface-alt) 25%, var(--border) 37%, var(--surface-alt) 63%);
+    background-size:400% 100%; animation:skeleton-slide 1.3s ease infinite;
+  }
+  @keyframes skeleton-slide{ 0%{background-position:100% 0;} 100%{background-position:0 0;} }
+  @media (prefers-reduced-motion: reduce){ .skeleton-cell{animation:none;} }
+  .empty-actions{display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap;}
+
+  /* INT-03 — visões salvas: o recorte que você monta vira um botão. */
+  .visao-chip{
+    display:inline-flex; align-items:center; gap:6px; background:var(--surface-alt);
+    border:1px solid var(--border); border-radius:16px; padding:5px 6px 5px 12px;
+    font-size:12px; color:var(--text); cursor:pointer; font-family:inherit;
+  }
+  .visao-chip:hover{ border-color:var(--amber); }
+  .visao-chip .apagar{
+    background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px;
+    line-height:1; padding:0 3px; border-radius:50%;
+  }
+  .visao-chip .apagar:hover{ color:var(--rose); }
+  .visao-vazio{ font-size:12px; color:var(--muted); font-style:italic; }
+
+  /* FUN-02 — agenda do dia: o painel deixa de só informar e passa a dizer para quem ligar. */
+  .agenda{
+    background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--amber);
+    border-radius:0 10px 10px 0; padding:16px 18px; margin-bottom:22px;
+  }
+  .agenda-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .agenda-titulo{ font-family:'Space Grotesk', sans-serif; font-size:15px; font-weight:600; }
+  .agenda-sub{ font-size:12px; color:var(--muted); }
+  .agenda-cols{ display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:16px; margin-top:14px; }
+  .agenda-col-titulo{
+    font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700;
+    margin-bottom:8px; display:flex; align-items:center; gap:6px;
+  }
+  .agenda-item{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:7px 10px; border-radius:7px; background:var(--surface-alt);
+    border:1px solid var(--border); margin-bottom:6px; font-size:12.5px; cursor:pointer;
+  }
+  .agenda-item:hover{ border-color:var(--amber); }
+  .agenda-item-nome{ font-weight:600; }
+  .agenda-item-meta{ font-size:11px; color:var(--muted); }
+  .agenda-item-val{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; white-space:nowrap; }
+  .agenda-vazio{ font-size:12px; color:var(--muted); padding:6px 2px; }
+
+  /* FUN-03 — fila de revisão do Ajuste Manual */
+  .tab-badge{
+    display:inline-block; background:var(--rose); color:#fff; border-radius:10px;
+    padding:1px 6px; font-size:10px; font-weight:700; margin-left:5px; line-height:1.5;
+  }
+  .revisao-resumo{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:18px;}
+  .revisao-asaas{
+    font-size:11px; color:var(--muted); line-height:1.5; max-width:340px;
+    white-space:pre-wrap; word-break:break-word; max-height:34px; overflow:hidden; cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .revisao-asaas.aberto{ max-height:none; }
+  tr.revisado{ opacity:0.55; }
+  .revisao-select{
+    background:var(--surface-alt); border:1px solid var(--border); color:var(--text);
+    border-radius:6px; padding:5px 7px; font-size:11.5px; font-family:inherit; cursor:pointer; max-width:190px;
+  }
+  /* FUN-01 — ficha única da franquia: tudo o que estava em cinco telas, numa só. */
+  .ficha-box{
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    width:100%; max-width:940px; max-height:88vh; display:flex; flex-direction:column; overflow:hidden;
+  }
+  .ficha-topo{ padding:20px 24px 0; border-bottom:1px solid var(--border); }
+  .ficha-topo-linha{ display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap; }
+  .ficha-nome{ font-family:'Space Grotesk', sans-serif; font-size:21px; font-weight:600; margin:0; }
+  .ficha-sub{ font-size:12.5px; color:var(--muted); margin:4px 0 0; }
+  .ficha-saldo{ text-align:right; }
+  .ficha-saldo-valor{ font-family:'IBM Plex Mono', monospace; font-size:26px; font-weight:600; color:var(--amber); line-height:1.1; }
+  .ficha-saldo-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); }
+  .ficha-acoes{ display:flex; gap:6px; flex-wrap:wrap; margin:14px 0 0; }
+  .ficha-tabs{ display:flex; gap:4px; margin-top:14px; flex-wrap:wrap; }
+  .ficha-tab{
+    background:none; border:none; color:var(--muted); padding:8px 13px; font-size:12.5px;
+    cursor:pointer; border-radius:7px 7px 0 0; font-family:inherit; border-bottom:2px solid transparent;
+  }
+  .ficha-tab:hover{ color:var(--text); }
+  .ficha-tab.active{ color:var(--amber); border-bottom-color:var(--amber); font-weight:600; }
+  .ficha-corpo{ padding:20px 24px 24px; overflow-y:auto; flex:1; }
+  .ficha-kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:18px; }
+  .ficha-kpi{ background:var(--surface-alt); border:1px solid var(--border); border-radius:9px; padding:11px 13px; }
+  .ficha-kpi-k{ font-size:10px; text-transform:uppercase; letter-spacing:0.07em; color:var(--muted); }
+  .ficha-kpi-v{ font-family:'IBM Plex Mono', monospace; font-size:16px; font-weight:600; margin-top:3px; }
+  .ficha-secao-titulo{
+    font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted);
+    font-weight:700; margin:18px 0 8px;
+  }
+  .ficha-spark{ display:flex; align-items:flex-end; gap:3px; height:56px; margin-bottom:6px; }
+  .ficha-spark-bar{ flex:1; background:var(--amber); border-radius:2px 2px 0 0; min-height:2px; opacity:0.75; }
+  .ficha-spark-bar.hot{ background:var(--rose); opacity:1; }
+  .ficha-spark-labels{ display:flex; gap:3px; font-size:9px; color:var(--muted); font-family:'IBM Plex Mono',monospace; }
+  .ficha-spark-labels span{ flex:1; text-align:center; }
+  .ficha-tl{ display:flex; gap:10px; padding:9px 0; border-bottom:1px dashed var(--border); font-size:12.5px; }
+  .ficha-tl:last-child{ border-bottom:none; }
+  .ficha-tl-data{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--muted); white-space:nowrap; min-width:96px; }
+  .ficha-vazio{ color:var(--muted); font-size:12.5px; padding:10px 0; }
+  @media (max-width:720px){
+    .ficha-box{ max-height:94vh; }
+    .ficha-topo{ padding:16px 16px 0; }
+    .ficha-corpo{ padding:16px; }
+    .ficha-saldo{ text-align:left; }
+  }
+
+  .reclass-badge{
+    font-size:10px; padding:2px 6px; border-radius:4px; margin-left:6px; font-weight:600;
+    background:rgba(91,141,239,0.16); color:var(--blue);
+  }
+
+  /* INT-07 — foco visível em tudo que é operável pelo teclado */
+  a:focus-visible, button:focus-visible, select:focus-visible,
+  input:focus-visible, textarea:focus-visible, [tabindex]:focus-visible{
+    outline:2px solid var(--amber); outline-offset:2px; border-radius:6px;
+  }
   tbody td{padding:11px 14px; border-bottom:1px solid var(--border); vertical-align:middle;}
   tbody tr:last-child td{border-bottom:none;}
   tbody tr:hover{background:rgba(255,255,255,0.02);}
@@ -290,6 +559,11 @@
   }
   .toast.show{opacity:1; transform:translateY(0);}
   .toast .dot{width:7px;height:7px;border-radius:50%;background:var(--green);}
+  .toast{max-width:min(420px, calc(100vw - 48px)); line-height:1.45;}
+  .toast.erro{border-color:rgba(224,99,122,0.5);}
+  .toast.erro .dot{background:var(--rose);}
+  .toast.aviso{border-color:rgba(217,164,65,0.5);}
+  .toast.aviso .dot{background:var(--amber);}
 
   .auth-overlay{
     position:fixed; inset:0; z-index:100; background:var(--bg);
@@ -317,6 +591,23 @@
   .app-content{display:none;}
   .app-content.unlocked{display:block;}
 
+  /* VIS-01 — ícones de traço no lugar dos emojis: herdam a cor do tema, têm o mesmo
+     peso visual em qualquer sistema operacional e alinham com o texto. */
+  .ic{
+    width:15px; height:15px; flex:none; stroke:currentColor; fill:none;
+    stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;
+    vertical-align:-2px; margin-right:6px;
+  }
+  .ic-sm{ width:13px; height:13px; }
+  .tab-btn, .btn, .theme-toggle, .card-label, .fd-section-title, .modal-tab-btn{
+    display:inline-flex; align-items:center;
+  }
+  .card-label, .fd-section-title{ display:flex; }
+  .tab-btn{ gap:0; }
+
+  /* ===== VIS-06 — o celular deixa de ser só a tabela =====
+     A regra de 720px já transformava cada linha em cartão (e isso ficou). Faltava o
+     resto: filtros, quadro, gráficos e as tabelas largas das outras abas. */
   @media (max-width:720px){
     .topbar{padding:20px 16px 16px;}
     .container{padding:16px 16px 40px;}
@@ -327,10 +618,76 @@
     tbody td{display:flex; justify-content:space-between; gap:10px; border-bottom:1px dashed var(--border); padding:7px 10px;}
     tbody td::before{content:attr(data-label); color:var(--muted); font-size:11px; text-transform:uppercase;}
     td.num{text-align:right;}
+    tbody tr td:first-child{ padding-left:14px; }
+
+    /* filtros: recolhidos atrás de um botão, para a busca não sair da tela */
+    .toolbar{ padding:10px; gap:8px; }
+    .toolbar input[type=text], .toolbar select{ width:100%; min-width:0; font-size:13px; }
+    #tabPainel .toolbar.recolhivel > *:not(.toolbar-toggle){ display:none; }
+    #tabPainel .toolbar.recolhivel.aberta > *{ display:flex; }
+    #tabPainel .toolbar.recolhivel.aberta > select,
+    #tabPainel .toolbar.recolhivel.aberta > input{ display:block; }
+    .toolbar-toggle{ display:flex !important; width:100%; justify-content:center; }
+    .toolbar .count{ margin-left:0; width:100%; }
+
+    /* abas viram uma faixa rolável em vez de quebrar em três linhas */
+    .topbar{ overflow-x:clip; }
+    .tabs-nav{ flex-wrap:nowrap; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:none; margin:14px -16px 0; padding:0 16px; max-width:100vw; }
+    .tabs-nav::-webkit-scrollbar{ display:none; }
+    .tab-btn{ white-space:nowrap; }
+
+    /* quadro de negociação e gráficos empilhados */
+    .kanban-col{ min-width:78vw; max-width:78vw; }
+    #tabDashboard .cards{ grid-template-columns:1fr !important; }
+    #tabDashboard .cards .card{ grid-column:auto !important; }
+    .taxa-linha{ grid-template-columns:1fr 1fr; }
+    .taxa-destaque{ grid-column:1 / -1; border-right:none; border-bottom:1px solid var(--border); }
+    .taxa-item:nth-child(even){ border-right:none; }
+    .taxa-item{ border-bottom:1px solid var(--border); }
+    .agenda-cols{ grid-template-columns:1fr; }
+    .mudou-grid{ grid-template-columns:1fr; }
+
+    /* tabelas largas (Contatos, Revisão) rolam em vez de espremer */
+    table.table-wide{ min-width:0; }
+    #tabContatos tbody tr, #tabRevisao tbody tr, #tabAuditoria tbody tr{ display:block; }
+    .revisao-asaas{ max-width:none; }
+    .ficha-kpis{ grid-template-columns:1fr 1fr; }
   }
 </style>
 </head>
 <body>
+
+<!-- VIS-01: conjunto único de ícones de traço, usado em todo o painel -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="ic-painel" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
+    <symbol id="ic-telefone" viewBox="0 0 24 24"><path d="M6 3h3l2 5-2.5 1.5a12 12 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4 5.2 2 2 0 0 1 6 3z"/></symbol>
+    <symbol id="ic-fluxo" viewBox="0 0 24 24"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="10" rx="1"/><rect x="17" y="4" width="4" height="13" rx="1"/></symbol>
+    <symbol id="ic-contatos" viewBox="0 0 24 24"><rect x="5" y="3" width="15" height="18" rx="2"/><path d="M3 8h2M3 12h2M3 16h2"/><circle cx="12" cy="10" r="2.2"/><path d="M8.8 16a3.6 3.6 0 0 1 6.4 0"/></symbol>
+    <symbol id="ic-trofeu" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 5H5v1a3 3 0 0 0 3 3M16 5h3v1a3 3 0 0 1-3 3"/><path d="M12 13v4M9 21h6M10 17h4"/></symbol>
+    <symbol id="ic-grafico" viewBox="0 0 24 24"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M8 16v-4M12 16V8M16 16v-6"/></symbol>
+    <symbol id="ic-alerta" viewBox="0 0 24 24"><path d="M12 4 2.5 20h19z"/><path d="M12 10v4M12 17.2v.1"/></symbol>
+    <symbol id="ic-auditoria" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M15.5 15.5 21 21"/><path d="M9 11h4"/></symbol>
+    <symbol id="ic-planilha" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11M15 9v11"/></symbol>
+    <symbol id="ic-pdf" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 14h6M9 17h4"/></symbol>
+    <symbol id="ic-resumo" viewBox="0 0 24 24"><path d="M12 3a4 4 0 0 0-4 4c-1.6.7-2.5 2-2.5 3.6 0 1.2.5 2.2 1.4 3-.3 1.9.9 3.7 2.9 4.2A3.2 3.2 0 0 0 12 21a3.2 3.2 0 0 0 2.2-3.2c2-.5 3.2-2.3 2.9-4.2.9-.8 1.4-1.8 1.4-3 0-1.6-.9-2.9-2.5-3.6a4 4 0 0 0-4-4z"/><path d="M12 8v9"/></symbol>
+    <symbol id="ic-email" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></symbol>
+    <symbol id="ic-balanca" viewBox="0 0 24 24"><path d="M12 4v16M7 20h10"/><path d="M5 8h14M5 8 2.5 14h5zM19 8l2.5 6h-5z"/></symbol>
+    <symbol id="ic-download" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="m8 11 4 4 4-4"/><path d="M4 19h16"/></symbol>
+    <symbol id="ic-upload" viewBox="0 0 24 24"><path d="M12 16V5"/><path d="m8 9 4-4 4 4"/><path d="M4 19h16"/></symbol>
+    <symbol id="ic-salvar" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h7V3M8 14h8v7H8z"/></symbol>
+    <symbol id="ic-pessoa" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></symbol>
+    <symbol id="ic-mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="ic-dinheiro" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 12h.01M18 12h.01"/></symbol>
+    <symbol id="ic-link" viewBox="0 0 24 24"><path d="M10 13a4 4 0 0 0 5.7.3l2.6-2.6a4 4 0 1 0-5.7-5.7L11.4 6.3"/><path d="M14 11a4 4 0 0 0-5.7-.3L5.7 13.3a4 4 0 1 0 5.7 5.7l1.2-1.2"/></symbol>
+    <symbol id="ic-lupa" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16 21 21"/></symbol>
+    <symbol id="ic-nota" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h5"/></symbol>
+    <symbol id="ic-raio" viewBox="0 0 24 24"><path d="M13 3 5 14h6l-1 7 8-11h-6z"/></symbol>
+    <symbol id="ic-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/></symbol>
+    <symbol id="ic-predio" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></symbol>
+    <symbol id="ic-mapa" viewBox="0 0 24 24"><path d="M12 21s6.5-6 6.5-10.5A6.5 6.5 0 0 0 5.5 10.5C5.5 15 12 21 12 21z"/><circle cx="12" cy="10.4" r="2.3"/></symbol>
+  </defs>
+</svg>
 
 <div class="auth-overlay" id="authOverlay">
   <div class="auth-card">
@@ -366,24 +723,30 @@
   </div>
   <div class="health-strip" id="healthStrip"></div>
   <div class="health-legend" id="healthLegend"></div>
-  <div class="tabs-nav" id="tabsNav">
-    <button class="tab-btn active" data-tab="painel">📋 Painel</button>
-    <button class="tab-btn" data-tab="historico">📞 Histórico de Cobranças</button>
-    <button class="tab-btn" data-tab="negociacao">🗂️ Fluxo de Negociação</button>
-    <button class="tab-btn" data-tab="contatos">📇 Contatos das Franquias</button>
-    <button class="tab-btn" data-tab="ranking">🏆 Ranking</button>
-    <button class="tab-btn" data-tab="dashboard">📈 Dashboard Executivo</button>
-    <button class="tab-btn" data-tab="auditoria">🕵️ Auditoria</button>
+  <div class="tabs-nav" id="tabsNav" role="tablist" aria-label="Seções do painel">
+    <button class="tab-btn active" data-tab="painel"><svg class="ic" aria-hidden="true"><use href="#ic-painel"></use></svg>Painel</button>
+    <button class="tab-btn" data-tab="historico"><svg class="ic" aria-hidden="true"><use href="#ic-telefone"></use></svg>Histórico de Cobranças</button>
+    <button class="tab-btn" data-tab="negociacao"><svg class="ic" aria-hidden="true"><use href="#ic-fluxo"></use></svg>Fluxo de Negociação</button>
+    <button class="tab-btn" data-tab="contatos"><svg class="ic" aria-hidden="true"><use href="#ic-contatos"></use></svg>Contatos das Franquias</button>
+    <button class="tab-btn" data-tab="ranking"><svg class="ic" aria-hidden="true"><use href="#ic-trofeu"></use></svg>Ranking</button>
+    <button class="tab-btn" data-tab="dashboard"><svg class="ic" aria-hidden="true"><use href="#ic-grafico"></use></svg>Dashboard Executivo</button>
+    <button class="tab-btn" data-tab="revisao"><svg class="ic" aria-hidden="true"><use href="#ic-alerta"></use></svg>Revisão de Ajustes<span class="tab-badge" id="revisaoBadge" style="display:none;">0</span></button>
+    <button class="tab-btn" data-tab="auditoria"><svg class="ic" aria-hidden="true"><use href="#ic-auditoria"></use></svg>Auditoria</button>
   </div>
 </div>
 
 <div class="container">
 
   <div class="tab-panel" id="tabPainel">
-  <div class="cards" id="cards"></div>
-  <p style="font-size:11.5px; color:var(--muted); margin:-8px 0 18px;">
-    ℹ️ "Total Pendente" = Total Vencido + Total A Vencer. "Total Negociação" é um subconjunto que já está contido nesses dois valores (não é somado à parte).
-  </p>
+  <!-- FUN-02: agenda do dia, montada a partir das promessas de pagamento registradas -->
+  <div class="agenda" id="agendaDoDia" style="display:none;">
+    <div class="agenda-head">
+      <span class="agenda-titulo">Cobranças de hoje</span>
+      <span class="agenda-sub" id="agendaResumo"></span>
+    </div>
+    <div class="agenda-cols" id="agendaCols"></div>
+  </div>
+  <div class="kpi-linha" id="cards"></div>
   <div id="overrideNotice" style="display:none; font-size:12px; background:rgba(217,164,65,0.12); border:1px solid rgba(217,164,65,0.35); color:var(--text); border-radius:8px; padding:8px 12px; margin:-8px 0 18px;">
   </div>
 
@@ -431,17 +794,23 @@
     <button class="btn" id="clearFilters">Limpar filtros</button>
     <span class="count" id="resultCount"></span>
   </div>
+  <div class="toolbar" id="visoesBar" style="padding-top:8px; padding-bottom:8px;">
+    <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); white-space:nowrap;">Visões salvas</span>
+    <div id="visoesChips" style="display:flex; flex-wrap:wrap; gap:6px; align-items:center;"></div>
+    <button class="btn" id="salvarVisaoBtn" style="margin-left:auto; font-size:12px;" title="Guarda o recorte atual (busca, filtros, combinações e ordenação) com um nome">+ Salvar visão atual</button>
+    <button class="btn" id="copiarLinkVisaoBtn" style="font-size:12px;" title="Copia um link que abre o painel exatamente neste recorte"><svg class="ic  ic-sm" aria-hidden="true"><use href="#ic-link"></use></svg>Copiar link do recorte</button>
+  </div>
   <div class="toolbar" id="regrasChipsBarWrap" style="display:none; padding-top:6px; padding-bottom:6px;">
     <span style="font-size:11.5px; color:var(--muted);">Combinações ativas:</span>
     <div id="regrasChipsBar" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
   </div>
 
   <div class="toolbar" style="margin-top:-6px;">
-    <button class="btn btn-export" id="exportExcelBtn">📊 Exportar Excel</button>
-    <button class="btn btn-export" id="exportPdfBtn">📄 Exportar Relatório PDF</button>
-    <button class="btn" id="resumoBtn">🧠 Gerar resumo</button>
-    <button class="btn" id="mensagemBtn">✉️ Gerar mensagem de cobrança</button>
-    <button class="btn" id="notificacaoBtn" style="border-color:rgba(224,99,122,0.4); color:var(--rose);">⚖️ Solicitar Notificação Extrajudicial</button>
+    <button class="btn btn-export" id="exportExcelBtn"><svg class="ic" aria-hidden="true"><use href="#ic-planilha"></use></svg>Exportar Excel</button>
+    <button class="btn btn-export" id="exportPdfBtn"><svg class="ic" aria-hidden="true"><use href="#ic-pdf"></use></svg>Exportar Relatório PDF</button>
+    <button class="btn" id="resumoBtn"><svg class="ic" aria-hidden="true"><use href="#ic-resumo"></use></svg>Gerar resumo</button>
+    <button class="btn" id="mensagemBtn"><svg class="ic" aria-hidden="true"><use href="#ic-email"></use></svg>Gerar mensagem de cobrança</button>
+    <button class="btn" id="notificacaoBtn" style="border-color:rgba(224,99,122,0.4); color:var(--rose);"><svg class="ic" aria-hidden="true"><use href="#ic-balanca"></use></svg>Solicitar Notificação Extrajudicial</button>
     <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted);">
       <input type="checkbox" id="filterFavoritos"> Só favoritos
     </label>
@@ -457,11 +826,10 @@
           <th data-key="categoria">Categoria</th>
           <th data-key="vencimento">Vencimento</th>
           <th data-key="valor" style="text-align:right">Valor</th>
-          <th data-key="multa" style="text-align:right">Multa</th>
-          <th data-key="juros" style="text-align:right">Juros</th>
-          <th data-key="igpm" style="text-align:right">IGPM</th>
+          <th data-key="encargos" style="text-align:right" title="Multa + juros de mora + correção IGP-M. Clique no valor para abrir a composição.">Encargos</th>
           <th data-key="total" style="text-align:right">Total</th>
           <th data-key="controle">Status</th>
+          <th style="text-align:right">Ações</th>
         </tr>
       </thead>
       <tbody id="tableBody"></tbody>
@@ -472,7 +840,7 @@
   <div class="pagination" id="pagination"></div>
 
   <div style="margin-top:40px; padding-top:20px; border-top:1px dashed var(--border); display:flex; justify-content:flex-end;">
-    <button class="btn reset" id="resetOverrides" title="Desfaz todas as alterações de status feitas no painel" style="opacity:0.75; display:none;">⚠️ Restaurar status originais (apaga todas as alterações manuais)</button>
+    <button class="btn reset" id="resetOverrides" title="Desfaz todas as alterações de status feitas no painel" style="opacity:0.75; display:none;"><svg class="ic" aria-hidden="true"><use href="#ic-alerta"></use></svg>Restaurar status originais (apaga todas as alterações manuais)</button>
   </div>
 
   </div><!-- fim tab-painel -->
@@ -486,18 +854,27 @@
       <span class="count" id="historicoUltimoContato"></span>
     </div>
 
-    <div class="card" style="margin-bottom:22px; border:1px dashed var(--border);">
-      <div class="card-label">📥 Registro em lote (várias unidades de uma vez)</div>
+    <div class="card card-plano" style="margin-bottom:22px;">
+      <div class="card-label"><svg class="ic" aria-hidden="true"><use href="#ic-upload"></use></svg>Registro em lote (várias unidades de uma vez)</div>
       <p style="font-size:12px; color:var(--muted); margin:6px 0 10px;">
         Para não precisar abrir unidade por unidade: cole abaixo (ou envie um arquivo .csv/.txt) uma linha por unidade, no formato
         <code>Unidade;Canal;Observação</code>. Canal deve ser exatamente um de: <code>WhatsApp</code>, <code>Yungas</code>, <code>E-mail</code> ou <code>Telefone</code>.
         O nome da unidade deve bater (mesmo que parcialmente) com o nome da franquia como aparece no painel. Exemplo:<br>
-        <code>Catalão/GO;Yungas;Aviso de atualização de contrato enviado, assinatura até 28/08/2026</code>
+        <code>Catalão/GO;Yungas;Aviso de atualização de contrato enviado, assinatura até 28/08/2026</code><br>
+        Nada é gravado direto: o painel mostra primeiro a conferência de cada linha e só registra depois que você confirmar.
       </p>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:10px; padding:10px 12px; background:var(--surface-alt); border:1px solid var(--border); border-radius:8px;">
+        <span style="font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em;">Trazer do filtro do Painel</span>
+        <select id="loteDoFiltroCanal" style="background:var(--surface); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:6px 8px; font-family:inherit; font-size:12.5px;">
+          <option>Yungas</option><option>WhatsApp</option><option>E-mail</option><option>Telefone</option>
+        </select>
+        <input type="text" id="loteDoFiltroObs" placeholder="Observação do registro (opcional)" style="flex:1; min-width:200px; background:var(--surface); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:6px 9px; font-family:inherit; font-size:12.5px;">
+        <button class="btn" id="loteDoFiltroBtn">Gerar bloco do filtro atual</button>
+      </div>
       <textarea id="loteTexto" rows="5" style="width:100%; font-family:monospace; font-size:12px; box-sizing:border-box;" placeholder="Unidade;Canal;Observação"></textarea>
       <div style="display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;">
         <input type="file" id="loteArquivo" accept=".csv,.txt">
-        <button class="btn btn-export" id="loteProcessarBtn">Processar lote e registrar</button>
+        <button class="btn btn-export" id="loteProcessarBtn">Conferir lote antes de gravar</button>
       </div>
       <div id="loteResultado" style="margin-top:12px; font-size:13px; line-height:1.6;"></div>
     </div>
@@ -505,18 +882,18 @@
     <div id="historicoConteudo" style="display:none;">
       <div class="cards" style="grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:18px;">
         <div class="card">
-          <div class="card-label">👤 Contato / Responsável</div>
+          <div class="card-label"><svg class="ic" aria-hidden="true"><use href="#ic-pessoa"></use></svg>Contato / Responsável</div>
           <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
             <input type="text" id="histContato" class="crm-input" placeholder="Nome do contato">
             <input type="text" id="histResponsavel" class="crm-input" placeholder="Responsável interno">
           </div>
         </div>
         <div class="card">
-          <div class="card-label">☎️ Telefone / WhatsApp</div>
+          <div class="card-label"><svg class="ic" aria-hidden="true"><use href="#ic-telefone"></use></svg>Telefone / WhatsApp</div>
           <input type="text" id="histTelefone" class="crm-input" placeholder="(00) 00000-0000" style="margin-top:8px;">
         </div>
         <div class="card">
-          <div class="card-label">✉️ E-mail</div>
+          <div class="card-label"><svg class="ic" aria-hidden="true"><use href="#ic-email"></use></svg>E-mail</div>
           <input type="text" id="histEmail" class="crm-input" placeholder="email@..." style="margin-top:8px;">
         </div>
       </div>
@@ -525,7 +902,7 @@
       </div>
 
       <div class="card" style="margin-bottom:18px;">
-        <div class="card-label">➕ Registrar novo contato de cobrança</div>
+        <div class="card-label"><svg class="ic" aria-hidden="true"><use href="#ic-mais"></use></svg>Registrar novo contato de cobrança</div>
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
           <select id="historicoCanal">
             <option value="WhatsApp">📱 WhatsApp</option>
@@ -534,6 +911,10 @@
             <option value="Telefone">📞 Telefone</option>
           </select>
           <input type="text" id="historicoObservacao" placeholder="O que foi tratado nesse contato..." style="flex:1; min-width:220px;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); white-space:nowrap;">
+            Prometeu pagar em
+            <input type="date" id="historicoDataPrometida" style="background:var(--surface-alt); border:1px solid var(--border); color:var(--text); border-radius:7px; padding:8px 10px; font-family:inherit; font-size:12.5px;">
+          </label>
           <button class="btn btn-export" id="historicoSalvarBtn">Registrar contato</button>
         </div>
       </div>
@@ -564,11 +945,11 @@
     </div>
     <div class="cards" style="grid-template-columns:1fr 1fr; gap:20px;">
       <div>
-        <h3 style="font-size:14px; margin-bottom:10px;">💰 Maiores devedores (total vencido)</h3>
+        <h3 style="font-size:14px; margin-bottom:10px;"><svg class="ic" aria-hidden="true"><use href="#ic-dinheiro"></use></svg>Maiores devedores (total vencido)</h3>
         <div class="table-wrap"><table><thead><tr><th>#</th><th>Franquia</th><th style="text-align:right">Total vencido</th></tr></thead><tbody id="rankingDevedores"></tbody></table></div>
       </div>
       <div>
-        <h3 style="font-size:14px; margin-bottom:10px;">📄 Maior quantidade de boletos vencidos</h3>
+        <h3 style="font-size:14px; margin-bottom:10px;"><svg class="ic" aria-hidden="true"><use href="#ic-pdf"></use></svg>Maior quantidade de boletos vencidos</h3>
         <div class="table-wrap"><table><thead><tr><th>#</th><th>Franquia</th><th style="text-align:right">Qtde.</th></tr></thead><tbody id="rankingQtde"></tbody></table></div>
       </div>
       <div>
@@ -576,7 +957,7 @@
         <div class="table-wrap"><table><thead><tr><th>#</th><th>Franquia</th><th style="text-align:right">Dias</th></tr></thead><tbody id="rankingAtraso"></tbody></table></div>
       </div>
       <div>
-        <h3 style="font-size:14px; margin-bottom:10px;">📈 Maior evolução / recuperação</h3>
+        <h3 style="font-size:14px; margin-bottom:10px;"><svg class="ic" aria-hidden="true"><use href="#ic-grafico"></use></svg>Maior evolução / recuperação</h3>
         <div class="table-wrap"><div class="empty" style="padding:24px;">Esse ranking compara mês a mês. Vai começar a aparecer aqui a partir da segunda atualização mensal registrada no histórico (aba Dashboard Executivo).</div></div>
       </div>
     </div>
@@ -585,7 +966,25 @@
   <!-- ===================== ABA: DASHBOARD EXECUTIVO ===================== -->
   <div class="tab-panel" id="tabDashboard" style="display:none;">
     <p class="subtitle" style="margin-bottom:14px;">Visão gráfica da carteira. O gráfico de evolução mensal começa a se formar a partir de agora — cada atualização mensal grava uma "foto" automática aqui.</p>
-    <button class="btn btn-export" id="exportExecutivoBtn" style="margin-bottom:16px;">📑 Exportar Relatório Executivo Mensal (PDF)</button>
+
+    <!-- FUN-06: taxa de inadimplência (vencido ÷ gerado) como indicador nativo -->
+    <div class="toolbar" style="margin-bottom:16px;">
+      <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted);">Recorte da taxa</span>
+      <select id="taxaCategoria" aria-label="Categoria para a taxa de inadimplência"><option value="">Todas as categorias</option></select>
+      <select id="taxaEscopo" aria-label="Escopo de franquias">
+        <option value="ativas-franqueadas">Franquias ativas e franqueadas</option>
+        <option value="ativas">Todas as ativas</option>
+        <option value="">Carteira inteira</option>
+      </select>
+      <button class="btn btn-export" id="exportExecutivoBtn"><svg class="ic" aria-hidden="true"><use href="#ic-pdf"></use></svg>Exportar Relatório Executivo Mensal (PDF)</button>
+    </div>
+    <div class="taxa-linha" id="taxaLinha"></div>
+
+    <!-- FUN-05: o que mudou desde a carga anterior -->
+    <div class="card card-aviso" id="mudouCard" style="margin-bottom:22px; display:none;">
+      <div class="card-label" id="mudouTitulo">O que mudou desde a atualização anterior</div>
+      <div class="mudou-grid" id="mudouGrid"></div>
+    </div>
     <div class="cards" style="grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px;">
       <div class="card" style="grid-column:span 1;"><div class="card-label">Distribuição por status</div><canvas id="chartStatus" height="220"></canvas></div>
       <div class="card" style="grid-column:span 1;"><div class="card-label">Distribuição por categoria (vencido + a vencer)</div><canvas id="chartCategoria" height="220"></canvas></div>
@@ -597,14 +996,69 @@
     </div>
   </div>
 
+  <!-- ===================== ABA: REVISÃO DE AJUSTES (FUN-03) ===================== -->
+  <div class="tab-panel" id="tabRevisao" style="display:none;">
+    <p class="subtitle" style="margin-bottom:14px;">
+      A categoria <b>AJUSTE MANUAL</b> é atribuída automaticamente quando a descrição do Asaas não permite classificar o lançamento — e é a pendência mais antiga do painel.
+      Como o BI e os disparos do Yungas ignoram essa categoria, tudo que fica aqui some das duas pontas. Reclassifique em bloco e marque o que já foi conferido.
+    </p>
+
+    <div class="revisao-resumo" id="revisaoResumo"></div>
+
+    <div class="toolbar">
+      <input type="text" id="revisaoBusca" placeholder="Buscar por franquia, franqueado ou texto do Asaas...">
+      <select id="revisaoFiltroStatusFr">
+        <option value="ATIVA">Somente franquias ativas</option>
+        <option value="">Todas as franquias</option>
+        <option value="INATIVA">Somente inativas</option>
+        <option value="EM PROCESSO DE DISTRATO">Somente em distrato</option>
+      </select>
+      <select id="revisaoFiltroRevisado">
+        <option value="pendente">Pendentes de revisão</option>
+        <option value="">Todos</option>
+        <option value="revisado">Já revisados</option>
+      </select>
+      <span class="count" id="revisaoCount"></span>
+    </div>
+
+    <div class="toolbar" style="margin-top:-6px;">
+      <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted);">
+        <input type="checkbox" id="revisaoSelecionarTodos"> Selecionar todos os visíveis
+      </label>
+      <span style="font-size:12.5px; color:var(--muted);">Aplicar aos selecionados:</span>
+      <select id="revisaoCategoriaLote" class="revisao-select"><option value="">Reclassificar para...</option></select>
+      <button class="btn btn-export" id="revisaoAplicarLoteBtn">Aplicar</button>
+      <button class="btn" id="revisaoMarcarLoteBtn">Marcar como revisado</button>
+      <span class="count" id="revisaoSelecionadosCount">0 selecionados</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:34px;"></th>
+            <th>Franquia</th>
+            <th>Vencimento</th>
+            <th style="text-align:right">Valor</th>
+            <th>Descrição no Asaas</th>
+            <th>Reclassificar como</th>
+            <th>Revisão</th>
+          </tr>
+        </thead>
+        <tbody id="revisaoBody"></tbody>
+      </table>
+      <div class="empty" id="revisaoEmpty" style="display:none;">Nenhum lançamento nesse recorte — a fila está limpa.</div>
+    </div>
+  </div>
+
   <!-- ===================== ABA: AUDITORIA ===================== -->
   <div class="tab-panel" id="tabAuditoria" style="display:none;">
     <p class="subtitle" style="margin-bottom:14px;">Registro de quem alterou o status de cada lançamento, quando, e qual era o valor antes/depois. Mostrando as 300 alterações mais recentes.</p>
 
-    <div class="card" style="margin-bottom:18px; border-color:rgba(79,174,138,0.35);">
-      <div class="card-label" style="color:var(--green);">💾 Backup Completo</div>
+    <div class="card card-plano" style="margin-bottom:18px;">
+      <div class="card-label" style="color:var(--green);"><svg class="ic" aria-hidden="true"><use href="#ic-salvar"></use></svg>Backup Completo</div>
       <p style="font-size:12px; color:var(--muted); margin:8px 0 12px;">Baixa um arquivo .json com tudo que está salvo no Firebase: CRM, Histórico de Cobranças, Acordos (registros e parcelas), Auditoria, Favoritos e status alterados manualmente. Guarde esse arquivo de vez em quando como segurança extra.</p>
-      <button class="btn btn-export" id="exportarBackupBtn">💾 Exportar Backup Completo (.json)</button>
+      <button class="btn btn-export" id="exportarBackupBtn"><svg class="ic" aria-hidden="true"><use href="#ic-download"></use></svg>Exportar Backup Completo (.json)</button>
     </div>
 
     <div class="table-wrap">
@@ -671,6 +1125,18 @@
 
 <div class="toast" id="toast"><span class="dot"></span><span id="toastText">Salvo</span></div>
 
+<!-- INT-05: confirmação no visual do painel, no lugar do confirm() do navegador -->
+<div class="modal-overlay" id="confirmModal" style="display:none; z-index:90;">
+  <div class="modal-box" style="max-width:440px;">
+    <h3 id="confirmModalTitulo">Confirmar</h3>
+    <p id="confirmModalTexto" style="font-size:13.5px; color:var(--muted); line-height:1.6; margin:0;"></p>
+    <div class="modal-actions">
+      <button class="btn" id="confirmModalCancelar">Cancelar</button>
+      <button class="btn btn-export" id="confirmModalOk">Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="genericModal" style="display:none;">
   <div class="modal-box">
     <h3 id="modalTitle">Título</h3>
@@ -707,9 +1173,9 @@
     </div>
 
     <div class="tabs-nav" style="margin-top:0; margin-bottom:14px;">
-      <button class="modal-tab-btn active" data-obstab="observacao" type="button">📝 Observação</button>
-      <button class="modal-tab-btn" data-obstab="registro" type="button">📋 Registro de Acordo</button>
-      <button class="modal-tab-btn" data-obstab="info" type="button">💰 Informações do Acordo</button>
+      <button class="modal-tab-btn active" data-obstab="observacao" type="button"><svg class="ic  ic-sm" aria-hidden="true"><use href="#ic-nota"></use></svg>Observação</button>
+      <button class="modal-tab-btn" data-obstab="registro" type="button"><svg class="ic  ic-sm" aria-hidden="true"><use href="#ic-painel"></use></svg>Registro de Acordo</button>
+      <button class="modal-tab-btn" data-obstab="info" type="button"><svg class="ic  ic-sm" aria-hidden="true"><use href="#ic-dinheiro"></use></svg>Informações do Acordo</button>
     </div>
 
     <!-- ABA: OBSERVAÇÃO -->
@@ -755,7 +1221,7 @@
       </div>
 
       <div style="background:var(--surface-alt); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:14px;">
-        <div style="font-size:11px; text-transform:uppercase; color:var(--amber); font-weight:600; margin-bottom:8px;">⚡ Gerar parcelas automaticamente</div>
+        <div style="font-size:11px; text-transform:uppercase; color:var(--amber); font-weight:600; margin-bottom:8px;"><svg class="ic  ic-sm" aria-hidden="true"><use href="#ic-raio"></use></svg>Gerar parcelas automaticamente</div>
         <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end;">
           <div style="flex:1; min-width:130px;">
             <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:3px;">Vencimento da 1ª parcela</label>
@@ -794,7 +1260,7 @@
 
 <div class="modal-overlay" id="pinModal" style="display:none;">
   <div class="modal-box" style="max-width:360px; text-align:center;">
-    <h3 style="color:var(--rose);">⚠️ Confirmar restauração</h3>
+    <h3 style="color:var(--rose);"><svg class="ic" aria-hidden="true"><use href="#ic-alerta"></use></svg>Confirmar restauração</h3>
     <p style="font-size:12.5px; color:var(--muted); margin-bottom:16px;">Isso vai apagar TODAS as alterações manuais de status feitas no painel, voltando ao original da planilha. Digite o código PIN para confirmar.</p>
     <input type="password" id="pinModalInput" class="auth-input" placeholder="••••••" inputmode="numeric" maxlength="6" autocomplete="off" style="margin-bottom:8px;">
     <div id="pinModalErro" style="color:var(--rose); font-size:12px; min-height:16px; margin-bottom:8px;"></div>
@@ -807,7 +1273,7 @@
 
 <div class="modal-overlay" id="corrigirOverridesModal" style="display:none;">
   <div class="modal-box" style="max-width:420px; text-align:center;">
-    <h3 style="color:var(--amber);">🔄 Corrigir status para bater com a planilha</h3>
+    <h3 style="color:var(--amber);"><svg class="ic" aria-hidden="true"><use href="#ic-refresh"></use></svg>Corrigir status para bater com a planilha</h3>
     <p id="corrigirOverridesTexto" style="font-size:12.5px; color:var(--muted); margin-bottom:16px;"></p>
     <div class="modal-actions" style="justify-content:center;">
       <button class="btn reset" id="corrigirOverridesConfirmarBtn">Sim, corrigir agora</button>
@@ -818,7 +1284,7 @@
 
 <div class="modal-overlay" id="detalheAjusteModal" style="display:none;">
   <div class="modal-box" style="max-width:600px;">
-    <h3>🔍 Detalhe do Ajuste Manual</h3>
+    <h3><svg class="ic" aria-hidden="true"><use href="#ic-lupa"></use></svg>Detalhe do Ajuste Manual</h3>
     <div style="font-size:12.5px; color:var(--muted); margin-bottom:12px; display:grid; grid-template-columns:1fr 1fr; gap:4px 14px;">
       <div><b>Franquia:</b> <span id="detalheAjusteFranquia"></span></div>
       <div><b>Franqueado:</b> <span id="detalheAjusteFranqueado"></span></div>
@@ -836,6 +1302,32 @@
   </div>
 </div>
 
+<!-- FUN-01: ficha única da franquia — financeiro, acordo, contatos e histórico no mesmo lugar -->
+<div class="modal-overlay" id="ficha360" style="display:none; z-index:85;">
+  <div class="ficha-box">
+    <div class="ficha-topo">
+      <div class="ficha-topo-linha">
+        <div>
+          <h3 class="ficha-nome" id="fichaNome">Franquia</h3>
+          <p class="ficha-sub" id="fichaSub">—</p>
+        </div>
+        <div class="ficha-saldo">
+          <div class="ficha-saldo-valor" id="fichaSaldo">—</div>
+          <div class="ficha-saldo-label">em aberto hoje</div>
+        </div>
+      </div>
+      <div class="ficha-acoes" id="fichaAcoes"></div>
+      <div class="ficha-tabs">
+        <button class="ficha-tab active" data-fichatab="financeiro" type="button">Financeiro</button>
+        <button class="ficha-tab" data-fichatab="acordo" type="button">Acordo</button>
+        <button class="ficha-tab" data-fichatab="contatos" type="button">Contatos</button>
+        <button class="ficha-tab" data-fichatab="historico" type="button">Histórico</button>
+      </div>
+    </div>
+    <div class="ficha-corpo" id="fichaCorpo"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="detalheFranquiaModal" style="display:none;">
   <div class="modal-box" style="max-width:760px;">
     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px;">
@@ -848,7 +1340,7 @@
 
     <div class="franquia-detalhe-grid">
       <div class="fd-section">
-        <div class="fd-section-title">🏢 Dados Cadastrais</div>
+        <div class="fd-section-title"><svg class="ic  ic-sm" aria-hidden="true"><use href="#ic-predio"></use></svg>Dados Cadastrais</div>
         <div class="fd-row"><span class="fd-k">Razão Social</span><span class="fd-v" id="fdRazaoSocial">—</span></div>
         <div class="fd-row"><span class="fd-k">CNPJ</span><span class="fd-v" id="fdCnpj">—</span></div>
         <div class="fd-row"><span class="fd-k">Responsável</span><span class="fd-v" id="fdResponsavel">—</span></div>
@@ -857,7 +1349,7 @@
         <div class="fd-row"><span class="fd-k">Regime da Empresa</span><span class="fd-v" id="fdRegime">—</span></div>
       </div>
       <div class="fd-section">
-        <div class="fd-section-title">☎️ Contato</div>
+        <div class="fd-section-title"><svg class="ic  ic-sm" aria-hidden="true"><use href="#ic-telefone"></use></svg>Contato</div>
         <div class="fd-row"><span class="fd-k">E-mail</span><span class="fd-v" id="fdEmail">—</span></div>
         <div class="fd-row"><span class="fd-k">Telefone</span><span class="fd-v" id="fdTelefone">—</span></div>
         <div class="fd-row"><span class="fd-k">Celular</span><span class="fd-v" id="fdCelular">—</span></div>
@@ -866,7 +1358,7 @@
         <div class="fd-row"><span class="fd-k">Consultora Operacional</span><span class="fd-v" id="fdConsultoraOperacional">—</span></div>
       </div>
       <div class="fd-section">
-        <div class="fd-section-title">📍 Endereço</div>
+        <div class="fd-section-title"><svg class="ic  ic-sm" aria-hidden="true"><use href="#ic-mapa"></use></svg>Endereço</div>
         <div class="fd-row"><span class="fd-k">Endereço</span><span class="fd-v" id="fdEndereco">—</span></div>
         <div class="fd-row"><span class="fd-k">Bairro</span><span class="fd-v" id="fdBairro">—</span></div>
         <div class="fd-row"><span class="fd-k">Cidade / UF</span><span class="fd-v" id="fdCidadeUf">—</span></div>
@@ -874,7 +1366,7 @@
         <div class="fd-row"><span class="fd-k">Mapa</span><span class="fd-v" id="fdMapaLink">—</span></div>
       </div>
       <div class="fd-section">
-        <div class="fd-section-title">💰 Comercial</div>
+        <div class="fd-section-title"><svg class="ic  ic-sm" aria-hidden="true"><use href="#ic-dinheiro"></use></svg>Comercial</div>
         <div class="fd-row"><span class="fd-k">Modelo de Operação</span><span class="fd-v" id="fdModeloOperacao">—</span></div>
         <div class="fd-row"><span class="fd-k">Taxa de Royalties</span><span class="fd-v" id="fdTaxaRoyalties">—</span></div>
         <div class="fd-row"><span class="fd-k">Valor Mínimo de Royalties</span><span class="fd-v" id="fdValorMinimo">—</span></div>
@@ -883,7 +1375,7 @@
     </div>
 
     <div id="fdAtendeWrap" style="margin-top:14px; display:none;">
-      <div class="fd-section-title" style="margin-bottom:6px;">🗺️ Esta franquia também atende</div>
+      <div class="fd-section-title" style="margin-bottom:6px;"><svg class="ic  ic-sm" aria-hidden="true"><use href="#ic-mapa"></use></svg>Esta franquia também atende</div>
       <div class="fd-atende-lista" id="fdAtendeLista"></div>
     </div>
 
@@ -1010,7 +1502,7 @@ let regrasCombinadas = []; // [{categoria:'', status:'', temporal:'TODOS'}] — 
 let sortKey = 'total';
 let sortDir = 'desc';
 let currentPage = 1;
-const PAGE_SIZE = 40;
+let PAGE_SIZE = parseInt(lerPrefs().pageSize) || 40;
 
 const fmtMoney = v => 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
 const fmtDate = s => { if(!s) return '–'; const [y,m,d] = s.split('-'); return `${d}/${m}/${y}`; };
@@ -1104,12 +1596,117 @@ async function persistStatusFranquiaOverrides(){
   }
 }
 
-function showToast(msg){
+// =====================================================================
+// INT-07 — TECLADO E ACESSIBILIDADE
+// O arquivo não tinha nenhum aria-*, nenhum role e uma única regra de :focus. Aqui as
+// abas viram uma tablist navegável por setas e três atalhos cobrem o que mais se usa.
+// =====================================================================
+function prepararAcessibilidade(){
+  const abas = [...document.querySelectorAll('.tab-btn')];
+  abas.forEach((b, i)=>{
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', b.classList.contains('active') ? 'true' : 'false');
+    b.setAttribute('aria-controls', TAB_PANELS[b.dataset.tab]);
+    b.addEventListener('keydown', (e)=>{
+      if(e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      const prox = abas[(i + (e.key === 'ArrowRight' ? 1 : abas.length - 1)) % abas.length];
+      prox.focus(); prox.click();
+    });
+  });
+  Object.entries(TAB_PANELS).forEach(([tab, id])=>{
+    const painel = document.getElementById(id);
+    if(painel){ painel.setAttribute('role','tabpanel'); painel.setAttribute('aria-label', tab); }
+  });
+  // rótulos nos filtros, que eram só selects soltos
+  const rotulos = {
+    searchInput: 'Buscar por franqueado ou franquia',
+    filterFranquia: 'Filtrar por franquia',
+    filterFranqueado: 'Filtrar por franqueado',
+    filterAtivaInativa: 'Filtrar por situação da franquia',
+    filterPropria: 'Filtrar por tipo de operação',
+    filterFavoritos: 'Mostrar somente favoritos'
+  };
+  Object.entries(rotulos).forEach(([id, texto])=>{
+    const el = document.getElementById(id);
+    if(el) el.setAttribute('aria-label', texto);
+  });
+  document.getElementById('toast').setAttribute('role', 'status');
+  document.getElementById('toast').setAttribute('aria-live', 'polite');
+}
+
+// Atalhos: "/" foca a busca, "Esc" fecha o que estiver aberto, 1..8 troca de aba.
+document.addEventListener('keydown', (e)=>{
+  const digitando = ['INPUT','TEXTAREA','SELECT'].includes((e.target.tagName || '').toUpperCase());
+  if(e.key === 'Escape'){
+    ['ficha360','genericModal','obsModal','detalheAjusteModal','detalheFranquiaModal','pinModal','corrigirOverridesModal']
+      .forEach(id=>{ const m = document.getElementById(id); if(m && m.style.display !== 'none') m.style.display = 'none'; });
+    return;
+  }
+  if(digitando || e.ctrlKey || e.metaKey || e.altKey) return;
+  if(e.key === '/'){
+    e.preventDefault();
+    document.querySelector('.tab-btn[data-tab="painel"]').click();
+    document.getElementById('searchInput').focus();
+    return;
+  }
+  if(/^[1-8]$/.test(e.key)){
+    const abas = document.querySelectorAll('.tab-btn');
+    const alvo = abas[parseInt(e.key) - 1];
+    if(alvo){ alvo.click(); alvo.focus(); }
+  }
+});
+
+// ===================== INT-06: PREFERÊNCIAS DO USUÁRIO =====================
+// Tema, aba aberta, tamanho de página e filtro do ranking passam a sobreviver ao F5.
+// Fica no navegador (localStorage); se estiver bloqueado, o painel só ignora e segue.
+const PREFS_KEY = 'painel-inadimplencia-prefs';
+function lerPrefs(){
+  try{ return JSON.parse(localStorage.getItem(PREFS_KEY) || '{}') || {}; }
+  catch(e){ return {}; }
+}
+function salvarPref(chave, valor){
+  try{
+    const p = lerPrefs(); p[chave] = valor;
+    localStorage.setItem(PREFS_KEY, JSON.stringify(p));
+  }catch(e){ /* navegador sem localStorage — segue sem memória */ }
+}
+
+// ===================== INT-05: AVISOS E CONFIRMAÇÕES NO PAINEL =====================
+// Substitui os alert()/confirm() do navegador, que travavam a página e ignoravam o tema.
+function showToast(msg, tipo){
   const t = document.getElementById('toast');
   document.getElementById('toastText').textContent = msg;
+  t.classList.remove('erro','aviso');
+  if(tipo === 'erro' || tipo === 'aviso') t.classList.add(tipo);
   t.classList.add('show');
   clearTimeout(showToast._timer);
-  showToast._timer = setTimeout(()=> t.classList.remove('show'), 2200);
+  const tempo = msg.length > 90 ? 5200 : 2600;
+  showToast._timer = setTimeout(()=> t.classList.remove('show'), tempo);
+}
+
+// Promise que resolve true/false — use com await no lugar de confirm().
+function confirmarAcao(texto, opts){
+  return new Promise(resolve=>{
+    const modal = document.getElementById('confirmModal');
+    document.getElementById('confirmModalTitulo').textContent = (opts && opts.titulo) || 'Confirmar';
+    document.getElementById('confirmModalTexto').textContent = texto;
+    const btnOk = document.getElementById('confirmModalOk');
+    const btnCancel = document.getElementById('confirmModalCancelar');
+    btnOk.textContent = (opts && opts.confirmar) || 'Confirmar';
+    modal.style.display = 'flex';
+    btnOk.focus();
+    function fechar(valor){
+      modal.style.display = 'none';
+      btnOk.onclick = null; btnCancel.onclick = null;
+      document.removeEventListener('keydown', onKey);
+      resolve(valor);
+    }
+    function onKey(e){ if(e.key === 'Escape') fechar(false); }
+    btnOk.onclick = ()=> fechar(true);
+    btnCancel.onclick = ()=> fechar(false);
+    document.addEventListener('keydown', onKey);
+  });
 }
 
 // ===================== FILTROS =====================
@@ -1184,8 +1781,10 @@ function getFiltered(){
   });
 
   rows.sort((a,b)=>{
-    let va = sortKey==='controle' ? effectiveStatus(a) : a[sortKey];
-    let vb = sortKey==='controle' ? effectiveStatus(b) : b[sortKey];
+    let va, vb;
+    if(sortKey === 'controle'){ va = effectiveStatus(a); vb = effectiveStatus(b); }
+    else if(sortKey === 'encargos'){ va = encargosDe(a); vb = encargosDe(b); } // VIS-03
+    else { va = a[sortKey]; vb = b[sortKey]; }
     if(typeof va === 'string'){ va = va.toLowerCase(); vb = vb.toLowerCase(); }
     if(va < vb) return sortDir==='asc' ? -1 : 1;
     if(va > vb) return sortDir==='asc' ? 1 : -1;
@@ -1206,21 +1805,30 @@ function renderCards(rows){
   const totalPendente = totalAberto + avencer.reduce((s,d)=>s+d.total,0);
   const qtdPendente = abertos.length + avencer.length;
 
-  const cards = [
-    {label:'Total vencido', value: fmtMoney(totalAberto), sub: abertos.length + ' lançamentos', color:'#D9A441'},
-    {label:'Total Negociação', value: fmtMoney(negociacao.reduce((s,d)=>s+d.total,0)), sub: negociacao.length + ' lançamentos', color:'#5B8DEF'},
-    {label:'Total a vencer', value: fmtMoney(avencer.reduce((s,d)=>s+d.total,0)), sub: avencer.length + ' lançamentos futuros', color:'#9B7FE8'},
-    {label:'Franquias com pendência', value: franquiasUnicas, sub: 'no filtro atual', color:'var(--text)'},
-    {label:'Total pendente (filtro)', value: fmtMoney(totalPendente), sub: qtdPendente + ' lançamentos (sem baixados)', color:'var(--text)'},
+  // INT-01 — o total vencido é o número que decide o dia; os outros passam a ser apoio.
+  const apoio = [
+    { label:'Total pendente', value: fmtMoney(totalPendente), sub: qtdPendente + ' lançamentos, sem contar baixados',
+      color:'var(--text)', dica:'Total Pendente = Total Vencido + Total A Vencer.' },
+    { label:'A vencer', value: fmtMoney(avencer.reduce((s,d)=>s+d.total,0)), sub: avencer.length + ' lançamentos futuros',
+      color:'var(--violet)', dica:'' },
+    { label:'Em negociação', value: fmtMoney(negociacao.reduce((s,d)=>s+d.total,0)), sub: negociacao.length + ' lançamentos',
+      color:'var(--blue)', dica:'Já está contido no vencido e no a vencer — não é um valor somado à parte.' },
+    { label:'Franquias com pendência', value: franquiasUnicas, sub:'no recorte atual', color:'var(--text)', dica:'' },
   ];
 
-  document.getElementById('cards').innerHTML = cards.map(c => `
-    <div class="card">
-      <div class="card-label">${c.label}</div>
-      <div class="card-value" style="color:${c.color}">${c.value}</div>
-      <div class="card-sub">${c.sub}</div>
+  document.getElementById('cards').innerHTML = `
+    <div class="kpi-principal">
+      <div class="kpi-k">Total vencido</div>
+      <div class="kpi-v">${fmtMoney(totalAberto)}</div>
+      <div class="kpi-s">${abertos.length} lançamento(s) em ${franquiasUnicas} franquia(s)</div>
     </div>
-  `).join('');
+    ${apoio.map(c=>`
+      <div class="kpi-apoio">
+        <div class="kpi-k">${c.label}${c.dica ? ` <span class="kpi-dica" title="${c.dica}">i</span>` : ''}</div>
+        <div class="kpi-v" style="color:${c.color}">${c.value}</div>
+        <div class="kpi-s">${c.sub}</div>
+      </div>`).join('')}
+  `;
 
   renderOverrideNotice(rows);
 }
@@ -1369,11 +1977,16 @@ async function manterOverridesComoEstao(){
   showToast(`${linhas.length} lançamento(s) marcados como revisados`);
 }
 
-function renderHealthStrip(){
+// INT-02 — antes esta barra sempre lia o DATA inteiro, enquanto os cards liam as linhas
+// filtradas: mudar o filtro não mexia nela e ela parecia travada. Agora ela recebe as
+// mesmas linhas que os cards e a tabela, e o rótulo diz qual recorte está mostrando.
+function renderHealthStrip(rows){
+  const base = Array.isArray(rows) ? rows : DATA;
+  const filtrado = base.length !== DATA.length;
   const metrica = [
-    { key: 'vencido', label: 'Vencido', cor: '#D9A441', count: DATA.filter(d=>effectiveStatus(d)==='EM ABERTO').length },
-    { key: 'negociacao', label: 'Negociação', cor: '#5B8DEF', count: DATA.filter(d=>d.categoria==='NEGOCIAÇÃO').length },
-    { key: 'avencer', label: 'A vencer', cor: '#9B7FE8', count: DATA.filter(d=>effectiveStatus(d)==='A VENCER').length },
+    { key: 'vencido', label: 'Vencido', cor: '#D9A441', count: base.filter(d=>effectiveStatus(d)==='EM ABERTO').length },
+    { key: 'negociacao', label: 'Negociação', cor: '#5B8DEF', count: base.filter(d=>d.categoria==='NEGOCIAÇÃO').length },
+    { key: 'avencer', label: 'A vencer', cor: '#9B7FE8', count: base.filter(d=>effectiveStatus(d)==='A VENCER').length },
   ];
   const somaTotal = metrica.reduce((s,m)=>s+m.count, 0);
 
@@ -1386,7 +1999,8 @@ function renderHealthStrip(){
   const legend = document.getElementById('healthLegend');
   legend.innerHTML = metrica.map(m=>`
     <div class="legend-item"><span class="legend-dot" style="background:${m.cor}"></span>${m.label} · ${m.count}</div>
-  `).join('');
+  `).join('')
+  + `<div class="legend-item" style="margin-left:auto; font-style:italic;">${filtrado ? 'recorte filtrado' : 'carteira inteira'}</div>`;
 }
 
 function diasEmAtraso(vencimento){
@@ -1456,6 +2070,57 @@ function corAtraso(dias){
   return '#4FAE8A';                 // em dia / futuro
 }
 
+// VIS-03 — encargos somados numa coluna só (multa + juros de mora + correção IGP-M).
+function encargosDe(d){ return (d.multa || 0) + (d.juros || 0) + (d.igpm || 0); }
+
+// FUN-04 — índice de contato por nome de franquia do painel, para as ações da linha.
+// Junta o que veio da planilha de contatos (e-mail, franqueado) com o cadastro completo
+// (telefone e celular), que é onde o número de fato está.
+let _contatoIndex = null;
+function contatoDaFranquia(franquiaPainel){
+  if(_contatoIndex === null){
+    _contatoIndex = {};
+    try{
+      CONTATOS.forEach(c=>{
+        if(!c.franquiaPainel) return;
+        const cad = c._cadastro || {};
+        _contatoIndex[c.franquiaPainel] = {
+          cidade: c.cidade, email: c.email || '', franqueado: c.franqueado || '',
+          telefone: cad.celular || cad.telefone || '', key: c._key
+        };
+      });
+    }catch(e){ /* cadastro indisponível — as ações que dependem dele só não aparecem */ }
+  }
+  const base = _contatoIndex[franquiaPainel] || { cidade:'', email:'', franqueado:'', telefone:'', key:'' };
+  // o telefone editado à mão na aba Histórico tem prioridade sobre o cadastro
+  try{
+    const crm = crmDataCache[franquiaKey(franquiaPainel)];
+    if(crm && crm.telefone) return { ...base, telefone: crm.telefone, email: crm.email || base.email };
+  }catch(e){}
+  return base;
+}
+
+function telefoneParaWhatsapp(contato){
+  if(!contato || !contato.telefone) return '';
+  const so = contato.telefone.replace(/\D/g, '');
+  if(so.length < 10) return '';
+  return so.startsWith('55') ? so : ('55' + so);
+}
+
+// VIS-05 — linhas-fantasma enquanto o painel monta a tabela (o dataset é grande e
+// o desenho leva um instante perceptível; antes a área ficava simplesmente em branco).
+function renderSkeleton(qtd){
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+  if(!tbody) return;
+  empty.style.display = 'none';
+  const colunas = document.querySelectorAll('#tabPainel thead th').length || 10;
+  tbody.innerHTML = Array.from({length: qtd || 8}).map(()=>
+    `<tr>${Array.from({length: colunas}).map((_,i)=>
+      `<td><span class="skeleton-cell" style="width:${i===0?70:(i===1?55:40)}%"></span></td>`).join('')}</tr>`
+  ).join('');
+}
+
 function renderTable(rows){
   const start = (currentPage-1)*PAGE_SIZE;
   const pageRows = rows.slice(start, start+PAGE_SIZE);
@@ -1464,7 +2129,12 @@ function renderTable(rows){
 
   if(pageRows.length === 0){
     tbody.innerHTML = '';
+    // VIS-05 — o vazio agora oferece a saída, em vez de só constatar o problema.
+    empty.innerHTML = 'Nenhum lançamento encontrado com esses filtros.'
+      + '<div class="empty-actions"><button class="btn" id="emptyLimparBtn">Limpar filtros</button></div>';
     empty.style.display = 'block';
+    const btnLimpar = document.getElementById('emptyLimparBtn');
+    if(btnLimpar) btnLimpar.onclick = ()=> document.getElementById('clearFilters').click();
   } else {
     empty.style.display = 'none';
     tbody.innerHTML = pageRows.map(d=>{
@@ -1477,21 +2147,31 @@ function renderTable(rows){
       const dias = diasEmAtraso(d.vencimento);
       const dotColor = corAtraso(dias);
       const diasLabel = dias > 0 ? `${dias}d atraso` : (dias < 0 ? 'a vencer' : 'vence hoje');
+      const enc = encargosDe(d);
+      const contato = contatoDaFranquia(d.franquia);
+      const zap = telefoneParaWhatsapp(contato);
+      // VIS-03 — severidade pela idade do débito em aberto (só para o que está vencido)
+      const sev = (st === 'EM ABERTO') ? (dias > 90 ? 3 : (dias > 30 ? 2 : (dias > 0 ? 1 : 0))) : 0;
+      const franquiaEsc = d.franquia.replace(/"/g,'&quot;');
       return `
-        <tr>
-          <td data-label="Franquia"><span class="fav-star ${isFav?'active':''}" data-fav="${d.franquia}" title="Fixar franquia">${isFav?'★':'☆'}</span><span class="franquia-nome-click" data-obs="${d.franquia.replace(/"/g,'&quot;')}" title="Clique para ver/editar observação" style="cursor:pointer; text-decoration:underline dotted;">${d.franquia}</span>${frBadge}${propriaBadge}</td>
+        <tr class="${sev ? 'sev-'+sev : ''}">
+          <td data-label="Franquia"><span class="fav-star ${isFav?'active':''}" data-fav="${d.franquia}" title="Fixar franquia">${isFav?'★':'☆'}</span><span class="franquia-nome-click" data-obs="${franquiaEsc}" title="Abrir a ficha completa da unidade" style="cursor:pointer; text-decoration:underline dotted;">${d.franquia}</span>${frBadge}${propriaBadge}</td>
           <td data-label="Franqueado">${d.nome}</td>
           <td data-label="Categoria">${d.categoria}${d.categoria === 'AJUSTE MANUAL' ? ` <span class="detalhe-ajuste-click" data-id="${d.id}" title="Ver/editar detalhe deste ajuste" style="cursor:pointer;">🔍</span>` : ''}</td>
-          <td data-label="Vencimento" class="mono"><span class="aging-dot" style="background:${dotColor}" title="${diasLabel}"></span>${fmtDate(d.vencimento)}</td>
+          <td data-label="Vencimento" class="mono"><span class="aging-dot" style="background:${dotColor}" title="${diasLabel}"></span>${fmtDate(d.vencimento)}${dias > 0 && st === 'EM ABERTO' ? ` <span style="color:var(--muted); font-size:10.5px;">${dias}d</span>` : ''}</td>
           <td data-label="Valor" class="num">${fmtMoney(d.valor)}</td>
-          <td data-label="Multa" class="num">${fmtMoney(d.multa)}</td>
-          <td data-label="Juros" class="num">${fmtMoney(d.juros)}</td>
-          <td data-label="IGPM" class="num">${fmtMoney(d.igpm)}</td>
+          <td data-label="Encargos" class="num encargos-cell" data-enc="${d.id}" title="Multa ${fmtMoney(d.multa)} · Juros ${fmtMoney(d.juros)} · IGP-M ${fmtMoney(d.igpm)}"><span class="encargos-valor">${enc > 0 ? fmtMoney(enc) : '—'}</span></td>
           <td data-label="Total" class="num total">${fmtMoney(d.total)}</td>
           <td data-label="Status">
-            <select class="status-select ${STATUS_CLASS[st]}" data-id="${d.id}" data-old="${st}">
+            <select class="status-select ${STATUS_CLASS[st]}" data-id="${d.id}" data-old="${st}" aria-label="Status do lançamento">
               ${Object.keys(STATUS_LABELS).map(k=>`<option value="${k}" ${k===st?'selected':''}>${STATUS_LABELS[k]}</option>`).join('')}
             </select>
+          </td>
+          <td data-label="Ações" class="acoes">
+            <button class="acao-btn" data-acao="ficha" data-franquia="${franquiaEsc}" title="Abrir a ficha completa da unidade" aria-label="Abrir ficha de ${franquiaEsc}"><svg class="ic" aria-hidden="true"><use href="#ic-pessoa"></use></svg></button>
+            <button class="acao-btn" data-acao="cobrar" data-franquia="${franquiaEsc}" title="Gerar mensagem de cobrança desta unidade" aria-label="Gerar mensagem de cobrança"><svg class="ic" aria-hidden="true"><use href="#ic-email"></use></svg></button>
+            <button class="acao-btn" data-acao="registrar" data-franquia="${franquiaEsc}" title="Registrar um contato de cobrança" aria-label="Registrar contato"><svg class="ic" aria-hidden="true"><use href="#ic-nota"></use></svg></button>
+            ${zap ? `<button class="acao-btn zap" data-acao="zap" data-zap="${zap}" title="Abrir WhatsApp de ${contato.telefone}" aria-label="Abrir WhatsApp"><svg class="ic" aria-hidden="true"><use href="#ic-telefone"></use></svg></button>` : ''}
           </td>
         </tr>
       `;
@@ -1510,21 +2190,240 @@ function renderPagination(totalRows){
     <button id="prevPage" ${currentPage<=1?'disabled':''}>&larr; Anterior</button>
     <span>Página ${currentPage} de ${totalPages}</span>
     <button id="nextPage" ${currentPage>=totalPages?'disabled':''}>Próxima &rarr;</button>
+    <label style="display:flex; align-items:center; gap:6px; font-size:12px; margin-left:14px;">
+      por página
+      <select id="pageSizeSelect" style="background:var(--surface-alt); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:4px 6px; font-family:inherit; font-size:12px; cursor:pointer;">
+        ${[40,100,200,500].map(n=>`<option value="${n}" ${n===PAGE_SIZE?'selected':''}>${n}</option>`).join('')}
+      </select>
+    </label>
   `;
   document.getElementById('prevPage').onclick = ()=>{ currentPage--; renderAll(); };
   document.getElementById('nextPage').onclick = ()=>{ currentPage++; renderAll(); };
+  document.getElementById('pageSizeSelect').onchange = (e)=>{
+    PAGE_SIZE = parseInt(e.target.value) || 40;
+    salvarPref('pageSize', PAGE_SIZE);
+    currentPage = 1;
+    renderAll();
+  };
 }
 
 function renderAll(){
   const rows = getFiltered();
   renderCards(rows);
-  renderHealthStrip();
+  renderHealthStrip(rows);
   renderTable(rows);
+  atualizarIndicadorOrdenacao();
+  sincronizarURL(); // INT-03
   document.getElementById('totalRegistros').textContent = DATA.length;
 }
 
+// INT-04 — marca no cabeçalho qual coluna está ordenando e em que direção.
+function atualizarIndicadorOrdenacao(){
+  document.querySelectorAll('thead th[data-key]').forEach(th=>{
+    if(th.closest('#tabPainel') === null) return;
+    if(th.dataset.key === sortKey){ th.setAttribute('data-sort', sortDir); th.setAttribute('aria-sort', sortDir === 'asc' ? 'ascending' : 'descending'); }
+    else { th.removeAttribute('data-sort'); th.removeAttribute('aria-sort'); }
+  });
+}
+
+// =====================================================================
+// INT-03 — VISÕES SALVAS E ESTADO NA URL
+// Antes, nenhum filtro sobrevivia ao F5 e não havia como mandar "olha esse recorte"
+// para ninguém. Agora o recorte inteiro cabe na URL e pode virar um botão nomeado.
+// =====================================================================
+const visoesDocRef = db.collection('painel-inadimplencia').doc('visoesSalvas');
+let visoesSalvas = [];
+
+function estadoAtualFiltros(){
+  return {
+    q: document.getElementById('searchInput').value.trim(),
+    fr: document.getElementById('filterFranquia').value,
+    fq: document.getElementById('filterFranqueado').value,
+    st: document.getElementById('filterAtivaInativa').value,
+    op: document.getElementById('filterPropria').value,
+    fav: somenteFavoritos ? 1 : 0,
+    rg: regrasCombinadas,
+    sk: sortKey,
+    sd: sortDir
+  };
+}
+
+function aplicarEstadoFiltros(e){
+  if(!e) return;
+  document.getElementById('searchInput').value = e.q || '';
+  document.getElementById('filterAtivaInativa').value = e.st || '';
+  document.getElementById('filterPropria').value = e.op || '';
+  atualizarOpcoesFranquiaFranqueado();
+  document.getElementById('filterFranquia').value = e.fr || '';
+  document.getElementById('filterFranqueado').value = e.fq || '';
+  somenteFavoritos = !!e.fav;
+  document.getElementById('filterFavoritos').checked = somenteFavoritos;
+  regrasCombinadas = Array.isArray(e.rg) ? e.rg : [];
+  if(e.sk) sortKey = e.sk;
+  if(e.sd) sortDir = e.sd;
+  renderRegrasChips();
+  atualizarLabelRegras();
+  currentPage = 1;
+  renderAll();
+}
+
+function estadoEhVazio(e){
+  return !e.q && !e.fr && !e.fq && !e.st && !e.op && !e.fav && (!e.rg || e.rg.length === 0);
+}
+
+// A URL guarda o recorte em JSON codificado — assim o link abre exatamente a mesma tela.
+function sincronizarURL(){
+  try{
+    const e = estadoAtualFiltros();
+    const hash = estadoEhVazio(e) ? '' : '#v=' + encodeURIComponent(JSON.stringify(e));
+    if(location.hash !== hash){
+      history.replaceState(null, '', location.pathname + location.search + hash);
+    }
+  }catch(err){ /* URL muito longa ou navegador restrito — segue sem sincronizar */ }
+}
+
+function lerEstadoDaURL(){
+  try{
+    const m = location.hash.match(/^#v=(.*)$/);
+    if(!m) return null;
+    return JSON.parse(decodeURIComponent(m[1]));
+  }catch(err){ return null; }
+}
+
+async function carregarVisoes(){
+  try{
+    const doc = await visoesDocRef.get();
+    if(doc.exists && doc.data().valores){ visoesSalvas = JSON.parse(doc.data().valores) || []; }
+  }catch(e){
+    // Firestore indisponível — cai para a memória do próprio navegador
+    visoesSalvas = lerPrefs().visoes || [];
+  }
+  renderVisoes();
+}
+
+async function persistirVisoes(){
+  salvarPref('visoes', visoesSalvas); // cópia local, sempre
+  try{
+    await visoesDocRef.set({ valores: JSON.stringify(visoesSalvas), atualizadoEm: new Date().toISOString() });
+  }catch(e){ console.error('Visões salvas só localmente:', e); }
+}
+
+function renderVisoes(){
+  const wrap = document.getElementById('visoesChips');
+  if(!wrap) return;
+  if(visoesSalvas.length === 0){
+    wrap.innerHTML = '<span class="visao-vazio">nenhuma ainda — monte um recorte e clique em “Salvar visão atual”</span>';
+    return;
+  }
+  wrap.innerHTML = visoesSalvas.map((v,i)=>`
+    <span class="visao-chip" data-visao="${i}" title="Aplicar este recorte">
+      ${v.nome.replace(/</g,'&lt;')}
+      <button class="apagar" data-apagar="${i}" title="Apagar esta visão">✕</button>
+    </span>
+  `).join('');
+  wrap.querySelectorAll('.visao-chip').forEach(chip=>{
+    chip.addEventListener('click', (ev)=>{
+      if(ev.target.classList.contains('apagar')) return;
+      aplicarEstadoFiltros(visoesSalvas[parseInt(chip.dataset.visao)].estado);
+      showToast('Visão aplicada');
+    });
+  });
+  wrap.querySelectorAll('.apagar').forEach(btn=>{
+    btn.addEventListener('click', async (ev)=>{
+      ev.stopPropagation();
+      const i = parseInt(btn.dataset.apagar);
+      const ok = await confirmarAcao(`Apagar a visão “${visoesSalvas[i].nome}”?`, { titulo:'Apagar visão', confirmar:'Apagar' });
+      if(!ok) return;
+      visoesSalvas.splice(i, 1);
+      await persistirVisoes();
+      renderVisoes();
+      showToast('Visão apagada');
+    });
+  });
+}
+
+document.getElementById('salvarVisaoBtn').addEventListener('click', async ()=>{
+  const estado = estadoAtualFiltros();
+  if(estadoEhVazio(estado)){
+    showToast('Monte um recorte primeiro (busca, filtro ou combinação) e depois salve.', 'aviso');
+    return;
+  }
+  const nome = await pedirTexto('Como você quer chamar esta visão?', 'Ex.: Vencido +90d de ativas');
+  if(!nome) return;
+  visoesSalvas.push({ nome: nome.slice(0, 40), estado, criadaEm: new Date().toISOString() });
+  await persistirVisoes();
+  renderVisoes();
+  showToast('Visão salva');
+});
+
+document.getElementById('copiarLinkVisaoBtn').addEventListener('click', async ()=>{
+  sincronizarURL();
+  try{
+    await navigator.clipboard.writeText(location.href);
+    showToast('Link do recorte copiado');
+  }catch(e){
+    showToast('Não consegui copiar sozinho — o link já está na barra de endereço.', 'aviso');
+  }
+});
+
+// Caixa de texto simples, no visual do painel, para substituir o prompt() do navegador.
+function pedirTexto(titulo, placeholder){
+  return new Promise(resolve=>{
+    const modal = document.getElementById('confirmModal');
+    document.getElementById('confirmModalTitulo').textContent = titulo;
+    const texto = document.getElementById('confirmModalTexto');
+    texto.innerHTML = `<input type="text" id="promptInput" class="crm-input" placeholder="${placeholder||''}" style="font-size:13.5px; padding:9px 11px;">`;
+    const btnOk = document.getElementById('confirmModalOk');
+    const btnCancel = document.getElementById('confirmModalCancelar');
+    btnOk.textContent = 'Salvar';
+    modal.style.display = 'flex';
+    const input = document.getElementById('promptInput');
+    input.focus();
+    function fechar(valor){
+      modal.style.display = 'none';
+      texto.innerHTML = '';
+      btnOk.onclick = null; btnCancel.onclick = null;
+      input.removeEventListener('keydown', onKey);
+      resolve(valor);
+    }
+    function onKey(ev){
+      if(ev.key === 'Enter') fechar(input.value.trim());
+      if(ev.key === 'Escape') fechar(null);
+    }
+    input.addEventListener('keydown', onKey);
+    btnOk.onclick = ()=> fechar(input.value.trim());
+    btnCancel.onclick = ()=> fechar(null);
+  });
+}
+
+// VIS-06 — no celular, os filtros ficam atrás de um botão para a busca não sair da tela.
+function prepararFiltrosMobile(){
+  const toolbar = document.querySelector('#tabPainel .toolbar');
+  if(!toolbar || toolbar.querySelector('.toolbar-toggle')) return;
+  toolbar.classList.add('recolhivel');
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'btn toolbar-toggle';
+  btn.style.display = 'none';
+  btn.textContent = 'Filtrar e buscar';
+  btn.setAttribute('aria-expanded', 'false');
+  btn.addEventListener('click', ()=>{
+    const aberta = toolbar.classList.toggle('aberta');
+    btn.textContent = aberta ? 'Esconder filtros' : 'Filtrar e buscar';
+    btn.setAttribute('aria-expanded', aberta ? 'true' : 'false');
+    if(aberta) document.getElementById('searchInput').focus();
+  });
+  toolbar.insertBefore(btn, toolbar.firstChild);
+}
+
 // ===================== EVENTOS =====================
-document.getElementById('searchInput').addEventListener('input', ()=>{ currentPage=1; renderAll(); });
+// TEC-03 — a busca disparava filtro + cards + barra + tabela a cada tecla, varrendo os
+// 3.329 registros inteiros. Com 200ms de espera, só o último caractere digitado redesenha.
+function debounce(fn, ms){
+  let t;
+  return function(...args){ clearTimeout(t); t = setTimeout(()=> fn.apply(this, args), ms); };
+}
+document.getElementById('searchInput').addEventListener('input', debounce(()=>{ currentPage=1; renderAll(); }, 200));
 document.getElementById('filterFranquia').addEventListener('change', ()=>{ currentPage=1; renderAll(); });
 document.getElementById('filterFranqueado').addEventListener('change', ()=>{ currentPage=1; renderAll(); });
 document.getElementById('filterAtivaInativa').addEventListener('change', ()=>{ atualizarOpcoesFranquiaFranqueado(); currentPage=1; renderAll(); });
@@ -1575,7 +2474,7 @@ document.getElementById('addRegraBtn').addEventListener('click', ()=>{
   const status = document.getElementById('regraStatusSelect').value;
   const temporal = document.getElementById('regraTemporalSelect').value;
   if(!categoria && !status){
-    alert('Escolha ao menos uma categoria ou um status para montar a combinação.');
+    showToast('Escolha ao menos uma categoria ou um status para montar a combinação.', 'aviso');
     return;
   }
   regrasCombinadas.push({ categoria, status, temporal });
@@ -1669,11 +2568,62 @@ document.getElementById('filterFavoritos').addEventListener('change', (e)=>{
   renderAll();
 });
 
+// ===================== VIS-03 / FUN-04: CÉLULA DE ENCARGOS E AÇÕES DA LINHA =====================
+document.getElementById('tableBody').addEventListener('click', (e)=>{
+  // abre/fecha a composição dos encargos na própria célula
+  const cell = e.target.closest('.encargos-cell');
+  if(cell){
+    const d = DATA.find(x=>x.id === cell.dataset.enc);
+    if(!d) return;
+    if(cell.querySelector('.encargos-detalhe')){
+      cell.innerHTML = `<span class="encargos-valor">${encargosDe(d) > 0 ? fmtMoney(encargosDe(d)) : '—'}</span>`;
+    } else {
+      cell.innerHTML = `<span class="encargos-valor">${encargosDe(d) > 0 ? fmtMoney(encargosDe(d)) : '—'}</span>`
+        + `<span class="encargos-detalhe">multa ${fmtMoney(d.multa)}<br>juros ${fmtMoney(d.juros)}<br>IGP-M ${fmtMoney(d.igpm)}</span>`;
+    }
+    return;
+  }
+
+  const btn = e.target.closest('.acao-btn');
+  if(!btn) return;
+  const acao = btn.dataset.acao;
+  const franquia = btn.dataset.franquia;
+
+  if(acao === 'zap'){
+    window.open(`https://wa.me/${btn.dataset.zap}`, '_blank', 'noopener');
+    return;
+  }
+  if(acao === 'ficha'){
+    abrirFicha360(franquia);
+    return;
+  }
+  if(acao === 'cobrar'){
+    // FUN-04 — antes era preciso filtrar a franquia primeiro; agora a ação leva o filtro junto.
+    document.getElementById('filterFranquia').value = franquia;
+    currentPage = 1;
+    renderAll();
+    document.getElementById('mensagemBtn').click();
+    return;
+  }
+  if(acao === 'registrar'){
+    const tabBtn = document.querySelector('.tab-btn[data-tab="historico"]');
+    if(tabBtn) tabBtn.click();
+    const sel = document.getElementById('historicoFranquiaSelect');
+    sel.value = franquia;
+    renderHistorico(franquia);
+    setTimeout(()=>{
+      const obs = document.getElementById('historicoObservacao');
+      if(obs) obs.focus();
+    }, 120);
+    return;
+  }
+});
+
 // ===================== EXPORTAÇÃO EXCEL =====================
 function exportToExcel(){
   const rows = getFiltered();
   if(rows.length === 0){
-    alert('Nenhum lançamento encontrado com os filtros atuais.');
+    showToast('Nenhum lançamento encontrado com os filtros atuais.', 'aviso');
     return;
   }
   const data = rows.map(d=>({
@@ -1798,12 +2748,12 @@ function gerarConsideracoes(rows, franquiaSel){
 async function exportToPDF(){
   const franquiaSel = document.getElementById('filterFranquia').value;
   if(!franquiaSel){
-    alert('Selecione uma única franquia no filtro "Todas as franquias" antes de gerar o relatório em PDF. O relatório é feito por unidade.');
+    showToast('Selecione uma franquia no filtro antes de gerar o relatório em PDF — ele é feito por unidade.', 'aviso');
     return;
   }
   const rows = getFiltered();
   if(rows.length === 0){
-    alert('Nenhum lançamento encontrado para essa franquia com os filtros atuais.');
+    showToast('Nenhum lançamento encontrado para essa franquia com os filtros atuais.', 'aviso');
     return;
   }
 
@@ -2526,13 +3476,13 @@ function populateKanbanAddSelect(){
 document.getElementById('kanbanAddBtn').addEventListener('click', async ()=>{
   const sel = document.getElementById('kanbanAddSelect');
   const franquia = sel.value;
-  if(!franquia){ alert('Escolha uma franquia para adicionar ao quadro.'); return; }
+  if(!franquia){ showToast('Escolha uma franquia para adicionar ao quadro.', 'aviso'); return; }
   const key = franquiaKey(franquia);
   try{
     const doc = await acordosCollection.doc(key).get();
     const dados = doc.exists ? doc.data() : {};
     if(dados.estagio){ showToast('Essa franquia já está no quadro'); return; }
-    await acordosCollection.doc(key).set({ ...dados, estagio: 'CONTATO', removidoQuadro: firebase.firestore.FieldValue.delete() }, { merge: true });
+    await acordosCollection.doc(key).set({ ...dados, estagio: 'CONTATO', estagioEm: new Date().toISOString(), removidoQuadro: firebase.firestore.FieldValue.delete() }, { merge: true });
     sel.value = '';
     showToast('Franquia adicionada ao quadro');
     await renderKanban();
@@ -2558,9 +3508,11 @@ async function renderKanban(){
   }
   const etapaPorKey = {};
   const removidoPorKey = {};
+  const etapaDesdePorKey = {}; // FUN-07
   snap.docs.forEach(doc=>{
     if(doc.data().estagio) etapaPorKey[doc.id] = doc.data().estagio;
     if(doc.data().removidoQuadro) removidoPorKey[doc.id] = true;
+    if(doc.data().estagioEm) etapaDesdePorKey[doc.id] = doc.data().estagioEm;
   });
 
   const franquiasNoQuadro = new Set();
@@ -2587,30 +3539,62 @@ async function renderKanban(){
   const etapaPorFranquia = {};
   franquias.forEach(f=>{ etapaPorFranquia[f] = etapaPorKey[franquiaKey(f)] || 'CONTATO'; });
 
+  // FUN-07 — quantos dias a franquia está parada na etapa atual
+  const hojeMs = Date.now();
+  function diasNaEtapa(f){
+    const desde = etapaDesdePorKey[franquiaKey(f)];
+    if(!desde) return null;
+    return Math.floor((hojeMs - new Date(desde).getTime()) / 86400000);
+  }
+  // etapa final não conta como estagnada; nas demais, 15 dias parado já pede atenção
+  const LIMITE_PARADO = 15;
+
   board.innerHTML = KANBAN_ETAPAS.map(etapa=>{
-    const cardsDaEtapa = franquias.filter(f=>etapaPorFranquia[f]===etapa.key);
+    const cardsDaEtapa = franquias.filter(f=>etapaPorFranquia[f]===etapa.key)
+      .sort((a,b)=> (porFranquiaValor[b]||0) - (porFranquiaValor[a]||0));
+    const totalEtapa = cardsDaEtapa.reduce((soma,f)=> soma + (porFranquiaValor[f]||0), 0);
+    const ehFinal = etapa.key === 'QUITADO';
     return `
       <div class="kanban-col" data-etapa="${etapa.key}">
         <div class="kanban-col-title"><span>${etapa.label}</span><span>${cardsDaEtapa.length}</span></div>
+        <span class="kanban-col-total">${totalEtapa > 0 ? fmtMoney(totalEtapa) : '—'}</span>
         <div class="kanban-col-body" data-etapa="${etapa.key}" style="min-height:60px;">
-        ${cardsDaEtapa.map(f=>`
-            <div class="kanban-card" draggable="true" data-franquia="${f.replace(/"/g,'&quot;')}">
+        ${cardsDaEtapa.map(f=>{
+            const dias = diasNaEtapa(f);
+            const parado = !ehFinal && dias !== null && dias > LIMITE_PARADO;
+            const abertoDaFranquia = DATA.filter(x=>x.franquia===f && effectiveStatus(x)==='EM ABERTO');
+            const maiorAtraso = abertoDaFranquia.length ? Math.max(...abertoDaFranquia.map(x=>diasEmAtraso(x.vencimento))) : 0;
+            return `
+            <div class="kanban-card ${parado ? 'parado' : ''}" draggable="true" data-franquia="${f.replace(/"/g,'&quot;')}" title="Clique para abrir a ficha da unidade">
               <button class="kanban-card-remove" data-remover="${f.replace(/"/g,'&quot;')}" title="Remover do quadro">✕</button>
               <div class="kanban-card-nome">${f}</div>
               <div class="kanban-card-valor">${fmtMoney(porFranquiaValor[f]||0)}</div>
-            </div>
-          `).join('') || '<p style="color:var(--muted); font-size:11.5px; text-align:center; padding:10px 0;">arraste aqui</p>'}
+              <div class="kanban-card-meta">
+                <span>${dias === null ? 'etapa sem data' : (dias === 0 ? 'entrou hoje' : `${dias}d nesta etapa`)}${parado ? ' · parado' : ''}</span>
+                <span class="kanban-card-atraso">${maiorAtraso > 0 ? maiorAtraso + 'd atraso' : ''}</span>
+              </div>
+            </div>`;
+          }).join('') || '<p style="color:var(--muted); font-size:11.5px; text-align:center; padding:10px 0;">arraste aqui</p>'}
         </div>
       </div>
     `;
   }).join('');
+
+  // FUN-01 — clicar no cartão abre a ficha completa da unidade
+  board.querySelectorAll('.kanban-card').forEach(card=>{
+    card.addEventListener('click', (e)=>{
+      if(e.target.closest('.kanban-card-remove')) return;
+      abrirFicha360(card.dataset.franquia);
+    });
+  });
 
   // ---- Remover do quadro ----
   board.querySelectorAll('.kanban-card-remove').forEach(btn=>{
     btn.addEventListener('click', async (e)=>{
       e.stopPropagation();
       const franquia = btn.dataset.remover;
-      if(!confirm(`Remover "${franquia}" do quadro de negociação? (não apaga o histórico, só tira do quadro)`)) return;
+      const okRemover = await confirmarAcao(`Remover "${franquia}" do quadro de negociação? O histórico da unidade é mantido — ela só sai do quadro.`, { titulo:'Remover do quadro', confirmar:'Remover' });
+      if(!okRemover) return;
       try{
         const key = franquiaKey(franquia);
         const doc = await acordosCollection.doc(key).get();
@@ -2658,7 +3642,8 @@ async function renderKanban(){
       try{
         const doc = await acordosCollection.doc(key).get();
         const dados = doc.exists ? doc.data() : {};
-        await acordosCollection.doc(key).set({ ...dados, estagio: novaEtapa }, { merge: true });
+        // FUN-07 — carimba quando a franquia entrou nesta etapa, para medir estagnação
+        await acordosCollection.doc(key).set({ ...dados, estagio: novaEtapa, estagioEm: new Date().toISOString() }, { merge: true });
         await renderKanban();
       }catch(err){
         console.error('Erro ao mover card (drag):', err);
@@ -2716,7 +3701,7 @@ document.querySelectorAll('.modal-tab-btn').forEach(btn=>{
 
 document.getElementById('tableBody').addEventListener('click', (e)=>{
   const el = e.target.closest('.franquia-nome-click');
-  if(el) abrirObsModal(el.dataset.obs);
+  if(el) abrirFicha360(el.dataset.obs); // FUN-01 — antes abria só a observação
 });
 
 document.getElementById('tableBody').addEventListener('click', (e)=>{
@@ -2843,22 +3828,23 @@ async function carregarInfoAcordo(franquia){
 }
 
 // Gera N parcelas mensais a partir da 1ª data informada, mantendo o mesmo dia e valor.
-function gerarParcelasAutomaticamente(){
+async function gerarParcelasAutomaticamente(){
   const dataStr = document.getElementById('acordoGerarPrimeiraData').value.trim();
   const valorStr = document.getElementById('acordoGerarValorParcela').value.trim();
   const qtd = parseInt(document.getElementById('acordoGerarQtdParcelas').value);
 
   const m = dataStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-  if(!m){ alert('Digite a data da 1ª parcela no formato dd/mm/aaaa.'); return; }
-  if(!valorStr){ alert('Digite o valor de cada parcela.'); return; }
-  if(!qtd || qtd < 1){ alert('Digite a quantidade de parcelas (nº inteiro maior que 0).'); return; }
+  if(!m){ showToast('Digite a data da 1ª parcela no formato dd/mm/aaaa.', 'aviso'); return; }
+  if(!valorStr){ showToast('Digite o valor de cada parcela.', 'aviso'); return; }
+  if(!qtd || qtd < 1){ showToast('Digite a quantidade de parcelas (número inteiro maior que 0).', 'aviso'); return; }
 
   let [_, dia, mes, ano] = m;
   if(ano.length === 2) ano = '20'+ano;
   dia = parseInt(dia); mes = parseInt(mes); ano = parseInt(ano);
 
   if(parcelasAtuais.length > 0){
-    if(!confirm('Isso vai substituir as parcelas já cadastradas por uma lista nova, gerada automaticamente. Continuar?')) return;
+    const okSubstituir = await confirmarAcao('Isso substitui as parcelas já cadastradas por uma lista nova, gerada automaticamente.', { titulo:'Substituir parcelas', confirmar:'Substituir' });
+    if(!okSubstituir) return;
   }
 
   const novasParcelas = [];
@@ -2990,6 +3976,143 @@ async function calcularFranquiasSemContato(diasMin){
   return semContato;
 }
 
+// =====================================================================
+// FUN-02 — AGENDA DE PROMESSAS DE PAGAMENTO
+// A função parseDataPrometida() já existia no arquivo desde sempre e nunca era chamada:
+// a ideia de anotar "o franqueado prometeu pagar dia X" tinha sido começada e parada.
+// Aqui ela finalmente vira rotina — a promessa é gravada junto com o contato e o painel
+// abre no que precisa de cobrança hoje.
+// =====================================================================
+let agendaCache = { promessasHoje: [], promessasAtrasadas: [], semContato: [], carregadaEm: null };
+
+function saldoAbertoDaFranquia(franquia){
+  return DATA.filter(d => d.franquia === franquia && effectiveStatus(d) === 'EM ABERTO')
+             .reduce((soma, d) => soma + d.total, 0);
+}
+
+function hojeISO(){
+  const h = new Date();
+  return `${h.getFullYear()}-${String(h.getMonth()+1).padStart(2,'0')}-${String(h.getDate()).padStart(2,'0')}`;
+}
+
+function diasEntreISO(a, b){
+  return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000);
+}
+
+async function carregarAgenda(){
+  const hoje = hojeISO();
+  const promessasHoje = [], promessasAtrasadas = [], semContato = [];
+
+  // franquias com débito vencido hoje — só elas interessam para a agenda
+  const comDebito = {};
+  DATA.filter(d => effectiveStatus(d) === 'EM ABERTO').forEach(d=>{
+    if(!comDebito[d.franquia]) comDebito[d.franquia] = { total: 0, maxDias: 0 };
+    comDebito[d.franquia].total += d.total;
+    const dd = diasEmAtraso(d.vencimento);
+    if(dd > comDebito[d.franquia].maxDias) comDebito[d.franquia].maxDias = dd;
+  });
+
+  let snap;
+  try{ snap = await historicoCollection.get(); }
+  catch(e){ console.error('Agenda: não consegui ler o histórico', e); return; }
+
+  const contatoPorKey = {};
+  snap.docs.forEach(doc=>{
+    const entradas = (doc.data() && doc.data().entradas) ? doc.data().entradas : [];
+    if(entradas.length) contatoPorKey[doc.id] = entradas;
+  });
+
+  Object.keys(comDebito).forEach(franquia=>{
+    const key = franquiaKey(franquia);
+    const entradas = contatoPorKey[key] || [];
+    const info = comDebito[franquia];
+
+    // última promessa registrada para a unidade
+    let ultimaPromessa = null;
+    entradas.forEach(en=>{
+      if(!en.dataPrometida) return;
+      if(!ultimaPromessa || en.data > ultimaPromessa.data) ultimaPromessa = en;
+    });
+
+    if(ultimaPromessa){
+      const prometida = ultimaPromessa.dataPrometida;
+      // houve contato depois da data prometida? então a promessa já foi tratada
+      const tratada = entradas.some(en => en.data.slice(0,10) > prometida);
+      if(prometida === hoje){
+        promessasHoje.push({ franquia, promessa: prometida, total: info.total, obs: ultimaPromessa.observacao });
+        return;
+      }
+      if(prometida < hoje && !tratada){
+        promessasAtrasadas.push({ franquia, promessa: prometida, atraso: diasEntreISO(prometida, hoje), total: info.total, obs: ultimaPromessa.observacao });
+        return;
+      }
+    }
+
+    // sem contato nenhum, ou último contato há mais de 30 dias
+    const ultimoContato = entradas.length ? entradas.map(e=>e.data).sort().slice(-1)[0] : null;
+    const diasSemContato = ultimoContato ? diasEntreISO(ultimoContato.slice(0,10), hoje) : 9999;
+    if(diasSemContato > 30 && info.maxDias > 0){
+      semContato.push({ franquia, dias: diasSemContato === 9999 ? null : diasSemContato, total: info.total, maxDias: info.maxDias });
+    }
+  });
+
+  promessasAtrasadas.sort((a,b)=> b.atraso - a.atraso);
+  semContato.sort((a,b)=> b.total - a.total);
+
+  agendaCache = { promessasHoje, promessasAtrasadas, semContato, carregadaEm: new Date() };
+  renderAgenda();
+}
+
+function renderAgenda(){
+  const box = document.getElementById('agendaDoDia');
+  if(!box) return;
+  const { promessasHoje, promessasAtrasadas, semContato } = agendaCache;
+  const total = promessasHoje.length + promessasAtrasadas.length + semContato.length;
+  if(total === 0){ box.style.display = 'none'; return; }
+  box.style.display = 'block';
+
+  const somaValor = [...promessasHoje, ...promessasAtrasadas, ...semContato].reduce((s,i)=>s+i.total, 0);
+  document.getElementById('agendaResumo').textContent =
+    `${total} unidade(s) pedindo ação · ${fmtMoney(somaValor)} em aberto`;
+
+  function lista(itens, vazio, render){
+    if(!itens.length) return `<div class="agenda-vazio">${vazio}</div>`;
+    return itens.slice(0, 8).map(render).join('')
+      + (itens.length > 8 ? `<div class="agenda-vazio">+ ${itens.length - 8} outra(s)</div>` : '');
+  }
+
+  document.getElementById('agendaCols').innerHTML = `
+    <div>
+      <div class="agenda-col-titulo" style="color:var(--green);">Prometeram pagar hoje · ${promessasHoje.length}</div>
+      ${lista(promessasHoje, 'Nenhuma promessa marcada para hoje.', p=>`
+        <div class="agenda-item" data-agenda-franquia="${p.franquia.replace(/"/g,'&quot;')}">
+          <span><span class="agenda-item-nome">${p.franquia}</span><br><span class="agenda-item-meta">prometido para hoje</span></span>
+          <span class="agenda-item-val">${fmtMoney(p.total)}</span>
+        </div>`)}
+    </div>
+    <div>
+      <div class="agenda-col-titulo" style="color:var(--rose);">Promessa vencida sem retorno · ${promessasAtrasadas.length}</div>
+      ${lista(promessasAtrasadas, 'Nenhuma promessa em atraso.', p=>`
+        <div class="agenda-item" data-agenda-franquia="${p.franquia.replace(/"/g,'&quot;')}">
+          <span><span class="agenda-item-nome">${p.franquia}</span><br><span class="agenda-item-meta">prometeu ${p.promessa.split('-').reverse().join('/')} · ${p.atraso}d sem retorno</span></span>
+          <span class="agenda-item-val">${fmtMoney(p.total)}</span>
+        </div>`)}
+    </div>
+    <div>
+      <div class="agenda-col-titulo" style="color:var(--amber);">Sem contato há mais de 30 dias · ${semContato.length}</div>
+      ${lista(semContato, 'Todas as unidades com débito foram contatadas no último mês.', p=>`
+        <div class="agenda-item" data-agenda-franquia="${p.franquia.replace(/"/g,'&quot;')}">
+          <span><span class="agenda-item-nome">${p.franquia}</span><br><span class="agenda-item-meta">${p.dias === null ? 'nunca contatada' : p.dias + ' dias sem contato'} · ${p.maxDias}d de atraso</span></span>
+          <span class="agenda-item-val">${fmtMoney(p.total)}</span>
+        </div>`)}
+    </div>
+  `;
+
+  document.querySelectorAll('[data-agenda-franquia]').forEach(el=>{
+    el.addEventListener('click', ()=> abrirFicha360(el.dataset.agendaFranquia));
+  });
+}
+
 // (função renderAlertaSemContato removida — esse alerta agora vive só na Central de Alertas)
 function statusFranquiaBaseDe(franquia){
   const r = DATA.find(d=>d.franquia===franquia);
@@ -3053,7 +4176,7 @@ async function renderHistorico(franquia){
           <td>${new Date(en.data).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
           <td>${en.quem}</td>
           <td>${CANAL_ICON[en.canal]||''} ${en.canal}</td>
-          <td>${en.observacao}</td>
+          <td>${en.observacao}${en.dataPrometida ? ` <span class="franquia-badge fr-distrato" title="Promessa de pagamento registrada">promessa ${en.dataPrometida.split('-').reverse().join('/')}</span>` : ''}</td>
         </tr>
       `).join('');
       const ultima = ordenadas[0];
@@ -3083,17 +4206,22 @@ document.getElementById('historicoSalvarBtn').addEventListener('click', async ()
   if(!franquia) return;
   const canal = document.getElementById('historicoCanal').value;
   const observacao = document.getElementById('historicoObservacao').value.trim();
-  if(!observacao){ alert('Escreva uma observação sobre o contato.'); return; }
+  const dataPrometida = document.getElementById('historicoDataPrometida').value; // FUN-02
+  if(!observacao){ showToast('Escreva uma observação sobre o contato.', 'aviso'); return; }
   const usuario = (auth.currentUser && auth.currentUser.email) ? auth.currentUser.email : 'desconhecido';
   const key = franquiaKey(franquia);
   try{
     const doc = await historicoCollection.doc(key).get();
     const entradas = (doc.exists && doc.data().entradas) ? doc.data().entradas : [];
-    entradas.push({ data: new Date().toISOString(), quem: usuario, canal, observacao });
+    const entrada = { data: new Date().toISOString(), quem: usuario, canal, observacao };
+    if(dataPrometida) entrada.dataPrometida = dataPrometida;
+    entradas.push(entrada);
     await historicoCollection.doc(key).set({ entradas });
     document.getElementById('historicoObservacao').value = '';
-    showToast('Contato registrado');
+    document.getElementById('historicoDataPrometida').value = '';
+    showToast(dataPrometida ? 'Contato registrado e promessa agendada' : 'Contato registrado');
     renderHistorico(franquia);
+    carregarAgenda();
   }catch(e){
     console.error('Erro ao salvar histórico:', e);
     showToast('Erro ao registrar contato');
@@ -3128,77 +4256,619 @@ document.getElementById('loteArquivo').addEventListener('change', (e) => {
   reader.readAsText(file, 'utf-8');
 });
 
-document.getElementById('loteProcessarBtn').addEventListener('click', async () => {
-  const texto = document.getElementById('loteTexto').value;
+// FUN-08 — antes o lote gravava primeiro e só depois avisava o que não bateu. Agora ele
+// analisa, mostra a conferência linha a linha, e só grava quando você confirma.
+function analisarLote(texto){
   const linhas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const plano = { ok: [], naoEncontrada: [], canalInvalido: [], formatoInvalido: [], total: linhas.length };
+  linhas.forEach(linha=>{
+    const partes = linha.split(';').map(p => p.trim());
+    if(partes.length < 3 || !partes[0] || !partes[1] || !partes[2]){ plano.formatoInvalido.push(linha); return; }
+    const unidadeDigitada = partes[0];
+    const canal = partes[1];
+    // FUN-02 — um 4º campo opcional com a data prometida (dd/mm/aaaa) vira agenda
+    let observacao = partes.slice(2).join(';').trim();
+    let dataPrometida = '';
+    if(partes.length >= 4){
+      const dt = parseDataPrometida(partes[partes.length-1]);
+      if(dt){
+        dataPrometida = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+        observacao = partes.slice(2, partes.length-1).join(';').trim();
+      }
+    }
+    if(!CANAIS_VALIDOS_LOTE.includes(canal)){ plano.canalInvalido.push(`${unidadeDigitada} (canal "${canal}")`); return; }
+    const franquia = encontrarFranquiaPorNomeLote(unidadeDigitada);
+    if(!franquia){ plano.naoEncontrada.push(unidadeDigitada); return; }
+    const exato = normalizarTextoLote(franquia) === normalizarTextoLote(unidadeDigitada);
+    plano.ok.push({ franquia, canal, observacao, dataPrometida, digitado: unidadeDigitada, exato });
+  });
+  return plano;
+}
+
+function renderPreviewLote(plano){
   const resDiv = document.getElementById('loteResultado');
+  let html = '';
+  if(plano.ok.length){
+    html += `<p style="color:var(--green); font-weight:600; margin:0 0 6px;">${plano.ok.length} linha(s) prontas para registrar</p>`;
+    html += '<div class="table-wrap" style="max-height:260px; overflow:auto; margin-bottom:10px;"><table><thead><tr>'
+         + '<th style="cursor:default;">Unidade no painel</th><th style="cursor:default;">Canal</th><th style="cursor:default;">Observação</th></tr></thead><tbody>'
+         + plano.ok.map(o=>`<tr>
+              <td>${o.franquia}${o.exato ? '' : ` <span class="franquia-badge fr-distrato" title="Casou por aproximação com &quot;${o.digitado}&quot;">aprox.</span>`}</td>
+              <td>${o.canal}</td>
+              <td style="color:var(--muted); font-size:12px;">${o.observacao.length > 90 ? o.observacao.slice(0,90)+'…' : o.observacao}${o.dataPrometida ? ` <span class="franquia-badge fr-distrato">promessa ${o.dataPrometida.split('-').reverse().join('/')}</span>` : ''}</td>
+            </tr>`).join('')
+         + '</tbody></table></div>';
+  }
+  if(plano.naoEncontrada.length){
+    html += `<p style="color:var(--rose);">Não encontrada(s) no painel — confira o nome exato: ${plano.naoEncontrada.join(', ')}</p>`;
+  }
+  if(plano.canalInvalido.length){
+    html += `<p style="color:var(--rose);">Canal inválido (use WhatsApp, Yungas, E-mail ou Telefone): ${plano.canalInvalido.join(', ')}</p>`;
+  }
+  if(plano.formatoInvalido.length){
+    html += `<p style="color:var(--muted);">Linha(s) ignorada(s) por formato incompleto: ${plano.formatoInvalido.join(' | ')}</p>`;
+  }
+  if(plano.ok.length){
+    html += `<button class="btn btn-export" id="loteConfirmarBtn">Confirmar e registrar ${plano.ok.length} unidade(s)</button>`;
+  }
+  resDiv.innerHTML = html;
+  const btnConfirmar = document.getElementById('loteConfirmarBtn');
+  if(btnConfirmar) btnConfirmar.onclick = ()=> gravarLote(plano.ok);
+}
+
+async function gravarLote(itens){
+  const usuario = (auth.currentUser && auth.currentUser.email) ? auth.currentUser.email : 'desconhecido';
+  const btn = document.getElementById('loteConfirmarBtn');
+  const gravadas = [];
+  const falhas = [];
+  if(btn) btn.disabled = true;
+  for(let i = 0; i < itens.length; i++){
+    if(btn) btn.textContent = `Registrando ${i + 1}/${itens.length}...`;
+    const it = itens[i];
+    try{
+      const key = franquiaKey(it.franquia);
+      const doc = await historicoCollection.doc(key).get();
+      const entradas = (doc.exists && doc.data().entradas) ? doc.data().entradas : [];
+      const entradaLote = { data: new Date().toISOString(), quem: usuario, canal: it.canal, observacao: it.observacao };
+      if(it.dataPrometida) entradaLote.dataPrometida = it.dataPrometida;
+      entradas.push(entradaLote);
+      await historicoCollection.doc(key).set({ entradas });
+      gravadas.push(it.franquia);
+    }catch(e){
+      console.error('Erro ao registrar lote para', it.franquia, e);
+      falhas.push(it.franquia);
+    }
+  }
+  let html = `<p style="color:var(--green); font-weight:600;">${gravadas.length} unidade(s) registrada(s): ${gravadas.join(', ')}</p>`;
+  if(falhas.length) html += `<p style="color:var(--rose);">Falha ao salvar (tente de novo): ${falhas.join(', ')}</p>`;
+  document.getElementById('loteResultado').innerHTML = html;
+  showToast(`${gravadas.length} unidade(s) registradas em lote`);
+  const franquiaAtual = document.getElementById('historicoFranquiaSelect').value;
+  if(franquiaAtual && gravadas.includes(franquiaAtual)) renderHistorico(franquiaAtual);
+  if(typeof atualizarContadoresAlerta === 'function') atualizarContadoresAlerta();
+  carregarAgenda(); // FUN-02
+}
+
+document.getElementById('loteProcessarBtn').addEventListener('click', () => {
+  const texto = document.getElementById('loteTexto').value;
+  if(!texto.trim()){
+    showToast('Cole ou envie ao menos uma linha no formato Unidade;Canal;Observação.', 'aviso');
+    return;
+  }
+  const plano = analisarLote(texto);
+  renderPreviewLote(plano);
+  if(!plano.ok.length) showToast('Nenhuma linha válida encontrada — veja a conferência abaixo.', 'erro');
+});
+
+// FUN-08 — gera o bloco do lote a partir do recorte que está na tela do Painel,
+// fechando o ciclo: filtrar -> disparar -> registrar, sem montar a lista fora do painel.
+document.getElementById('loteDoFiltroBtn').addEventListener('click', () => {
+  const rows = getFiltered().filter(d => effectiveStatus(d) === 'EM ABERTO');
+  const canal = document.getElementById('loteDoFiltroCanal').value;
+  const obs = document.getElementById('loteDoFiltroObs').value.trim()
+    || 'Débito vencido sinalizado à unidade.';
+  const porFranquia = {};
+  rows.forEach(d=>{
+    if(!porFranquia[d.franquia]) porFranquia[d.franquia] = { total: 0, qtd: 0 };
+    porFranquia[d.franquia].total += d.total;
+    porFranquia[d.franquia].qtd += 1;
+  });
+  const nomes = Object.keys(porFranquia).sort();
+  if(!nomes.length){
+    showToast('O filtro atual não tem nenhum título vencido para gerar o bloco.', 'aviso');
+    return;
+  }
+  const linhas = nomes.map(f=>{
+    const v = porFranquia[f];
+    return `${f};${canal};${obs} (${v.qtd} título(s), ${fmtMoney(v.total)})`;
+  });
+  document.getElementById('loteTexto').value = linhas.join('\n');
+  renderPreviewLote(analisarLote(linhas.join('\n')));
+  showToast(`${nomes.length} unidade(s) trazidas do filtro atual`);
+});
+
+// =====================================================================
+// FUN-03 — FILA DE REVISÃO DO AJUSTE MANUAL
+// Antes só existia a lupa por linha, uma de cada vez, e nenhuma visão do conjunto.
+// A reclassificação feita aqui é gravada no Firebase e aplicada ao dataset inteiro —
+// filtros, gráficos, ranking e exportações passam a enxergar a categoria corrigida.
+// =====================================================================
+const revisaoDocRef = db.collection('painel-inadimplencia').doc('revisaoAjustes');
+let revisaoAjustes = {}; // { idLancamento: { categoria, revisadoPor, revisadoEm } }
+let revisaoSelecionados = new Set();
+
+async function loadRevisaoAjustes(){
+  try{
+    const doc = await revisaoDocRef.get();
+    revisaoAjustes = (doc.exists && doc.data().valores) ? (JSON.parse(doc.data().valores) || {}) : {};
+  }catch(e){
+    console.error('Erro ao carregar revisão de ajustes:', e);
+    revisaoAjustes = {};
+  }
+  aplicarReclassificacoes();
+}
+
+async function persistRevisaoAjustes(){
+  try{
+    await revisaoDocRef.set({ valores: JSON.stringify(revisaoAjustes), atualizadoEm: new Date().toISOString() });
+  }catch(e){
+    console.error('Erro ao salvar revisão de ajustes:', e);
+    showToast('Não foi possível salvar a revisão. Verifique a conexão.', 'erro');
+  }
+}
+
+// Reescreve a categoria no próprio dataset, guardando a original para poder desfazer.
+function aplicarReclassificacoes(){
+  DATA.forEach(d=>{
+    const r = revisaoAjustes[d.id];
+    if(r && r.categoria){
+      if(d.categoriaOriginal === undefined) d.categoriaOriginal = d.categoria;
+      d.categoria = r.categoria;
+      d.reclassificado = true;
+    } else if(d.categoriaOriginal !== undefined){
+      d.categoria = d.categoriaOriginal;
+      d.reclassificado = false;
+    }
+  });
+}
+
+function lancamentosAjusteManual(){
+  return DATA.filter(d=>{
+    const cat = (d.categoriaOriginal !== undefined) ? d.categoriaOriginal : d.categoria;
+    return cat === 'AJUSTE MANUAL' && ['EM ABERTO','A VENCER'].includes(effectiveStatus(d));
+  });
+}
+
+function atualizarContadoresAlerta(){
+  const badge = document.getElementById('revisaoBadge');
+  if(!badge) return;
+  const pendentes = lancamentosAjusteManual().filter(d=>!revisaoAjustes[d.id]);
+  badge.textContent = pendentes.length;
+  badge.style.display = pendentes.length ? 'inline-block' : 'none';
+}
+
+function categoriasDisponiveis(){
+  const cats = [...new Set(DATA.map(d => d.categoriaOriginal !== undefined ? d.categoriaOriginal : d.categoria))]
+    .filter(c => c && c !== 'AJUSTE MANUAL').sort();
+  return cats;
+}
+
+function revisaoFiltrados(){
+  const busca = (document.getElementById('revisaoBusca').value || '').trim().toLowerCase();
+  const fStatus = document.getElementById('revisaoFiltroStatusFr').value;
+  const fRevisado = document.getElementById('revisaoFiltroRevisado').value;
+  return lancamentosAjusteManual().filter(d=>{
+    if(fStatus && statusFranquiaDe(d.franquia) !== fStatus) return false;
+    const temRevisao = !!revisaoAjustes[d.id];
+    if(fRevisado === 'pendente' && temRevisao) return false;
+    if(fRevisado === 'revisado' && !temRevisao) return false;
+    if(busca){
+      const hay = (d.franquia + ' ' + d.nome + ' ' + (d.detalheAsaas || '')).toLowerCase();
+      if(!hay.includes(busca)) return false;
+    }
+    return true;
+  }).sort((a,b)=> b.total - a.total);
+}
+
+function renderRevisaoResumo(){
+  const todos = lancamentosAjusteManual();
+  const pendentes = todos.filter(d=>!revisaoAjustes[d.id]);
+  const ativas = pendentes.filter(d=>statusFranquiaDe(d.franquia)==='ATIVA');
+  const revisados = todos.length - pendentes.length;
+  const cards = [
+    { label:'Pendentes de revisão', valor: pendentes.length + ' lançamentos', sub: fmtMoney(pendentes.reduce((s,d)=>s+d.total,0)), cor:'var(--rose)' },
+    { label:'Só de franquias ativas', valor: ativas.length + ' lançamentos', sub: fmtMoney(ativas.reduce((s,d)=>s+d.total,0)), cor:'var(--amber)' },
+    { label:'Já revisados', valor: revisados + ' lançamentos', sub: revisados ? 'reclassificados e aplicados ao painel' : 'nenhum ainda', cor:'var(--green)' },
+    { label:'Franquias envolvidas', valor: new Set(pendentes.map(d=>d.franquia)).size, sub:'com ajuste manual em aberto', cor:'var(--text)' },
+  ];
+  document.getElementById('revisaoResumo').innerHTML = cards.map(c=>`
+    <div class="card">
+      <div class="card-label">${c.label}</div>
+      <div class="card-value" style="color:${c.cor}; font-size:19px;">${c.valor}</div>
+      <div class="card-sub">${c.sub}</div>
+    </div>`).join('');
+}
+
+function renderRevisao(){
+  renderRevisaoResumo();
+  const cats = categoriasDisponiveis();
+  const selLote = document.getElementById('revisaoCategoriaLote');
+  if(selLote.options.length <= 1){
+    cats.forEach(c=>{ const o = document.createElement('option'); o.value = c; o.textContent = c; selLote.appendChild(o); });
+  }
+
+  const linhas = revisaoFiltrados();
+  const tbody = document.getElementById('revisaoBody');
+  const empty = document.getElementById('revisaoEmpty');
+  document.getElementById('revisaoCount').textContent = linhas.length + ' lançamento(s) · ' + fmtMoney(linhas.reduce((s,d)=>s+d.total,0));
+
   if(linhas.length === 0){
-    alert('Cole ou envie ao menos uma linha no formato Unidade;Canal;Observação.');
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    tbody.innerHTML = linhas.map(d=>{
+      const r = revisaoAjustes[d.id];
+      const texto = (d.detalheAsaas || '').trim() || '(sem descrição no extrato)';
+      return `
+      <tr class="${r ? 'revisado' : ''}">
+        <td><input type="checkbox" class="revisao-check" data-id="${d.id}" ${revisaoSelecionados.has(d.id)?'checked':''} aria-label="Selecionar lançamento"></td>
+        <td>${d.franquia}${badgeAtivaInativa(statusFranquiaDe(d.franquia))}<br><span style="font-size:11px; color:var(--muted);">${d.nome}</span></td>
+        <td class="mono">${fmtDate(d.vencimento)}</td>
+        <td class="num">${fmtMoney(d.total)}</td>
+        <td><div class="revisao-asaas" title="Clique para ver o texto inteiro">${texto.replace(/</g,'&lt;')}</div></td>
+        <td>
+          <select class="revisao-select" data-recat="${d.id}">
+            <option value="">— manter Ajuste Manual —</option>
+            ${cats.map(c=>`<option value="${c}" ${r && r.categoria===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </td>
+        <td style="font-size:11px; color:var(--muted); white-space:nowrap;">
+          ${r ? `${(r.revisadoPor||'').split('@')[0]}<br>${r.revisadoEm ? new Date(r.revisadoEm).toLocaleDateString('pt-BR') : ''}
+                 <button class="acao-btn" data-desfazer="${d.id}" title="Voltar para Ajuste Manual">desfazer</button>`
+              : '<span style="opacity:0.6;">pendente</span>'}
+        </td>
+      </tr>`;
+    }).join('');
+  }
+  atualizarSelecionadosCount();
+  atualizarContadoresAlerta();
+}
+
+function atualizarSelecionadosCount(){
+  document.getElementById('revisaoSelecionadosCount').textContent = revisaoSelecionados.size + ' selecionados';
+}
+
+async function marcarRevisao(id, categoria){
+  const usuario = (auth.currentUser && auth.currentUser.email) ? auth.currentUser.email : 'desconhecido';
+  if(categoria === null){ delete revisaoAjustes[id]; }
+  else { revisaoAjustes[id] = { categoria: categoria || '', revisadoPor: usuario, revisadoEm: new Date().toISOString() }; }
+}
+
+document.getElementById('revisaoBody').addEventListener('change', async (e)=>{
+  const check = e.target.closest('.revisao-check');
+  if(check){
+    if(check.checked) revisaoSelecionados.add(check.dataset.id);
+    else revisaoSelecionados.delete(check.dataset.id);
+    atualizarSelecionadosCount();
+    return;
+  }
+  const sel = e.target.closest('[data-recat]');
+  if(sel){
+    await marcarRevisao(sel.dataset.recat, sel.value);
+    await persistRevisaoAjustes();
+    aplicarReclassificacoes();
+    recalcularEncargosDoDataset();
+    populateFilterOptions();
+    renderRevisao();
+    renderAll();
+    showToast(sel.value ? `Reclassificado como ${sel.value}` : 'Marcado como revisado, mantendo Ajuste Manual');
+  }
+});
+
+document.getElementById('revisaoBody').addEventListener('click', async (e)=>{
+  const asaas = e.target.closest('.revisao-asaas');
+  if(asaas){ asaas.classList.toggle('aberto'); return; }
+  const desfazer = e.target.closest('[data-desfazer]');
+  if(desfazer){
+    await marcarRevisao(desfazer.dataset.desfazer, null);
+    await persistRevisaoAjustes();
+    aplicarReclassificacoes();
+    recalcularEncargosDoDataset();
+    renderRevisao();
+    renderAll();
+    showToast('Revisão desfeita');
+  }
+});
+
+document.getElementById('revisaoSelecionarTodos').addEventListener('change', (e)=>{
+  const linhas = revisaoFiltrados();
+  if(e.target.checked) linhas.forEach(d=>revisaoSelecionados.add(d.id));
+  else revisaoSelecionados.clear();
+  renderRevisao();
+});
+
+document.getElementById('revisaoAplicarLoteBtn').addEventListener('click', async ()=>{
+  const cat = document.getElementById('revisaoCategoriaLote').value;
+  if(!cat){ showToast('Escolha para qual categoria reclassificar.', 'aviso'); return; }
+  if(revisaoSelecionados.size === 0){ showToast('Selecione ao menos um lançamento.', 'aviso'); return; }
+  const ok = await confirmarAcao(`Reclassificar ${revisaoSelecionados.size} lançamento(s) para "${cat}"? A mudança vale para o painel inteiro — filtros, gráficos e exportações.`, { titulo:'Reclassificar em lote', confirmar:'Reclassificar' });
+  if(!ok) return;
+  for(const id of revisaoSelecionados) await marcarRevisao(id, cat);
+  await persistRevisaoAjustes();
+  aplicarReclassificacoes();
+  recalcularEncargosDoDataset();
+  populateFilterOptions();
+  revisaoSelecionados.clear();
+  document.getElementById('revisaoSelecionarTodos').checked = false;
+  renderRevisao();
+  renderAll();
+  showToast('Lançamentos reclassificados');
+});
+
+document.getElementById('revisaoMarcarLoteBtn').addEventListener('click', async ()=>{
+  if(revisaoSelecionados.size === 0){ showToast('Selecione ao menos um lançamento.', 'aviso'); return; }
+  for(const id of revisaoSelecionados) await marcarRevisao(id, '');
+  await persistRevisaoAjustes();
+  revisaoSelecionados.clear();
+  document.getElementById('revisaoSelecionarTodos').checked = false;
+  renderRevisao();
+  showToast('Marcados como revisados (categoria mantida)');
+});
+
+['revisaoBusca','revisaoFiltroStatusFr','revisaoFiltroRevisado'].forEach(id=>{
+  document.getElementById(id).addEventListener(id === 'revisaoBusca' ? 'input' : 'change',
+    id === 'revisaoBusca' ? debounce(renderRevisao, 200) : renderRevisao);
+});
+
+// =====================================================================
+// FUN-01 — FICHA ÚNICA DA FRANQUIA
+// Antes, entender uma unidade exigia cinco telas: lançamentos na aba Painel, acordo no
+// modal de observação, cadastro na aba Contatos, tratativas na aba Histórico e etapa na
+// aba Negociação. Os dados sempre existiram — só não se encontravam no mesmo lugar.
+// =====================================================================
+let fichaFranquiaAtual = null;
+let fichaAbaAtual = 'financeiro';
+let fichaDadosCache = {};
+
+async function abrirFicha360(franquia){
+  if(!franquia) return;
+  fichaFranquiaAtual = franquia;
+  fichaAbaAtual = 'financeiro';
+  document.querySelectorAll('.ficha-tab').forEach(b=>b.classList.toggle('active', b.dataset.fichatab === 'financeiro'));
+  document.getElementById('ficha360').style.display = 'flex';
+  document.getElementById('fichaCorpo').innerHTML = '<div class="ficha-vazio">Carregando…</div>';
+
+  const linhas = DATA.filter(d => d.franquia === franquia);
+  const abertos = linhas.filter(d => effectiveStatus(d) === 'EM ABERTO');
+  const saldo = abertos.reduce((s,d)=>s+d.total, 0);
+  const contato = contatoDaFranquia(franquia);
+  const stFr = statusFranquiaDe(franquia);
+  const nomeFranqueado = (linhas[0] && linhas[0].nome) || contato.franqueado || '—';
+
+  document.getElementById('fichaNome').textContent = franquia;
+  document.getElementById('fichaSub').innerHTML =
+    `${nomeFranqueado} ${badgeAtivaInativa(stFr)}` +
+    (linhas[0] && linhas[0].operacaoPropria === 'PRÓPRIA' ? ' <span class="franquia-badge" style="background:rgba(155,127,232,0.16); color:var(--violet);">própria</span>' : '');
+  document.getElementById('fichaSaldo').textContent = saldo > 0 ? fmtMoney(saldo) : 'sem débito';
+  document.getElementById('fichaSaldo').style.color = saldo > 0 ? 'var(--amber)' : 'var(--green)';
+
+  const zap = telefoneParaWhatsapp(contato);
+  document.getElementById('fichaAcoes').innerHTML = `
+    ${zap ? `<button class="btn" data-ficha-acao="zap" style="font-size:12px;">Abrir WhatsApp</button>` : ''}
+    <button class="btn" data-ficha-acao="cobrar" style="font-size:12px;">Gerar mensagem de cobrança</button>
+    <button class="btn" data-ficha-acao="registrar" style="font-size:12px;">Registrar contato</button>
+    <button class="btn" data-ficha-acao="acordo" style="font-size:12px;">Editar acordo / observação</button>
+    <button class="btn" data-ficha-acao="filtrar" style="font-size:12px;">Ver só esta unidade no Painel</button>
+    <button class="btn" data-ficha-acao="fechar" style="font-size:12px; margin-left:auto;">Fechar</button>`;
+
+  // busca em paralelo o que mora no Firebase
+  const key = franquiaKey(franquia);
+  let acordo = {}, historico = [];
+  try{
+    const [docAcordo, docHist] = await Promise.all([
+      acordosCollection.doc(key).get(),
+      historicoCollection.doc(key).get()
+    ]);
+    acordo = docAcordo.exists ? docAcordo.data() : {};
+    historico = (docHist.exists && docHist.data().entradas) ? docHist.data().entradas : [];
+  }catch(e){ console.error('Ficha: erro ao ler Firebase', e); }
+
+  // a observação da unidade vive no CRM (mesmo campo que o modal de observação usa)
+  if(Object.keys(crmDataCache).length === 0){ try{ await loadCrmData(); }catch(e){} }
+  const observacoes = (crmDataCache[key] && crmDataCache[key].observacoes) || '';
+  fichaDadosCache = { franquia, linhas, abertos, saldo, contato, acordo, historico, stFr, key, observacoes };
+  renderFichaCorpo();
+}
+
+function renderFichaCorpo(){
+  const c = fichaDadosCache;
+  const corpo = document.getElementById('fichaCorpo');
+  if(!c || !c.linhas){ corpo.innerHTML = '<div class="ficha-vazio">Sem dados.</div>'; return; }
+
+  if(fichaAbaAtual === 'financeiro'){
+    const aVencer = c.linhas.filter(d=>effectiveStatus(d)==='A VENCER');
+    const baixados = c.linhas.filter(d=>effectiveStatus(d)==='BAIXADO');
+    const maxDias = c.abertos.length ? Math.max(...c.abertos.map(d=>diasEmAtraso(d.vencimento))) : 0;
+    const porCategoria = {};
+    c.abertos.forEach(d=>{ porCategoria[d.categoria] = (porCategoria[d.categoria]||0) + d.total; });
+
+    // evolução do que está em aberto por mês de vencimento (últimos 12 com movimento)
+    const porMes = {};
+    c.abertos.forEach(d=>{ const m = d.vencimento.slice(0,7); porMes[m] = (porMes[m]||0) + d.total; });
+    const meses = Object.keys(porMes).sort().slice(-12);
+    const maxMes = Math.max(1, ...meses.map(m=>porMes[m]));
+
+    corpo.innerHTML = `
+      <div class="ficha-kpis">
+        <div class="ficha-kpi"><div class="ficha-kpi-k">Vencido</div><div class="ficha-kpi-v" style="color:var(--amber);">${fmtMoney(c.saldo)}</div><div class="card-sub">${c.abertos.length} título(s)</div></div>
+        <div class="ficha-kpi"><div class="ficha-kpi-k">A vencer</div><div class="ficha-kpi-v" style="color:var(--violet);">${fmtMoney(aVencer.reduce((s,d)=>s+d.total,0))}</div><div class="card-sub">${aVencer.length} título(s)</div></div>
+        <div class="ficha-kpi"><div class="ficha-kpi-k">Já pago</div><div class="ficha-kpi-v" style="color:var(--green);">${fmtMoney(baixados.reduce((s,d)=>s+d.total,0))}</div><div class="card-sub">${baixados.length} título(s)</div></div>
+        <div class="ficha-kpi"><div class="ficha-kpi-k">Maior atraso</div><div class="ficha-kpi-v" style="color:${maxDias>90?'var(--rose)':'var(--text)'};">${maxDias > 0 ? maxDias + 'd' : '—'}</div><div class="card-sub">${maxDias > 0 ? 'do título mais antigo' : 'nada vencido'}</div></div>
+      </div>
+
+      ${meses.length ? `
+        <div class="ficha-secao-titulo">Vencido por competência</div>
+        <div class="ficha-spark">
+          ${meses.map(m=>`<div class="ficha-spark-bar ${porMes[m] === maxMes ? 'hot':''}" style="height:${Math.max(4,(porMes[m]/maxMes)*100)}%" title="${m}: ${fmtMoney(porMes[m])}"></div>`).join('')}
+        </div>
+        <div class="ficha-spark-labels">${meses.map(m=>`<span>${m.slice(5)}/${m.slice(2,4)}</span>`).join('')}</div>` : ''}
+
+      <div class="ficha-secao-titulo">Composição do vencido por categoria</div>
+      ${Object.keys(porCategoria).length ? `<div class="table-wrap"><table><tbody>
+        ${Object.entries(porCategoria).sort((a,b)=>b[1]-a[1]).map(([cat,v])=>`
+          <tr><td>${cat}</td><td class="num">${fmtMoney(v)}</td><td class="num" style="color:var(--muted);">${((v/c.saldo)*100).toFixed(0)}%</td></tr>`).join('')}
+      </tbody></table></div>` : '<div class="ficha-vazio">Nenhum título vencido.</div>'}
+
+      <div class="ficha-secao-titulo">Títulos em aberto (${c.abertos.length})</div>
+      ${c.abertos.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Categoria</th><th>Vencimento</th><th style="text-align:right">Valor</th><th style="text-align:right">Encargos</th><th style="text-align:right">Total</th></tr></thead>
+        <tbody>${c.abertos.slice().sort((a,b)=>a.vencimento.localeCompare(b.vencimento)).map(d=>`
+          <tr><td>${d.categoria}</td><td class="mono">${fmtDate(d.vencimento)} <span style="color:var(--muted); font-size:10.5px;">${diasEmAtraso(d.vencimento)}d</span></td>
+          <td class="num">${fmtMoney(d.valor)}</td><td class="num">${fmtMoney(encargosDe(d))}</td><td class="num total">${fmtMoney(d.total)}</td></tr>`).join('')}
+        </tbody></table></div>` : '<div class="ficha-vazio">Nada em aberto — unidade em dia.</div>'}
+    `;
     return;
   }
 
-  const usuario = (auth.currentUser && auth.currentUser.email) ? auth.currentUser.email : 'desconhecido';
-  const resultados = { sucesso: [], naoEncontrada: [], canalInvalido: [], formatoInvalido: [] };
-  const btn = document.getElementById('loteProcessarBtn');
-  const textoOriginalBtn = btn.textContent;
-  btn.disabled = true;
+  if(fichaAbaAtual === 'acordo'){
+    const info = c.acordo.info || null;
+    const parcelas = (info && info.parcelas) || c.acordo.parcelas || [];
+    const registros = c.acordo.registros || [];
+    const estagio = c.acordo.estagio;
+    const etapaLabel = (KANBAN_ETAPAS.find(e=>e.key===estagio)||{}).label;
+    corpo.innerHTML = `
+      ${estagio ? `<div class="ficha-kpi" style="margin-bottom:16px;"><div class="ficha-kpi-k">Etapa no fluxo de negociação</div><div class="ficha-kpi-v" style="font-size:14px; color:var(--blue);">${etapaLabel || estagio}</div></div>` : ''}
+      ${info ? `
+        <div class="ficha-kpis">
+          <div class="ficha-kpi"><div class="ficha-kpi-k">Valor total</div><div class="ficha-kpi-v">${info.valorTotal || '—'}</div></div>
+          <div class="ficha-kpi"><div class="ficha-kpi-k">Parcelas</div><div class="ficha-kpi-v">${info.numParcelas || parcelas.length || '—'}</div></div>
+          <div class="ficha-kpi"><div class="ficha-kpi-k">Data do acordo</div><div class="ficha-kpi-v" style="font-size:14px;">${info.dataAcordo || '—'}</div></div>
+        </div>
+        ${info.detalhamento ? `<div class="ficha-secao-titulo">Detalhamento</div><div style="font-size:12.5px; color:var(--muted); white-space:pre-wrap; line-height:1.6;">${info.detalhamento.replace(/</g,'&lt;')}</div>` : ''}
+      ` : '<div class="ficha-vazio">Nenhuma informação de acordo cadastrada para esta unidade.</div>'}
 
-  for(let i = 0; i < linhas.length; i++){
-    btn.textContent = `Processando ${i + 1}/${linhas.length}...`;
-    const partes = linhas[i].split(';').map(p => p.trim());
-    if(partes.length < 3 || !partes[0] || !partes[1] || !partes[2]){
-      resultados.formatoInvalido.push(linhas[i]);
-      continue;
-    }
-    const unidadeDigitada = partes[0];
-    const canal = partes[1];
-    const observacao = partes.slice(2).join(';').trim();
+      ${parcelas.length ? `
+        <div class="ficha-secao-titulo">Parcelas (${parcelas.length})</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>#</th><th>Vencimento</th><th style="text-align:right">Valor</th><th>Situação</th></tr></thead>
+          <tbody>${parcelas.map((p,i)=>`<tr><td>${i+1}</td><td class="mono">${p.vencimento||'—'}</td><td class="num">${p.valor||'—'}</td>
+            <td><span class="franquia-badge ${p.status==='PAGO'?'fr-ativa':'fr-distrato'}">${p.status||'PENDENTE'}</span></td></tr>`).join('')}</tbody>
+        </table></div>` : ''}
 
-    if(!CANAIS_VALIDOS_LOTE.includes(canal)){
-      resultados.canalInvalido.push(`${unidadeDigitada} (canal "${canal}")`);
-      continue;
-    }
-    const franquia = encontrarFranquiaPorNomeLote(unidadeDigitada);
-    if(!franquia){
-      resultados.naoEncontrada.push(unidadeDigitada);
-      continue;
-    }
-    try{
-      const key = franquiaKey(franquia);
-      const doc = await historicoCollection.doc(key).get();
-      const entradas = (doc.exists && doc.data().entradas) ? doc.data().entradas : [];
-      entradas.push({ data: new Date().toISOString(), quem: usuario, canal, observacao });
-      await historicoCollection.doc(key).set({ entradas });
-      resultados.sucesso.push(franquia);
-    }catch(e){
-      console.error('Erro ao registrar lote para', unidadeDigitada, e);
-      resultados.naoEncontrada.push(`${unidadeDigitada} (erro ao salvar — tente novamente)`);
-    }
+      ${registros.length ? `
+        <div class="ficha-secao-titulo">Registros do acordo</div>
+        ${registros.slice().reverse().map(r=>`<div class="ficha-tl">
+          <span class="ficha-tl-data">${r.data ? new Date(r.data).toLocaleDateString('pt-BR') : ''}</span>
+          <span>${(r.texto||'').replace(/</g,'&lt;')}<br><span style="color:var(--muted); font-size:11px;">${(r.quem||'').split('@')[0]}</span></span>
+        </div>`).join('')}` : ''}
+
+      ${c.observacoes ? `<div class="ficha-secao-titulo">Observação da unidade</div>
+        <div style="font-size:12.5px; white-space:pre-wrap; line-height:1.6;">${c.observacoes.replace(/</g,'&lt;')}</div>` : ''}
+    `;
+    return;
   }
 
-  btn.disabled = false;
-  btn.textContent = textoOriginalBtn;
+  if(fichaAbaAtual === 'contatos'){
+    const cad = (CONTATOS_BY_KEY[c.contato.key] && CONTATOS_BY_KEY[c.contato.key]._cadastro) || null;
+    const info = CONTATOS_BY_KEY[c.contato.key] || {};
+    function linha(k, v){ return `<div class="fd-row"><span class="fd-k">${k}</span><span class="fd-v">${v || '—'}</span></div>`; }
+    corpo.innerHTML = `
+      <div class="franquia-detalhe-grid">
+        <div class="fd-section">
+          <div class="fd-section-title">Contato da unidade</div>
+          ${linha('Franqueado', info.franqueado || (c.linhas[0]||{}).nome)}
+          ${linha('Telefone / WhatsApp', c.contato.telefone)}
+          ${linha('E-mail', c.contato.email)}
+          ${linha('Suporte', info.suporte)}
+          ${linha('Consultor estratégico', info.consultorEstrategico)}
+          ${linha('Status da unidade', info.status)}
+        </div>
+        <div class="fd-section">
+          <div class="fd-section-title">Cadastro</div>
+          ${cad ? `
+            ${linha('Razão social', cad.razaoSocial)}
+            ${linha('CNPJ', cad.cnpj)}
+            ${linha('Responsável legal', cad.responsavel)}
+            ${linha('Cidade / UF', (cad.cidadeEndereco||'') + (cad.estadoEndereco ? '/'+cad.estadoEndereco : ''))}
+            ${linha('Taxa de royalties', cad.taxaRoyalties)}
+            ${linha('Mínimo de royalties', cad.valorMinimoRoyalties)}
+            ${linha('Dias de pagamento', cad.diasPagamento)}
+          ` : '<div class="ficha-vazio">Sem cadastro completo (CNPJ/endereço) na planilha mais recente.</div>'}
+        </div>
+      </div>`;
+    return;
+  }
 
-  let html = '';
-  if(resultados.sucesso.length){
-    html += `<p style="color:var(--emerald,#0a7a3d);">✅ ${resultados.sucesso.length} unidade(s) registrada(s): ${resultados.sucesso.join(', ')}</p>`;
+  if(fichaAbaAtual === 'historico'){
+    const CANAL_ICON = { 'WhatsApp':'📱', 'Yungas':'☎️', 'E-mail':'✉️', 'Telefone':'📞' };
+    const entradas = c.historico.slice().reverse();
+    const promessa = c.historico.filter(e=>e.dataPrometida).slice(-1)[0];
+    corpo.innerHTML = `
+      ${promessa ? `<div class="ficha-kpi" style="margin-bottom:16px; border-color:rgba(217,164,65,0.4);">
+        <div class="ficha-kpi-k">Última promessa de pagamento</div>
+        <div class="ficha-kpi-v" style="font-size:15px; color:var(--amber);">${promessa.dataPrometida.split('-').reverse().join('/')}</div>
+        <div class="card-sub">${(promessa.observacao||'').replace(/</g,'&lt;')}</div>
+      </div>` : ''}
+      <div class="ficha-secao-titulo">Linha do tempo de cobrança (${entradas.length})</div>
+      ${entradas.length ? entradas.map(en=>`
+        <div class="ficha-tl">
+          <span class="ficha-tl-data">${new Date(en.data).toLocaleDateString('pt-BR')}<br>${(en.quem||'').split('@')[0]}</span>
+          <span>${CANAL_ICON[en.canal]||''} <b>${en.canal}</b> — ${(en.observacao||'').replace(/</g,'&lt;')}
+            ${en.dataPrometida ? `<span class="franquia-badge fr-distrato">promessa ${en.dataPrometida.split('-').reverse().join('/')}</span>` : ''}</span>
+        </div>`).join('') : '<div class="ficha-vazio">Nenhum contato registrado ainda para esta unidade.</div>'}
+    `;
+    return;
   }
-  if(resultados.naoEncontrada.length){
-    html += `<p style="color:var(--rose,#c0392b);">⚠️ Não encontrada(s) no painel — confira o nome exato da unidade: ${resultados.naoEncontrada.join(', ')}</p>`;
-  }
-  if(resultados.canalInvalido.length){
-    html += `<p style="color:var(--rose,#c0392b);">⚠️ Canal inválido (use WhatsApp, Yungas, E-mail ou Telefone): ${resultados.canalInvalido.join(', ')}</p>`;
-  }
-  if(resultados.formatoInvalido.length){
-    html += `<p style="color:var(--muted);">Linha(s) ignorada(s) por formato incompleto (esperado Unidade;Canal;Observação): ${resultados.formatoInvalido.join(' | ')}</p>`;
-  }
-  resDiv.innerHTML = html;
+}
 
-  if(resultados.sucesso.length){
-    showToast(`${resultados.sucesso.length} unidade(s) registradas em lote`);
-    const franquiaAtual = document.getElementById('historicoFranquiaSelect').value;
-    if(franquiaAtual && resultados.sucesso.includes(franquiaAtual)) renderHistorico(franquiaAtual);
+document.querySelectorAll('.ficha-tab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.ficha-tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    fichaAbaAtual = btn.dataset.fichatab;
+    renderFichaCorpo();
+  });
+});
+
+document.getElementById('fichaAcoes').addEventListener('click', (e)=>{
+  const btn = e.target.closest('[data-ficha-acao]');
+  if(!btn) return;
+  const franquia = fichaFranquiaAtual;
+  const acao = btn.dataset.fichaAcao;
+  if(acao === 'fechar'){ document.getElementById('ficha360').style.display = 'none'; return; }
+  if(acao === 'zap'){ window.open(`https://wa.me/${telefoneParaWhatsapp(fichaDadosCache.contato)}`, '_blank', 'noopener'); return; }
+  if(acao === 'filtrar'){
+    document.getElementById('ficha360').style.display = 'none';
+    document.querySelector('.tab-btn[data-tab="painel"]').click();
+    document.getElementById('filterFranquia').value = franquia;
+    currentPage = 1; renderAll();
+    return;
   }
+  if(acao === 'cobrar'){
+    document.getElementById('ficha360').style.display = 'none';
+    document.getElementById('filterFranquia').value = franquia;
+    currentPage = 1; renderAll();
+    document.getElementById('mensagemBtn').click();
+    return;
+  }
+  if(acao === 'registrar'){
+    document.getElementById('ficha360').style.display = 'none';
+    document.querySelector('.tab-btn[data-tab="historico"]').click();
+    document.getElementById('historicoFranquiaSelect').value = franquia;
+    renderHistorico(franquia);
+    setTimeout(()=>{ const o = document.getElementById('historicoObservacao'); if(o) o.focus(); }, 120);
+    return;
+  }
+  if(acao === 'acordo'){
+    document.getElementById('ficha360').style.display = 'none';
+    abrirObsModal(franquia);
+    return;
+  }
+});
+
+document.getElementById('ficha360').addEventListener('click', (e)=>{
+  if(e.target.id === 'ficha360') document.getElementById('ficha360').style.display = 'none';
 });
 
 // ===================== RANKING =====================
@@ -3233,7 +4903,10 @@ function renderRanking(){
     <tr><td>${i+1}</td><td>${r.franquia}</td><td class="num">${r.maxDias}</td></tr>
   `).join('') || '<tr><td colspan="3" style="text-align:center; color:var(--muted);">Sem dados</td></tr>';
 }
-document.getElementById('rankingFiltroAtiva').addEventListener('change', renderRanking);
+document.getElementById('rankingFiltroAtiva').addEventListener('change', ()=>{
+  salvarPref('rankingFiltro', document.getElementById('rankingFiltroAtiva').value); // INT-06
+  renderRanking();
+});
 
 // ===================== DASHBOARD EXECUTIVO =====================
 let chartStatusInstance = null, chartCategoriaInstance = null, chartEvolucaoInstance = null, chartAgingInstance = null;
@@ -3261,12 +4934,176 @@ async function salvarSnapshotMensal(){
   }
 }
 
+// =====================================================================
+// FUN-06 — TAXA DE INADIMPLÊNCIA NATIVA
+// O indicador que a diretoria pede (vencido ÷ gerado) sempre foi calculado fora do
+// painel, em script, na hora de montar relatório. Agora ele está na tela, com o mesmo
+// recorte que os relatórios usam (categoria + situação da franquia).
+// =====================================================================
+function baseDaTaxa(){
+  const cat = document.getElementById('taxaCategoria').value;
+  const escopo = document.getElementById('taxaEscopo').value;
+  return DATA.filter(d=>{
+    if(cat && d.categoria !== cat) return false;
+    if(escopo === 'ativas' && statusFranquiaDe(d.franquia) !== 'ATIVA') return false;
+    if(escopo === 'ativas-franqueadas' && (statusFranquiaDe(d.franquia) !== 'ATIVA' || d.operacaoPropria !== 'FRANQUEADA')) return false;
+    return true;
+  });
+}
+
+function renderTaxaInadimplencia(){
+  const base = baseDaTaxa();
+  const gerado = base.reduce((s,d)=>s+d.total, 0);
+  const vencido = base.filter(d=>effectiveStatus(d)==='EM ABERTO').reduce((s,d)=>s+d.total, 0);
+  const baixado = base.filter(d=>effectiveStatus(d)==='BAIXADO').reduce((s,d)=>s+d.total, 0);
+  const aVencer = base.filter(d=>effectiveStatus(d)==='A VENCER').reduce((s,d)=>s+d.total, 0);
+  const taxa = gerado > 0 ? (vencido / gerado * 100) : 0;
+  const pct = v => gerado > 0 ? (v/gerado*100) : 0;
+
+  document.getElementById('taxaLinha').innerHTML = `
+    <div class="taxa-destaque">
+      <div class="kpi-k" style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted);">Taxa de inadimplência</div>
+      <div class="kpi-v" style="font-family:'IBM Plex Mono',monospace; font-weight:600; line-height:1.1; margin-top:6px;">${taxa.toFixed(1)}%</div>
+      <div class="kpi-s" style="font-size:12.5px; color:var(--muted); margin-top:5px;">vencido ÷ total gerado no recorte</div>
+      <div class="taxa-barra" title="Composição do total gerado">
+        <span style="width:${pct(baixado)}%; background:var(--green);"></span>
+        <span style="width:${pct(vencido)}%; background:var(--rose);"></span>
+        <span style="width:${pct(aVencer)}%; background:var(--violet);"></span>
+      </div>
+    </div>
+    <div class="taxa-item"><div class="kpi-k" style="font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted);">Total gerado</div>
+      <div class="kpi-v" style="font-family:'IBM Plex Mono',monospace; font-size:18px; font-weight:600; margin-top:4px;">${fmtMoney(gerado)}</div>
+      <div class="kpi-s" style="font-size:11px; color:var(--muted);">${base.length} lançamentos</div></div>
+    <div class="taxa-item"><div class="kpi-k" style="font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted);">Baixado (pago)</div>
+      <div class="kpi-v" style="font-family:'IBM Plex Mono',monospace; font-size:18px; font-weight:600; margin-top:4px; color:var(--green);">${fmtMoney(baixado)}</div>
+      <div class="kpi-s" style="font-size:11px; color:var(--muted);">${pct(baixado).toFixed(1)}% do gerado</div></div>
+    <div class="taxa-item"><div class="kpi-k" style="font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted);">Vencido</div>
+      <div class="kpi-v" style="font-family:'IBM Plex Mono',monospace; font-size:18px; font-weight:600; margin-top:4px; color:var(--rose);">${fmtMoney(vencido)}</div>
+      <div class="kpi-s" style="font-size:11px; color:var(--muted);">${pct(vencido).toFixed(1)}% do gerado</div></div>
+    <div class="taxa-item"><div class="kpi-k" style="font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted);">A vencer</div>
+      <div class="kpi-v" style="font-family:'IBM Plex Mono',monospace; font-size:18px; font-weight:600; margin-top:4px; color:var(--violet);">${fmtMoney(aVencer)}</div>
+      <div class="kpi-s" style="font-size:11px; color:var(--muted);">${pct(aVencer).toFixed(1)}% do gerado</div></div>
+  `;
+}
+
+function popularSelectTaxa(){
+  const sel = document.getElementById('taxaCategoria');
+  if(sel.options.length > 1) return;
+  [...new Set(DATA.map(d=>d.categoria))].sort().forEach(c=>{
+    const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o);
+  });
+}
+['taxaCategoria','taxaEscopo'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', renderTaxaInadimplencia);
+});
+
+// =====================================================================
+// FUN-05 — O QUE MUDOU DESDE A ATUALIZAÇÃO ANTERIOR
+// A atualização mensal substituía o dataset inteiro e ninguém via o movimento: quem
+// quitou, quem piorou, quais são os vencidos novos. Esse levantamento era feito à mão
+// (foi assim na conferência dos disparos do Yungas). Agora cada carga do RAW grava uma
+// foto do saldo por franquia, e o painel mostra a diferença entre as duas últimas.
+// =====================================================================
+const snapshotsCarteiraCollection = db.collection('snapshots-carteira');
+
+function saldoPorFranquiaAtual(){
+  const mapa = {};
+  DATA.filter(d=>effectiveStatus(d)==='EM ABERTO').forEach(d=>{
+    mapa[d.franquia] = (mapa[d.franquia] || 0) + d.total;
+  });
+  return mapa;
+}
+
+async function salvarSnapshotCarteira(){
+  const idSnap = RAW_ATUALIZADO_EM.slice(0, 10); // uma foto por versão do dataset
+  try{
+    const doc = await snapshotsCarteiraCollection.doc(idSnap).get();
+    if(doc.exists) return;
+    await snapshotsCarteiraCollection.doc(idSnap).set({
+      rawAtualizadoEm: RAW_ATUALIZADO_EM,
+      criadoEm: new Date().toISOString(),
+      totalAberto: DATA.filter(d=>effectiveStatus(d)==='EM ABERTO').reduce((s,d)=>s+d.total,0),
+      porFranquia: JSON.stringify(saldoPorFranquiaAtual())
+    });
+  }catch(e){ console.error('Não consegui gravar a foto da carteira:', e); }
+}
+
+async function renderOQueMudou(){
+  const card = document.getElementById('mudouCard');
+  if(!card) return;
+  const idAtual = RAW_ATUALIZADO_EM.slice(0, 10);
+  let anterior = null;
+  try{
+    const snap = await snapshotsCarteiraCollection.orderBy(firebase.firestore.FieldPath.documentId(), 'desc').limit(5).get();
+    const docs = snap.docs.filter(d => d.id < idAtual);
+    if(docs.length) anterior = docs[0];
+  }catch(e){ console.error('Comparativo indisponível:', e); }
+
+  if(!anterior){
+    card.style.display = 'block';
+    document.getElementById('mudouTitulo').textContent = 'O que mudou desde a atualização anterior';
+    document.getElementById('mudouGrid').innerHTML =
+      '<div class="agenda-vazio">Esta é a primeira carga registrada com foto da carteira. A partir da próxima atualização mensal, este bloco passa a mostrar quem quitou, quem piorou e quais são os vencidos novos.</div>';
+    return;
+  }
+
+  let antes = {};
+  try{ antes = JSON.parse(anterior.data().porFranquia || '{}'); }catch(e){ antes = {}; }
+  const agora = saldoPorFranquiaAtual();
+  const franquias = [...new Set([...Object.keys(antes), ...Object.keys(agora)])];
+
+  const quitaram = [], pioraram = [], novos = [];
+  franquias.forEach(f=>{
+    const a = antes[f] || 0, b = agora[f] || 0;
+    if(a > 0 && b === 0) quitaram.push({ franquia:f, valor:a });
+    else if(a === 0 && b > 0) novos.push({ franquia:f, valor:b });
+    else if(b > a) pioraram.push({ franquia:f, valor:b - a, de:a, para:b });
+  });
+  quitaram.sort((x,y)=>y.valor-x.valor);
+  pioraram.sort((x,y)=>y.valor-x.valor);
+  novos.sort((x,y)=>y.valor-x.valor);
+
+  const recuperado = quitaram.reduce((s,i)=>s+i.valor, 0);
+  const dataAnterior = (anterior.data().rawAtualizadoEm || anterior.id).slice(0,10).split('-').reverse().join('/');
+  document.getElementById('mudouTitulo').textContent =
+    `O que mudou desde ${dataAnterior} · ${fmtMoney(recuperado)} recuperado em ${quitaram.length} unidade(s)`;
+
+  function bloco(titulo, cor, itens, rotulo){
+    if(!itens.length) return `<div><div class="agenda-col-titulo" style="color:${cor};">${titulo} · 0</div><div class="agenda-vazio">nada nesta categoria</div></div>`;
+    return `<div>
+      <div class="agenda-col-titulo" style="color:${cor};">${titulo} · ${itens.length}</div>
+      ${itens.slice(0,6).map(i=>`
+        <div class="mudou-item" data-mudou-franquia="${i.franquia.replace(/"/g,'&quot;')}">
+          <span>${i.franquia}</span>
+          <span class="mudou-delta ${rotulo === 'baixa' ? 'baixa' : 'alta'}">${rotulo === 'baixa' ? '−' : '+'}${fmtMoney(i.valor).replace('R$ ','')}</span>
+        </div>`).join('')}
+      ${itens.length > 6 ? `<div class="agenda-vazio">+ ${itens.length - 6} outra(s)</div>` : ''}
+    </div>`;
+  }
+
+  card.style.display = 'block';
+  document.getElementById('mudouGrid').innerHTML =
+      bloco('Quitaram por completo', 'var(--green)', quitaram, 'baixa')
+    + bloco('Saldo aumentou', 'var(--rose)', pioraram, 'alta')
+    + bloco('Entraram em atraso agora', 'var(--amber)', novos, 'alta');
+
+  document.querySelectorAll('[data-mudou-franquia]').forEach(el=>{
+    el.addEventListener('click', ()=> abrirFicha360(el.dataset.mudouFranquia));
+  });
+}
+
 // ---- Estilo compartilhado dos gráficos do Dashboard Executivo ----
 // Resolução um pouco mais alta que o padrão do navegador, para ficar nítido
 // tanto na tela quanto capturado como PNG no Relatório Executivo em PDF.
-Chart.defaults.devicePixelRatio = 2;
-Chart.defaults.font.family = "'Inter', sans-serif";
-Chart.defaults.font.size = 12;
+// Se o CDN do Chart.js não responder, o painel inteiro deixava de carregar aqui
+// (erro no topo do script). Com a checagem, só os gráficos ficam indisponíveis.
+if(typeof Chart !== 'undefined'){
+  Chart.defaults.devicePixelRatio = 2;
+  Chart.defaults.font.family = "'Inter', sans-serif";
+  Chart.defaults.font.size = 12;
+} else {
+  console.warn('Chart.js não carregou — os gráficos do Dashboard ficarão indisponíveis.');
+}
 
 function chartTheme(){
   const css = getComputedStyle(document.body);
@@ -3297,6 +5134,9 @@ function fmtMoneyCompacto(v){
 // só franquias ativas — usado pelo Relatório Executivo em PDF, que é voltado à
 // diretoria e não deve trazer débito de unidades já inativas na rede.
 async function renderDashboard(opts){
+  popularSelectTaxa();       // FUN-06
+  renderTaxaInadimplencia(); // FUN-06
+  renderOQueMudou();         // FUN-05
   const onlyAtivas = !!(opts && opts.onlyAtivas);
   const t = chartTheme();
   const base = onlyAtivas ? DATA.filter(d=>statusFranquiaDe(d.franquia)==='ATIVA') : DATA;
@@ -3577,15 +5417,17 @@ document.getElementById('fdFecharBtn').addEventListener('click', ()=>{
 const TAB_PANELS = {
   painel: 'tabPainel', historico: 'tabHistorico',
   ranking: 'tabRanking', dashboard: 'tabDashboard', auditoria: 'tabAuditoria',
-  negociacao: 'tabNegociacao', contatos: 'tabContatos'
+  negociacao: 'tabNegociacao', contatos: 'tabContatos', revisao: 'tabRevisao'
 };
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', async ()=>{
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
     btn.classList.add('active');
+    btn.setAttribute('aria-selected','true');
     Object.values(TAB_PANELS).forEach(id=>document.getElementById(id).style.display = 'none');
     const tab = btn.dataset.tab;
     document.getElementById(TAB_PANELS[tab]).style.display = 'block';
+    salvarPref('aba', tab); // INT-06
 
     if(tab === 'ranking'){ renderRanking(); }
     else if(tab === 'dashboard'){ await renderDashboard(); }
@@ -3593,6 +5435,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     else if(tab === 'historico'){ await renderHistorico(document.getElementById('historicoFranquiaSelect').value); }
     else if(tab === 'negociacao'){ await renderKanban(); }
     else if(tab === 'contatos'){ renderContatos(); }
+    else if(tab === 'revisao'){ renderRevisao(); }
   });
 });
 
@@ -3616,7 +5459,7 @@ document.getElementById('modalCopyBtn').addEventListener('click', ()=>{
 document.getElementById('resumoBtn').addEventListener('click', ()=>{
   const franquiaSel = document.getElementById('filterFranquia').value;
   if(!franquiaSel){
-    alert('Selecione uma franquia no filtro para gerar o resumo.');
+    showToast('Selecione uma franquia no filtro para gerar o resumo.', 'aviso');
     return;
   }
   const rows = DATA.filter(d=>d.franquia === franquiaSel);
@@ -3663,14 +5506,14 @@ function gerarTextoMensagem(tipo, franquia, nome, totalAberto, maxDias){
 document.getElementById('notificacaoBtn').addEventListener('click', async ()=>{
   const franquiaSel = document.getElementById('filterFranquia').value;
   if(!franquiaSel){
-    alert('Selecione uma franquia no filtro para gerar a solicitação de notificação extrajudicial.');
+    showToast('Selecione uma franquia no filtro para gerar a solicitação de notificação extrajudicial.', 'aviso');
     return;
   }
   const rows = DATA.filter(d=>d.franquia === franquiaSel);
   const vencidos = rows.filter(d=>effectiveStatus(d)==='EM ABERTO').sort((a,b)=>new Date(a.vencimento)-new Date(b.vencimento));
 
   if(vencidos.length === 0){
-    alert('Essa unidade não possui boletos vencidos no momento — não há débito para embasar uma notificação extrajudicial.');
+    showToast('Essa unidade não tem boletos vencidos agora — não há débito para embasar uma notificação extrajudicial.', 'aviso');
     return;
   }
 
@@ -3720,7 +5563,7 @@ Setor Financeiro — Bee Delivery`;
 document.getElementById('mensagemBtn').addEventListener('click', ()=>{
   const franquiaSel = document.getElementById('filterFranquia').value;
   if(!franquiaSel){
-    alert('Selecione uma franquia no filtro para gerar a mensagem.');
+    showToast('Selecione uma franquia no filtro para gerar a mensagem.', 'aviso');
     return;
   }
   const rows = DATA.filter(d=>d.franquia === franquiaSel);
@@ -3746,13 +5589,18 @@ function applyTheme(isLight){
   document.getElementById('themeLabel').textContent = isLight ? 'Modo escuro' : 'Modo claro';
 }
 
-// Começa no tema escuro por padrão; respeita a preferência do sistema se for "claro".
-let isLightTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+// INT-06 — a escolha do tema agora é lembrada. Só quando não há escolha salva é que o
+// painel cai na preferência do sistema operacional (comportamento anterior).
+const temaSalvo = lerPrefs().tema;
+let isLightTheme = (temaSalvo === 'claro') ? true
+                 : (temaSalvo === 'escuro') ? false
+                 : !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
 applyTheme(isLightTheme);
 
 document.getElementById('themeToggle').addEventListener('click', ()=>{
   isLightTheme = !isLightTheme;
   applyTheme(isLightTheme);
+  salvarPref('tema', isLightTheme ? 'claro' : 'escuro');
 });
 
 // ===================== ACESSO (Firebase Authentication) =====================
@@ -3826,15 +5674,40 @@ auth.onAuthStateChanged((user)=>{
 
 // ===================== INIT =====================
 async function startApp(){
+  prepararAcessibilidade(); // INT-07
+  prepararFiltrosMobile();  // VIS-06
+  renderSkeleton(10); // VIS-05 — mostra a estrutura enquanto o Firebase responde
   populateFilterOptions();
   populateHistoricoSelect();
   await loadOverrides();
   await loadStatusFranquiaOverrides();
   await loadFavoritos();
   await loadDetalhesAjusteObs();
+  await loadRevisaoAjustes(); // FUN-03 — reclassificações entram antes de qualquer render
   recalcularEncargosDoDataset();
+  await loadCrmData();      // FUN-04 — telefones prontos para as ações da linha
+  await carregarVisoes();   // INT-03
+  restaurarPreferencias(); // INT-06
+  const estadoURL = lerEstadoDaURL(); // INT-03 — link compartilhado abre no mesmo recorte
+  if(estadoURL) aplicarEstadoFiltros(estadoURL);
   renderAll();
+  atualizarContadoresAlerta(); // FUN-03
+  carregarAgenda(); // FUN-02 — carrega em segundo plano, sem travar a tela
   salvarSnapshotMensal();
+  salvarSnapshotCarteira(); // FUN-05 — foto do saldo por franquia desta carga do RAW
+}
+
+// INT-06 — devolve o painel ao estado em que ele foi deixado: filtro do ranking e aba aberta.
+function restaurarPreferencias(){
+  const p = lerPrefs();
+  if(p.rankingFiltro){
+    const sel = document.getElementById('rankingFiltroAtiva');
+    if(sel) sel.value = p.rankingFiltro;
+  }
+  if(p.aba && p.aba !== 'painel'){
+    const btn = document.querySelector(`.tab-btn[data-tab="${p.aba}"]`);
+    if(btn) btn.click();
+  }
 }
 </script>
 </body>
