@@ -4386,9 +4386,17 @@ async function carregarAgenda(){
   const hoje = hojeISO();
   const promessasHoje = [], promessasAtrasadas = [], semContato = [];
 
-  // franquias com débito vencido hoje — só elas interessam para a agenda
+  // franquias com débito vencido hoje — só elas interessam para a agenda.
+  // Escopo (definido pelo Financeiro em 09/09/2026): só unidades ATIVAS e FRANQUEADAS.
+  // Unidades PRÓPRIA são operação da própria Bee (não são cobrança de franqueado) e
+  // unidades INATIVA / EM PROCESSO DE DISTRATO seguem o rito de encerramento/jurídico —
+  // nenhuma das duas deve entrar na rotina diária de cobrança. Mesmo critério que o BI
+  // e os disparos do Yungas já usam. `statusFranquiaDe` respeita o override manual de
+  // status feito no painel; `operacaoPropria` vem direto do RAW.
   const comDebito = {};
-  DATA.filter(d => effectiveStatus(d) === 'EM ABERTO').forEach(d=>{
+  DATA.filter(d => effectiveStatus(d) === 'EM ABERTO'
+                && statusFranquiaDe(d.franquia) === 'ATIVA'
+                && d.operacaoPropria === 'FRANQUEADA').forEach(d=>{
     if(!comDebito[d.franquia]) comDebito[d.franquia] = { total: 0, maxDias: 0 };
     comDebito[d.franquia].total += d.total;
     const dd = diasEmAtraso(d.vencimento);
@@ -4456,7 +4464,7 @@ function renderAgenda(){
 
   const somaValor = [...promessasHoje, ...promessasAtrasadas, ...semContato].reduce((s,i)=>s+i.total, 0);
   document.getElementById('agendaResumo').textContent =
-    `${total} unidade(s) pedindo ação · ${fmtMoney(somaValor)} em aberto`;
+    `${total} unidade(s) pedindo ação · ${fmtMoney(somaValor)} em aberto · só unidades ativas franqueadas`;
 
   function lista(itens, vazio, render){
     if(!itens.length) return `<div class="agenda-vazio">${vazio}</div>`;
