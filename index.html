@@ -738,14 +738,9 @@
 <div class="container">
 
   <div class="tab-panel" id="tabPainel">
-  <!-- FUN-02: agenda do dia, montada a partir das promessas de pagamento registradas -->
-  <div class="agenda" id="agendaDoDia" style="display:none;">
-    <div class="agenda-head">
-      <span class="agenda-titulo">Cobranças de hoje</span>
-      <span class="agenda-sub" id="agendaResumo"></span>
-    </div>
-    <div class="agenda-cols" id="agendaCols"></div>
-  </div>
+  <!-- Card "Cobranças de hoje" (agenda do dia: promessas + sem contato há 30 dias) removido
+       a pedido do Financeiro em 09/09/2026. O registro de promessa de pagamento continua
+       existindo na aba Histórico de Cobranças; só a vitrine no topo do Painel saiu. -->
   <div class="kpi-linha" id="cards"></div>
   <div id="overrideNotice" style="display:none; font-size:12px; background:rgba(217,164,65,0.12); border:1px solid rgba(217,164,65,0.35); color:var(--text); border-radius:8px; padding:8px 12px; margin:-8px 0 18px;">
   </div>
@@ -4360,13 +4355,12 @@ async function calcularFranquiasSemContato(diasMin){
 }
 
 // =====================================================================
-// FUN-02 — AGENDA DE PROMESSAS DE PAGAMENTO
-// A função parseDataPrometida() já existia no arquivo desde sempre e nunca era chamada:
-// a ideia de anotar "o franqueado prometeu pagar dia X" tinha sido começada e parada.
-// Aqui ela finalmente vira rotina — a promessa é gravada junto com o contato e o painel
-// abre no que precisa de cobrança hoje.
+// FUN-02 — PROMESSAS DE PAGAMENTO
+// A promessa ("o franqueado prometeu pagar dia X") continua sendo gravada junto com o
+// contato, na aba Histórico de Cobranças. O card "Cobranças de hoje" que exibia essas
+// promessas no topo do Painel foi removido em 09/09/2026 a pedido do Financeiro
+// (carregarAgenda/renderAgenda e o cache foram removidos junto).
 // =====================================================================
-let agendaCache = { promessasHoje: [], promessasAtrasadas: [], semContato: [], carregadaEm: null };
 
 function saldoAbertoDaFranquia(franquia){
   return DATA.filter(d => d.franquia === franquia && effectiveStatus(d) === 'EM ABERTO')
@@ -4380,128 +4374,6 @@ function hojeISO(){
 
 function diasEntreISO(a, b){
   return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000);
-}
-
-async function carregarAgenda(){
-  const hoje = hojeISO();
-  const promessasHoje = [], promessasAtrasadas = [], semContato = [];
-
-  // franquias com débito vencido hoje — só elas interessam para a agenda.
-  // Escopo (definido pelo Financeiro em 09/09/2026): só unidades ATIVAS e FRANQUEADAS.
-  // Unidades PRÓPRIA são operação da própria Bee (não são cobrança de franqueado) e
-  // unidades INATIVA / EM PROCESSO DE DISTRATO seguem o rito de encerramento/jurídico —
-  // nenhuma das duas deve entrar na rotina diária de cobrança. Mesmo critério que o BI
-  // e os disparos do Yungas já usam. `statusFranquiaDe` respeita o override manual de
-  // status feito no painel; `operacaoPropria` vem direto do RAW.
-  const comDebito = {};
-  DATA.filter(d => effectiveStatus(d) === 'EM ABERTO'
-                && statusFranquiaDe(d.franquia) === 'ATIVA'
-                && d.operacaoPropria === 'FRANQUEADA').forEach(d=>{
-    if(!comDebito[d.franquia]) comDebito[d.franquia] = { total: 0, maxDias: 0 };
-    comDebito[d.franquia].total += d.total;
-    const dd = diasEmAtraso(d.vencimento);
-    if(dd > comDebito[d.franquia].maxDias) comDebito[d.franquia].maxDias = dd;
-  });
-
-  let snap;
-  try{ snap = await historicoCollection.get(); }
-  catch(e){ console.error('Agenda: não consegui ler o histórico', e); return; }
-
-  const contatoPorKey = {};
-  snap.docs.forEach(doc=>{
-    const entradas = (doc.data() && doc.data().entradas) ? doc.data().entradas : [];
-    if(entradas.length) contatoPorKey[doc.id] = entradas;
-  });
-
-  Object.keys(comDebito).forEach(franquia=>{
-    const key = franquiaKey(franquia);
-    const entradas = contatoPorKey[key] || [];
-    const info = comDebito[franquia];
-
-    // última promessa registrada para a unidade
-    let ultimaPromessa = null;
-    entradas.forEach(en=>{
-      if(!en.dataPrometida) return;
-      if(!ultimaPromessa || en.data > ultimaPromessa.data) ultimaPromessa = en;
-    });
-
-    if(ultimaPromessa){
-      const prometida = ultimaPromessa.dataPrometida;
-      // houve contato depois da data prometida? então a promessa já foi tratada
-      const tratada = entradas.some(en => en.data.slice(0,10) > prometida);
-      if(prometida === hoje){
-        promessasHoje.push({ franquia, promessa: prometida, total: info.total, obs: ultimaPromessa.observacao });
-        return;
-      }
-      if(prometida < hoje && !tratada){
-        promessasAtrasadas.push({ franquia, promessa: prometida, atraso: diasEntreISO(prometida, hoje), total: info.total, obs: ultimaPromessa.observacao });
-        return;
-      }
-    }
-
-    // sem contato nenhum, ou último contato há mais de 30 dias
-    const ultimoContato = entradas.length ? entradas.map(e=>e.data).sort().slice(-1)[0] : null;
-    const diasSemContato = ultimoContato ? diasEntreISO(ultimoContato.slice(0,10), hoje) : 9999;
-    if(diasSemContato > 30 && info.maxDias > 0){
-      semContato.push({ franquia, dias: diasSemContato === 9999 ? null : diasSemContato, total: info.total, maxDias: info.maxDias });
-    }
-  });
-
-  promessasAtrasadas.sort((a,b)=> b.atraso - a.atraso);
-  semContato.sort((a,b)=> b.total - a.total);
-
-  agendaCache = { promessasHoje, promessasAtrasadas, semContato, carregadaEm: new Date() };
-  renderAgenda();
-}
-
-function renderAgenda(){
-  const box = document.getElementById('agendaDoDia');
-  if(!box) return;
-  const { promessasHoje, promessasAtrasadas, semContato } = agendaCache;
-  const total = promessasHoje.length + promessasAtrasadas.length + semContato.length;
-  if(total === 0){ box.style.display = 'none'; return; }
-  box.style.display = 'block';
-
-  const somaValor = [...promessasHoje, ...promessasAtrasadas, ...semContato].reduce((s,i)=>s+i.total, 0);
-  document.getElementById('agendaResumo').textContent =
-    `${total} unidade(s) pedindo ação · ${fmtMoney(somaValor)} em aberto · só unidades ativas franqueadas`;
-
-  function lista(itens, vazio, render){
-    if(!itens.length) return `<div class="agenda-vazio">${vazio}</div>`;
-    return itens.slice(0, 8).map(render).join('')
-      + (itens.length > 8 ? `<div class="agenda-vazio">+ ${itens.length - 8} outra(s)</div>` : '');
-  }
-
-  document.getElementById('agendaCols').innerHTML = `
-    <div>
-      <div class="agenda-col-titulo" style="color:var(--green);">Prometeram pagar hoje · ${promessasHoje.length}</div>
-      ${lista(promessasHoje, 'Nenhuma promessa marcada para hoje.', p=>`
-        <div class="agenda-item" data-agenda-franquia="${p.franquia.replace(/"/g,'&quot;')}">
-          <span><span class="agenda-item-nome">${p.franquia}</span><br><span class="agenda-item-meta">prometido para hoje</span></span>
-          <span class="agenda-item-val">${fmtMoney(p.total)}</span>
-        </div>`)}
-    </div>
-    <div>
-      <div class="agenda-col-titulo" style="color:var(--rose);">Promessa vencida sem retorno · ${promessasAtrasadas.length}</div>
-      ${lista(promessasAtrasadas, 'Nenhuma promessa em atraso.', p=>`
-        <div class="agenda-item" data-agenda-franquia="${p.franquia.replace(/"/g,'&quot;')}">
-          <span><span class="agenda-item-nome">${p.franquia}</span><br><span class="agenda-item-meta">prometeu ${p.promessa.split('-').reverse().join('/')} · ${p.atraso}d sem retorno</span></span>
-          <span class="agenda-item-val">${fmtMoney(p.total)}</span>
-        </div>`)}
-    </div>
-    <div>
-      <div class="agenda-col-titulo" style="color:var(--amber);">Sem contato há mais de 30 dias · ${semContato.length}</div>
-      ${lista(semContato, 'Todas as unidades com débito foram contatadas no último mês.', p=>`
-        <div class="agenda-item" data-agenda-franquia="${p.franquia.replace(/"/g,'&quot;')}">
-          <span><span class="agenda-item-nome">${p.franquia}</span><br><span class="agenda-item-meta">${p.dias === null ? 'nunca contatada' : p.dias + ' dias sem contato'} · ${p.maxDias}d de atraso</span></span>
-          <span class="agenda-item-val">${fmtMoney(p.total)}</span>
-        </div>`)}
-    </div>
-  `;
-
-  document.querySelectorAll('[data-agenda-franquia]').forEach(el=>{
-    el.addEventListener('click', ()=> abrirFicha360(el.dataset.agendaFranquia));
-  });
 }
 
 // (função renderAlertaSemContato removida — esse alerta agora vive só na Central de Alertas)
@@ -4612,7 +4484,6 @@ document.getElementById('historicoSalvarBtn').addEventListener('click', async ()
     document.getElementById('historicoDataPrometida').value = '';
     showToast(dataPrometida ? 'Contato registrado e promessa agendada' : 'Contato registrado');
     renderHistorico(franquia);
-    carregarAgenda();
   }catch(e){
     console.error('Erro ao salvar histórico:', e);
     showToast('Erro ao registrar contato');
@@ -4737,7 +4608,6 @@ async function gravarLote(itens){
   const franquiaAtual = document.getElementById('historicoFranquiaSelect').value;
   if(franquiaAtual && gravadas.includes(franquiaAtual)) renderHistorico(franquiaAtual);
   if(typeof atualizarContadoresAlerta === 'function') atualizarContadoresAlerta();
-  carregarAgenda(); // FUN-02
 }
 
 document.getElementById('loteProcessarBtn').addEventListener('click', () => {
@@ -6083,7 +5953,6 @@ async function startApp(){
   if(estadoURL) aplicarEstadoFiltros(estadoURL);
   renderAll();
   atualizarContadoresAlerta(); // FUN-03
-  carregarAgenda(); // FUN-02 — carrega em segundo plano, sem travar a tela
   salvarSnapshotMensal();
   salvarSnapshotCarteira(); // FUN-05 — foto do saldo por franquia desta carga do RAW
 }
