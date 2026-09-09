@@ -851,6 +851,7 @@
 
     <div class="toolbar" style="margin-bottom:16px;">
       <select id="historicoFranquiaSelect" style="min-width:260px;"><option value="">Selecione uma franquia...</option></select>
+      <button class="btn btn-export" id="exportHistoricoBtn"><svg class="ic" aria-hidden="true"><use href="#ic-planilha"></use></svg>Exportar Excel</button>
       <span class="count" id="historicoUltimoContato"></span>
     </div>
 
@@ -941,6 +942,7 @@
         <option value="INATIVA">Somente inativas</option>
         <option value="EM PROCESSO DE DISTRATO">Somente em processo de distrato</option>
       </select>
+      <button class="btn btn-export" id="exportRankingBtn"><svg class="ic" aria-hidden="true"><use href="#ic-planilha"></use></svg>Exportar Excel</button>
       <span class="count">Filtra os três rankings abaixo pelo status da franquia.</span>
     </div>
     <div class="cards" style="grid-template-columns:1fr 1fr; gap:20px;">
@@ -1029,6 +1031,7 @@
       <select id="revisaoCategoriaLote" class="revisao-select"><option value="">Reclassificar para...</option></select>
       <button class="btn btn-export" id="revisaoAplicarLoteBtn">Aplicar</button>
       <button class="btn" id="revisaoMarcarLoteBtn">Marcar como revisado</button>
+      <button class="btn btn-export" id="exportRevisaoBtn"><svg class="ic" aria-hidden="true"><use href="#ic-planilha"></use></svg>Exportar Excel</button>
       <span class="count" id="revisaoSelecionadosCount">0 selecionados</span>
     </div>
 
@@ -1059,6 +1062,11 @@
       <div class="card-label" style="color:var(--green);"><svg class="ic" aria-hidden="true"><use href="#ic-salvar"></use></svg>Backup Completo</div>
       <p style="font-size:12px; color:var(--muted); margin:8px 0 12px;">Baixa um arquivo .json com tudo que está salvo no Firebase: CRM, Histórico de Cobranças, Acordos (registros e parcelas), Auditoria, Favoritos e status alterados manualmente. Guarde esse arquivo de vez em quando como segurança extra.</p>
       <button class="btn btn-export" id="exportarBackupBtn"><svg class="ic" aria-hidden="true"><use href="#ic-download"></use></svg>Exportar Backup Completo (.json)</button>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn btn-export" id="exportAuditoriaBtn"><svg class="ic" aria-hidden="true"><use href="#ic-planilha"></use></svg>Exportar Excel</button>
+      <span class="count">Exporta as mesmas 300 alterações mais recentes que estão na tabela.</span>
     </div>
 
     <div class="table-wrap">
@@ -1097,6 +1105,7 @@
       <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); white-space:nowrap; cursor:pointer;">
         <input type="checkbox" id="contatosSoCadastro" style="cursor:pointer;"> Só com cadastro completo
       </label>
+      <button class="btn btn-export" id="exportContatosBtn"><svg class="ic" aria-hidden="true"><use href="#ic-planilha"></use></svg>Exportar Excel</button>
       <span class="count" id="contatosCount"></span>
     </div>
     <div class="table-wrap">
@@ -1434,7 +1443,8 @@ const RAW_ATUALIZADO_EM = '2026-09-08T00:00:00-03:00';
 // Serve de conferência na atualização mensal: se o arquivo aberto como base não tiver este
 // marcador, ele é uma versão anterior às 24 melhorias de 04/09/2026 e NÃO deve ser usado
 // como base (foi assim que a atualização de 08/09 desfez as melhorias sem ninguém perceber).
-const PAINEL_VERSAO = '2.0';
+// 2.0 = as 24 melhorias de 04/09/2026 · 2.1 = exportações no padrão Bee (09/09/2026)
+const PAINEL_VERSAO = '2.1';
 
 const STATUS_LABELS = {
   'EM ABERTO': 'Vencido',
@@ -2628,36 +2638,400 @@ document.getElementById('tableBody').addEventListener('click', (e)=>{
 });
 
 // ===================== EXPORTAÇÃO EXCEL =====================
+
+// =====================================================================
+// EXPORTAÇÃO DE PLANILHAS — PADRÃO BEE
+// Todas as planilhas que saem do painel seguem o mesmo modelo (o mesmo do arquivo
+// "debitosgeral.xlsx" que o financeiro já usava formatado à mão):
+//   · cabeçalho em negrito 11pt, texto preto sobre o amarelo Bee (#FFCC00), centralizado
+//   · dados em 10pt na cor grafite (#1A1A1A)
+//   · colunas de dinheiro em R$, negativo em vermelho entre parênteses e zero como "–"
+//   · coluna de total em negrito
+//   · primeira linha congelada e com filtro, larguras de coluna ajustadas
+// O SheetJS que o painel já carrega não escreve cor/fonte (isso é recurso pago), então o
+// ExcelJS entra sob demanda — só quando alguém clica em exportar. Se o CDN não responder,
+// cai para o SheetJS e a planilha sai sem cores, mas com formato de moeda e cabeçalho
+// congelado, em vez de não sair nada.
+// =====================================================================
+const XLS_AMARELO_BEE = 'FFFFCC00';
+const XLS_GRAFITE     = 'FF1A1A1A';
+const XLS_MOEDA_FMT   = '"R$"\\ #,##0.00;[Red]\\("R$"\\ #,##0.00\\);"–"';
+
+function carregarScriptExterno(url){
+  return new Promise((ok, erro)=>{
+    const el = document.createElement('script');
+    el.src = url; el.async = true;
+    el.onload = ()=> ok(url);
+    el.onerror = ()=> erro(new Error('não carregou: ' + url));
+    document.head.appendChild(el);
+  });
+}
+
+let _excelJsPromise = null;
+function carregarExcelJS(){
+  if(window.ExcelJS) return Promise.resolve(window.ExcelJS);
+  if(_excelJsPromise) return _excelJsPromise;
+  const espelhos = [
+    'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',
+    'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js'
+  ];
+  _excelJsPromise = espelhos
+    .reduce((cadeia, url)=> cadeia.catch(()=> carregarScriptExterno(url)), Promise.reject(new Error('início')))
+    .then(()=>{ if(!window.ExcelJS) throw new Error('ExcelJS não ficou disponível'); return window.ExcelJS; })
+    .catch(e=>{ _excelJsPromise = null; throw e; });
+  return _excelJsPromise;
+}
+
+function baixarBlob(blob, nomeArquivo){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = nomeArquivo;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=> URL.revokeObjectURL(url), 4000);
+}
+
+// Sufixo com a data do dataset, para os arquivos não virarem "(1)", "(2)", "(3)" na pasta.
+function sufixoDataArquivo(){
+  return RAW_ATUALIZADO_EM.slice(0,10).split('-').reverse().join('-');
+}
+
+function nomeArquivoLimpo(texto){
+  return (texto || '').toString().normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'').toLowerCase();
+}
+
+/**
+ * Gera a planilha no padrão Bee.
+ * @param {string} arquivo  nome do arquivo (sem .xlsx)
+ * @param {Array}  abas     [{ nome, colunas, linhas }]
+ *   colunas: [{ cabecalho, largura, alinhar, moeda, negrito, wrap }]
+ *   linhas:  array de arrays, na mesma ordem das colunas
+ */
+async function exportarPlanilhaBee(arquivo, abas){
+  const totalLinhas = abas.reduce((n,a)=> n + a.linhas.length, 0);
+  if(totalLinhas === 0){
+    showToast('Não há nada para exportar com os filtros atuais.', 'aviso');
+    return;
+  }
+  const nomeFinal = `${arquivo}-${sufixoDataArquivo()}.xlsx`;
+  showToast('Montando a planilha...');
+  try{
+    const ExcelJSLib = await carregarExcelJS();
+    const wb = new ExcelJSLib.Workbook();
+    wb.creator = 'Painel de Inadimplência — Bee Delivery';
+    wb.created = new Date();
+
+    abas.forEach(aba=>{
+      const ws = wb.addWorksheet(aba.nome.slice(0,31), {
+        views: [{ state: 'frozen', ySplit: 1 }]
+      });
+      ws.columns = aba.colunas.map(c=>({ header: c.cabecalho, width: c.largura || 16 }));
+      aba.linhas.forEach(l=> ws.addRow(l));
+
+      const cab = ws.getRow(1);
+      cab.height = 21;
+      cab.eachCell(cel=>{
+        cel.font = { bold: true, size: 11, color: { argb: 'FF000000' } };
+        cel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: XLS_AMARELO_BEE } };
+        cel.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        cel.border = { bottom: { style: 'thin', color: { argb: 'FFBF9900' } } };
+      });
+
+      aba.colunas.forEach((c, i)=>{
+        const coluna = ws.getColumn(i + 1);
+        coluna.eachCell({ includeEmpty: false }, (cel, numLinha)=>{
+          if(numLinha === 1) return;
+          cel.font = { size: 10, color: { argb: XLS_GRAFITE }, bold: !!c.negrito };
+          if(c.moeda){
+            cel.numFmt = XLS_MOEDA_FMT;
+            cel.alignment = { horizontal: 'right' };
+          } else if(c.alinhar || c.wrap){
+            cel.alignment = { horizontal: c.alinhar || 'left', wrapText: !!c.wrap, vertical: c.wrap ? 'top' : undefined };
+          }
+        });
+      });
+
+      ws.autoFilter = { from: { row:1, column:1 }, to: { row:1, column: aba.colunas.length } };
+    });
+
+    const buffer = await wb.xlsx.writeBuffer();
+    baixarBlob(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), nomeFinal);
+    showToast(`Planilha gerada · ${totalLinhas} linha(s)`);
+  }catch(e){
+    console.error('ExcelJS indisponível, exportando sem formatação:', e);
+    exportarPlanilhaSimples(nomeFinal, abas);
+    showToast('Planilha gerada sem as cores — a biblioteca de formatação não carregou.', 'aviso');
+  }
+}
+
+// Reserva: usa o SheetJS que já vem no painel. Sem cor/fonte, mas com formato de moeda,
+// cabeçalho congelado, filtro e larguras — melhor do que não exportar.
+function exportarPlanilhaSimples(nomeFinal, abas){
+  const wb = XLSX.utils.book_new();
+  abas.forEach(aba=>{
+    const matriz = [aba.colunas.map(c=>c.cabecalho), ...aba.linhas];
+    const ws = XLSX.utils.aoa_to_sheet(matriz);
+    ws['!cols'] = aba.colunas.map(c=>({ wch: c.largura || 16 }));
+    try{
+      ws['!freeze'] = 'A2';
+      ws['!autofilter'] = { ref: XLSX.utils.encode_range(
+        { r:0, c:0 }, { r:0, c: aba.colunas.length - 1 }) };
+      aba.colunas.forEach((c, i)=>{
+        if(!c.moeda) return;
+        for(let r = 1; r <= aba.linhas.length; r++){
+          const cel = ws[XLSX.utils.encode_cell({ r, c: i })];
+          if(cel && typeof cel.v === 'number') cel.z = XLS_MOEDA_FMT;
+        }
+      });
+    }catch(err){ /* formatação opcional — segue sem ela */ }
+    XLSX.utils.book_append_sheet(wb, ws, aba.nome.slice(0,31));
+  });
+  XLSX.writeFile(wb, nomeFinal);
+}
+
+// ===== Aba Painel: os débitos do recorte que está na tela =====
+// Larguras copiadas do arquivo que o financeiro já usava formatado à mão.
+const COLUNAS_DEBITOS = [
+  { cabecalho:'Franquia',        largura:25 },
+  { cabecalho:'Franqueado',      largura:33.4 },
+  { cabecalho:'Status Franquia', largura:18.4, alinhar:'center' },
+  { cabecalho:'Operação',        largura:18.4 },
+  { cabecalho:'Categoria',       largura:25 },
+  { cabecalho:'Vencimento',      largura:17.5, alinhar:'center' },
+  { cabecalho:'Valor Original',  largura:20, moeda:true },
+  { cabecalho:'Multa',           largura:15, moeda:true },
+  { cabecalho:'Juros',           largura:15, moeda:true },
+  { cabecalho:'IGPM',            largura:15, moeda:true },
+  { cabecalho:'Total',           largura:20.9, moeda:true, negrito:true },
+  { cabecalho:'Status',          largura:16.6, alinhar:'center' },
+];
+
 function exportToExcel(){
   const rows = getFiltered();
   if(rows.length === 0){
     showToast('Nenhum lançamento encontrado com os filtros atuais.', 'aviso');
     return;
   }
-  const data = rows.map(d=>({
-    'Franquia': d.franquia,
-    'Franqueado': d.nome,
-    'Status Franquia': STATUS_FRANQUIA_LABELS[statusFranquiaDe(d.franquia)] || statusFranquiaDe(d.franquia),
-    'Operação': d.operacaoPropria === 'PRÓPRIA' ? 'Própria' : 'Franqueada',
-    'Categoria': d.categoria,
-    'Vencimento': fmtDate(d.vencimento),
-    'Valor Original': d.valor,
-    'Multa': d.multa,
-    'Juros': d.juros,
-    'IGPM': d.igpm,
-    'Total': d.total,
-    'Status': STATUS_LABELS[effectiveStatus(d)]
-  }));
-  const ws = XLSX.utils.json_to_sheet(data);
-  ws['!cols'] = [{wch:22},{wch:20},{wch:14},{wch:14},{wch:20},{wch:12},{wch:14},{wch:10},{wch:10},{wch:10},{wch:14},{wch:16}];
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Débitos');
+  const linhas = rows.map(d=>[
+    d.franquia,
+    d.nome,
+    STATUS_FRANQUIA_LABELS[statusFranquiaDe(d.franquia)] || statusFranquiaDe(d.franquia),
+    d.operacaoPropria === 'PRÓPRIA' ? 'Própria' : 'Franqueada',
+    d.categoria,
+    fmtDate(d.vencimento),
+    d.valor, d.multa, d.juros, d.igpm, d.total,
+    STATUS_LABELS[effectiveStatus(d)]
+  ]);
   const franquiaSel = document.getElementById('filterFranquia').value;
-  const nomeArquivo = franquiaSel
-    ? `debitos-${franquiaSel.replace(/[^a-z0-9]/gi,'_')}.xlsx`
-    : 'debitos-geral.xlsx';
-  XLSX.writeFile(wb, nomeArquivo);
+  const arquivo = franquiaSel ? `debitos-${nomeArquivoLimpo(franquiaSel)}` : 'debitos-geral';
+  exportarPlanilhaBee(arquivo, [{ nome:'Débitos', colunas: COLUNAS_DEBITOS, linhas }]);
 }
+
+// =====================================================================
+// EXPORTAÇÕES DAS OUTRAS ABAS — todas no mesmo padrão Bee
+// =====================================================================
+let auditoriaCache = [];
+
+// ---- Ranking: as três listas viram três abas de uma planilha só ----
+function dadosRankingParaExport(){
+  const filtroAtiva = document.getElementById('rankingFiltroAtiva').value;
+  const porFranquia = {};
+  DATA.forEach(d=>{
+    if(filtroAtiva && statusFranquiaDe(d.franquia) !== filtroAtiva) return;
+    if(!porFranquia[d.franquia]) porFranquia[d.franquia] = { totalAberto:0, qtdAberto:0, maxDias:0 };
+    if(effectiveStatus(d) === 'EM ABERTO'){
+      porFranquia[d.franquia].totalAberto += d.total;
+      porFranquia[d.franquia].qtdAberto += 1;
+      const dias = diasEmAtraso(d.vencimento);
+      if(dias > porFranquia[d.franquia].maxDias) porFranquia[d.franquia].maxDias = dias;
+    }
+  });
+  return Object.entries(porFranquia)
+    .map(([franquia, v])=>({ franquia, status: STATUS_FRANQUIA_LABELS[statusFranquiaDe(franquia)] || '', ...v }))
+    .filter(r=> r.qtdAberto > 0);
+}
+
+document.getElementById('exportRankingBtn').addEventListener('click', ()=>{
+  const lista = dadosRankingParaExport();
+  const colBase = [
+    { cabecalho:'#',         largura:6,  alinhar:'center' },
+    { cabecalho:'Franquia',  largura:28 },
+    { cabecalho:'Situação',  largura:18, alinhar:'center' },
+  ];
+  const porDevedor = [...lista].sort((a,b)=>b.totalAberto - a.totalAberto).slice(0,15);
+  const porQtde    = [...lista].sort((a,b)=>b.qtdAberto - a.qtdAberto).slice(0,15);
+  const porAtraso  = [...lista].sort((a,b)=>b.maxDias - a.maxDias).slice(0,15);
+  exportarPlanilhaBee('ranking-inadimplencia', [
+    { nome:'Maiores devedores',
+      colunas:[...colBase, { cabecalho:'Total vencido', largura:18, moeda:true, negrito:true }],
+      linhas: porDevedor.map((r,i)=>[i+1, r.franquia, r.status, r.totalAberto]) },
+    { nome:'Mais boletos vencidos',
+      colunas:[...colBase, { cabecalho:'Boletos vencidos', largura:18, alinhar:'center' },
+                           { cabecalho:'Total vencido', largura:18, moeda:true }],
+      linhas: porQtde.map((r,i)=>[i+1, r.franquia, r.status, r.qtdAberto, r.totalAberto]) },
+    { nome:'Maior atraso',
+      colunas:[...colBase, { cabecalho:'Dias em atraso', largura:16, alinhar:'center' },
+                           { cabecalho:'Total vencido', largura:18, moeda:true }],
+      linhas: porAtraso.map((r,i)=>[i+1, r.franquia, r.status, r.maxDias, r.totalAberto]) },
+  ]);
+});
+
+// ---- Contatos das franquias (respeita a busca e os filtros da aba) ----
+document.getElementById('exportContatosBtn').addEventListener('click', ()=>{
+  const busca = document.getElementById('contatosSearch').value.trim().toLowerCase();
+  const filtroStatus = document.getElementById('contatosFiltroStatus').value;
+  const soCadastro = document.getElementById('contatosSoCadastro').checked;
+  const filtrados = CONTATOS.filter(c=>{
+    if(filtroStatus && c.status !== filtroStatus) return false;
+    if(soCadastro && !c._cadastro) return false;
+    if(!busca) return true;
+    const campos = [c.cidade, c.franqueado, c.consultorEstrategico, c.email];
+    if(c._cadastro) campos.push(c._cadastro.cnpj, c._cadastro.razaoSocial, c._cadastro.responsavel);
+    return campos.join(' ').toLowerCase().includes(busca);
+  });
+  exportarPlanilhaBee('contatos-franquias', [{
+    nome:'Contatos',
+    colunas:[
+      { cabecalho:'Franquia',              largura:24 },
+      { cabecalho:'UF',                    largura:7,  alinhar:'center' },
+      { cabecalho:'Status',                largura:20, alinhar:'center' },
+      { cabecalho:'Franqueado Responsável',largura:28 },
+      { cabecalho:'E-mail da Unidade',     largura:30 },
+      { cabecalho:'Telefone / Celular',    largura:20, alinhar:'center' },
+      { cabecalho:'Suporte',               largura:24 },
+      { cabecalho:'Consultor Estratégico', largura:24 },
+      { cabecalho:'Franquia no Painel',    largura:22 },
+      { cabecalho:'CNPJ',                  largura:22, alinhar:'center' },
+      { cabecalho:'Razão Social',          largura:34 },
+      { cabecalho:'Cadastro',              largura:14, alinhar:'center' },
+    ],
+    linhas: filtrados.map(c=>{
+      const cad = c._cadastro || {};
+      return [
+        c.cidade || '', c.uf || '', c.status || '', c.franqueado || '', c.email || '',
+        cad.celular || cad.telefone || '', c.suporte || '', c.consultorEstrategico || '',
+        c.franquiaPainel || 'sem lançamento no período',
+        cad.cnpj || '', cad.razaoSocial || '',
+        c._cadastro ? 'Completo' : 'Parcial'
+      ];
+    })
+  }]);
+});
+
+// ---- Fila de revisão do Ajuste Manual (respeita os filtros da aba) ----
+document.getElementById('exportRevisaoBtn').addEventListener('click', ()=>{
+  const linhas = revisaoFiltrados().map(d=>{
+    const r = revisaoAjustes[d.id] || {};
+    return [
+      d.franquia, d.nome,
+      STATUS_FRANQUIA_LABELS[statusFranquiaDe(d.franquia)] || '',
+      fmtDate(d.vencimento), d.valor, d.total,
+      (d.detalheAsaas || '').trim(),
+      r.categoria || '',
+      r.revisadoPor || '',
+      r.revisadoEm ? new Date(r.revisadoEm).toLocaleDateString('pt-BR') : ''
+    ];
+  });
+  exportarPlanilhaBee('revisao-ajuste-manual', [{
+    nome:'Ajuste Manual',
+    colunas:[
+      { cabecalho:'Franquia',            largura:24 },
+      { cabecalho:'Franqueado',          largura:28 },
+      { cabecalho:'Status Franquia',     largura:18, alinhar:'center' },
+      { cabecalho:'Vencimento',          largura:14, alinhar:'center' },
+      { cabecalho:'Valor Original',      largura:18, moeda:true },
+      { cabecalho:'Total',               largura:18, moeda:true, negrito:true },
+      { cabecalho:'Descrição no Asaas',  largura:70, wrap:true },
+      { cabecalho:'Reclassificado como', largura:24 },
+      { cabecalho:'Revisado por',        largura:26 },
+      { cabecalho:'Revisado em',         largura:14, alinhar:'center' },
+    ],
+    linhas
+  }]);
+});
+
+// ---- Auditoria (as mesmas 300 alterações que estão na tela) ----
+document.getElementById('exportAuditoriaBtn').addEventListener('click', ()=>{
+  if(auditoriaCache.length === 0){
+    showToast('Abra a aba Auditoria e espere carregar antes de exportar.', 'aviso');
+    return;
+  }
+  exportarPlanilhaBee('auditoria-painel', [{
+    nome:'Auditoria',
+    colunas:[
+      { cabecalho:'Quando',     largura:20, alinhar:'center' },
+      { cabecalho:'Quem',       largura:28 },
+      { cabecalho:'Franquia',   largura:24 },
+      { cabecalho:'Franqueado', largura:26 },
+      { cabecalho:'Status antes',largura:18, alinhar:'center' },
+      { cabecalho:'Status depois',largura:18, alinhar:'center' },
+      { cabecalho:'IP',         largura:16, alinhar:'center' },
+    ],
+    linhas: auditoriaCache.map(a=>[
+      a.quando ? new Date(a.quando).toLocaleString('pt-BR') : '',
+      a.quem || '', a.franquia || '', a.franqueado || '',
+      a.antes || '', a.depois || '', a.ip || ''
+    ])
+  }]);
+});
+
+// ---- Histórico de cobranças: a unidade selecionada, ou a rede inteira ----
+document.getElementById('exportHistoricoBtn').addEventListener('click', async ()=>{
+  const franquiaSel = document.getElementById('historicoFranquiaSelect').value;
+  const btn = document.getElementById('exportHistoricoBtn');
+  const rotulo = btn.innerHTML;
+  btn.disabled = true;
+  try{
+    const franquiaPorKey = {};
+    [...new Set(DATA.map(d=>d.franquia))].forEach(f=>{ franquiaPorKey[franquiaKey(f)] = f; });
+
+    let docs;
+    if(franquiaSel){
+      const doc = await historicoCollection.doc(franquiaKey(franquiaSel)).get();
+      docs = doc.exists ? [doc] : [];
+    } else {
+      const snap = await historicoCollection.get();
+      docs = snap.docs;
+    }
+
+    const linhas = [];
+    docs.forEach(doc=>{
+      const nomeFranquia = franquiaPorKey[doc.id] || doc.id;
+      const entradas = (doc.data() && doc.data().entradas) ? doc.data().entradas : [];
+      entradas.forEach(en=>{
+        linhas.push([
+          nomeFranquia,
+          en.data ? new Date(en.data).toLocaleString('pt-BR') : '',
+          en.quem || '',
+          en.canal || '',
+          en.observacao || '',
+          en.dataPrometida ? en.dataPrometida.split('-').reverse().join('/') : ''
+        ]);
+      });
+    });
+    linhas.sort((a,b)=> a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
+
+    const arquivo = franquiaSel ? `historico-${nomeArquivoLimpo(franquiaSel)}` : 'historico-cobranca-geral';
+    exportarPlanilhaBee(arquivo, [{
+      nome:'Histórico de cobrança',
+      colunas:[
+        { cabecalho:'Franquia',              largura:24 },
+        { cabecalho:'Data e hora',           largura:20, alinhar:'center' },
+        { cabecalho:'Quem registrou',        largura:26 },
+        { cabecalho:'Canal',                 largura:14, alinhar:'center' },
+        { cabecalho:'Observação',            largura:70, wrap:true },
+        { cabecalho:'Prometeu pagar em',     largura:18, alinhar:'center' },
+      ],
+      linhas
+    }]);
+  }catch(e){
+    console.error('Erro ao exportar histórico:', e);
+    showToast('Não consegui ler o histórico para exportar.', 'erro');
+  }finally{
+    btn.disabled = false;
+    btn.innerHTML = rotulo;
+  }
+});
 
 // ===================== EXPORTAÇÃO PDF (Relatório Bee Delivery) =====================
 function renderStatusChartImage(porStatus){
@@ -3408,6 +3782,7 @@ async function renderAuditoria(){
       return;
     }
     empty.style.display = 'none';
+    auditoriaCache = snap.docs.map(doc=>doc.data()); // guardado para a exportação
     tbody.innerHTML = snap.docs.map(doc=>{
       const a = doc.data();
       const dt = new Date(a.quando);
