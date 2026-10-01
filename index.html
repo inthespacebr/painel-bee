@@ -17,36 +17,37 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
   :root{
-    --bg: #0B1220;
-    --surface: #131B2E;
-    --surface-alt: #1B2740;
-    --border: #2A3652;
-    --text: #E8ECF4;
-    --muted: #8A94AC;
-    --amber: #D9A441;
-    --green: #4FAE8A;
-    --blue: #5B8DEF;
-    --rose: #E0637A;
-    --violet: #9B7FE8;
+    /* v3.0 — identidade Bee: preto + amarelo. --blue = negociação (laranja), --violet = a vencer (azul) */
+    --bg: #0A0A0A;
+    --surface: #131313;
+    --surface-alt: #1C1C1C;
+    --border: #2A2A2A;
+    --text: #F4F4F4;
+    --muted: #9B9B9B;
+    --amber: #FFCC00;
+    --green: #3DD68C;
+    --blue: #FF8A3D;
+    --rose: #FF5A5F;
+    --violet: #4DA8FF;
   }
   body.theme-light{
-    --bg: #F3F5FA;
+    --bg: #F4F4F1;
     --surface: #FFFFFF;
-    --surface-alt: #EEF1F8;
-    --border: #DCE1EE;
-    --text: #1B2740;
-    --muted: #667088;
+    --surface-alt: #F3F3EF;
+    --border: #E3E3DD;
+    --text: #111111;
+    --muted: #5E5E58;
     /* VIS-04: no tema claro os acentos precisam de tons mais escuros para ficarem
-       legíveis sobre fundo branco (o #D9A441 original tem contraste ~2:1). */
-    --amber: #A67908;
-    --green: #21785B;
-    --blue: #2B5FB8;
-    --rose: #B33A50;
-    --violet: #6142B0;
+       legíveis sobre fundo branco (o #FFCC00 original tem contraste ~2:1). */
+    --amber: #8A6500;
+    --green: #1B7A4B;
+    --blue: #B8500A;
+    --rose: #C4303A;
+    --violet: #1D6AA8;
   }
-  body.theme-light .topbar{ background:rgba(243,245,250,0.92); }
+  body.theme-light .topbar{ background:rgba(244,244,241,0.92); }
   body.theme-light .btn-export{ background:#1B1B1B; color:#F5C518; border-color:#1B1B1B; }
-  body.theme-light tbody tr:hover{ background:rgba(27,39,64,0.035); }
+  body.theme-light tbody tr:hover{ background:rgba(17,17,17,0.035); }
   body{ transition: background-color 0.2s ease, color 0.2s ease; }
   *{box-sizing:border-box;}
   body{
@@ -63,7 +64,7 @@
     padding:28px 32px 20px;
     border-bottom:1px solid var(--border);
     position:sticky; top:0; z-index:20;
-    background:rgba(11,18,32,0.92);
+    background:rgba(10,10,10,0.92);
     backdrop-filter:blur(6px);
   }
   .topbar-row{display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap;}
@@ -76,7 +77,7 @@
     border-radius:7px; padding:7px 12px; font-size:12.5px; cursor:pointer; font-family:inherit;
     display:flex; align-items:center; gap:6px;
   }
-  .theme-toggle:hover{border-color:#3a4870;}
+  .theme-toggle:hover{border-color:#3A3A3A;}
   .tabs-nav{display:flex; gap:6px; margin-top:16px; flex-wrap:wrap;}
   .tab-btn{
     background:none; border:none; color:var(--muted); padding:9px 14px; font-size:13px;
@@ -123,7 +124,7 @@
     display:flex; align-items:center; justify-content:space-between; gap:6px;
     font-size:10.5px; color:var(--muted); margin-top:5px;
   }
-  .kanban-card.parado{ border-color:rgba(224,99,122,0.5); }
+  .kanban-card.parado{ border-color:rgba(229,72,77,0.5); }
   .kanban-card.parado .kanban-card-meta{ color:var(--rose); }
   .kanban-card-atraso{ font-family:'IBM Plex Mono', monospace; }
   .kanban-move-btn{
@@ -147,7 +148,7 @@
   .alert-empty{color:var(--muted); font-size:13px; padding:6px 2px;}
   .kanban-card{cursor:grab;}
   .kanban-card.dragging{opacity:0.4;}
-  .kanban-col.drag-over{border-color:var(--amber); background:rgba(217,164,65,0.06);}
+  .kanban-col.drag-over{border-color:var(--amber); background:rgba(255,204,0,0.06);}
   .kanban-card-remove{background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; float:right;}
   .kanban-card-remove:hover{color:var(--rose);}
   .fav-star{cursor:pointer; margin-right:6px; color:var(--muted); font-size:14px;}
@@ -199,7 +200,7 @@
     background:var(--surface-alt); border:1px solid var(--border); color:var(--muted);
     border-radius:5px; padding:3px 5px; font-size:11px; font-family:inherit; cursor:pointer;
   }
-  .save-dot{width:7px;height:7px;border-radius:50%;background:var(--green); box-shadow:0 0 0 3px rgba(79,174,138,0.18);}
+  .save-dot{width:7px;height:7px;border-radius:50%;background:var(--green); box-shadow:0 0 0 3px rgba(31,164,99,0.18);}
 
   .health-strip{
     margin-top:18px; height:10px; border-radius:6px; overflow:hidden;
@@ -232,7 +233,7 @@
   }
   .kpi-principal{
     padding:20px 24px; border-right:1px solid var(--border);
-    background:linear-gradient(135deg, rgba(217,164,65,0.10), transparent 70%);
+    background:linear-gradient(135deg, rgba(255,204,0,0.10), transparent 70%);
   }
   .kpi-principal .kpi-k{ font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); }
   .kpi-principal .kpi-v{
@@ -271,7 +272,7 @@
   }
   .taxa-destaque{
     padding:20px 24px; border-right:1px solid var(--border);
-    background:linear-gradient(135deg, rgba(224,99,122,0.10), transparent 70%);
+    background:linear-gradient(135deg, rgba(229,72,77,0.10), transparent 70%);
   }
   .taxa-destaque .kpi-v{ font-size:38px; color:var(--rose); }
   .taxa-item{ padding:16px 18px; border-right:1px solid var(--border); }
@@ -306,8 +307,8 @@
     background:var(--surface-alt); border:1px solid var(--border); color:var(--text);
     border-radius:7px; padding:9px 14px; font-size:13px; cursor:pointer; font-family:inherit;
   }
-  .btn:hover{border-color:#3a4870;}
-  .btn.reset{color:var(--rose); border-color:rgba(224,99,122,0.35);}
+  .btn:hover{border-color:#3A3A3A;}
+  .btn.reset{color:var(--rose); border-color:rgba(229,72,77,0.35);}
   .btn-export{background:#1B1B1B; color:#F5C518; border-color:#F5C518; font-weight:600;}
   .btn-export:hover{background:#2A2A2A; border-color:#F5C518;}
 
@@ -369,7 +370,7 @@
   }
   tbody tr.sev-1 td:first-child::before{ background:var(--amber); }
   tbody tr.sev-2 td:first-child::before{ background:var(--rose); }
-  tbody tr.sev-3 td:first-child::before{ background:#8B2E3C; }
+  tbody tr.sev-3 td:first-child::before{ background:#9B1C1F; }
 
   /* VIS-05 — linhas-fantasma enquanto os dados são montados */
   .skeleton-cell{
@@ -483,7 +484,7 @@
 
   .reclass-badge{
     font-size:10px; padding:2px 6px; border-radius:4px; margin-left:6px; font-weight:600;
-    background:rgba(91,141,239,0.16); color:var(--blue);
+    background:rgba(232,89,12,0.16); color:var(--blue);
   }
 
   /* INT-07 — foco visível em tudo que é operável pelo teclado */
@@ -497,9 +498,9 @@
   td.num{font-family:'IBM Plex Mono', monospace; text-align:right; white-space:nowrap;}
   td.total{font-weight:600;}
   .franquia-badge{font-size:10.5px; padding:2px 7px; border-radius:4px; margin-left:8px; font-weight:600;}
-  .fr-ativa{background:rgba(79,174,138,0.14); color:var(--green);}
-  .fr-inativa{background:rgba(138,148,172,0.15); color:var(--muted);}
-  .fr-distrato{background:rgba(217,164,65,0.16); color:var(--amber);}
+  .fr-ativa{background:rgba(31,164,99,0.14); color:var(--green);}
+  .fr-inativa{background:rgba(150,150,150,0.15); color:var(--muted);}
+  .fr-distrato{background:rgba(255,204,0,0.16); color:var(--amber);}
 
   /* ===== Aba Contatos das Franquias ===== */
   .contatos-stats{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
@@ -518,8 +519,8 @@
     font-size:10.5px; padding:3px 8px; border-radius:5px; font-weight:600; white-space:nowrap; cursor:pointer;
     border:1px solid transparent;
   }
-  .cadastro-tag.completo{background:rgba(79,174,138,0.14); color:var(--green); border-color:rgba(79,174,138,0.3);}
-  .cadastro-tag.parcial{background:rgba(138,148,172,0.15); color:var(--muted); border-color:var(--border);}
+  .cadastro-tag.completo{background:rgba(31,164,99,0.14); color:var(--green); border-color:rgba(31,164,99,0.3);}
+  .cadastro-tag.parcial{background:rgba(150,150,150,0.15); color:var(--muted); border-color:var(--border);}
   .franquia-detalhe-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:6px;}
   @media(max-width:640px){ .franquia-detalhe-grid{grid-template-columns:1fr;} }
   .fd-section{background:var(--surface-alt); border:1px solid var(--border); border-radius:9px; padding:12px 14px;}
@@ -532,17 +533,17 @@
   .fd-row .fd-v a:hover{text-decoration:underline;}
   .fd-atende-lista{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;}
   .fd-atende-item{background:var(--surface); border:1px solid var(--border); border-radius:5px; padding:3px 8px; font-size:11.5px; color:var(--muted);}
-  .fd-sem-cadastro{background:rgba(217,164,65,0.1); border:1px solid rgba(217,164,65,0.3); color:var(--amber); border-radius:8px; padding:10px 14px; font-size:12.5px; margin-bottom:14px;}
+  .fd-sem-cadastro{background:rgba(255,204,0,0.1); border:1px solid rgba(255,204,0,0.3); color:var(--amber); border-radius:8px; padding:10px 14px; font-size:12.5px; margin-bottom:14px;}
 
   .status-select{
     font-size:12px; font-weight:600; border-radius:6px; padding:6px 10px; border:1px solid transparent;
     cursor:pointer; font-family:inherit; appearance:none; -webkit-appearance:none;
     background-repeat:no-repeat; background-position:right 8px center; background-size:10px;
   }
-  .st-EM_ABERTO{background:rgba(217,164,65,0.16); color:var(--amber); border-color:rgba(217,164,65,0.35);}
-  .st-BAIXADO{background:rgba(79,174,138,0.16); color:var(--green); border-color:rgba(79,174,138,0.35);}
-  .st-COBRANCA_INDEVIDA{background:rgba(224,99,122,0.16); color:var(--rose); border-color:rgba(224,99,122,0.35);}
-  .st-A_VENCER{background:rgba(155,127,232,0.16); color:var(--violet); border-color:rgba(155,127,232,0.35);}
+  .st-EM_ABERTO{background:rgba(255,204,0,0.16); color:var(--amber); border-color:rgba(255,204,0,0.35);}
+  .st-BAIXADO{background:rgba(31,164,99,0.16); color:var(--green); border-color:rgba(31,164,99,0.35);}
+  .st-COBRANCA_INDEVIDA{background:rgba(229,72,77,0.16); color:var(--rose); border-color:rgba(229,72,77,0.35);}
+  .st-A_VENCER{background:rgba(30,143,208,0.16); color:var(--violet); border-color:rgba(30,143,208,0.35);}
 
   .pagination{display:flex; justify-content:center; align-items:center; gap:14px; padding:16px; color:var(--muted); font-size:13px;}
   .pagination button{background:none; border:none; color:var(--text); cursor:pointer; font-size:13px; padding:6px 10px; border-radius:6px;}
@@ -560,9 +561,9 @@
   .toast.show{opacity:1; transform:translateY(0);}
   .toast .dot{width:7px;height:7px;border-radius:50%;background:var(--green);}
   .toast{max-width:min(420px, calc(100vw - 48px)); line-height:1.45;}
-  .toast.erro{border-color:rgba(224,99,122,0.5);}
+  .toast.erro{border-color:rgba(229,72,77,0.5);}
   .toast.erro .dot{background:var(--rose);}
-  .toast.aviso{border-color:rgba(217,164,65,0.5);}
+  .toast.aviso{border-color:rgba(255,204,0,0.5);}
   .toast.aviso .dot{background:var(--amber);}
 
   .auth-overlay{
@@ -653,6 +654,404 @@
     .revisao-asaas{ max-width:none; }
     .ficha-kpis{ grid-template-columns:1fr 1fr; }
   }
+
+  /* =====================================================================
+     v3.0 — IDENTIDADE BEE (preto + amarelo), NAVEGAÇÃO LATERAL E VISÃO GERAL AO VIVO
+     Este bloco vem por último de propósito: ele reveste os componentes antigos sem
+     mexer nas regras deles. Tudo o que era v2.1 continua funcionando por baixo.
+     ===================================================================== */
+  :root{
+    --bee:#FFCC00; --bee-ink:#0A0A0A; --bee-soft:rgba(255,204,0,0.12); --bee-line:rgba(255,204,0,0.35);
+    --sb-w:236px; --radius:14px; --radius-sm:9px;
+    --shadow:0 1px 0 rgba(255,255,255,0.03) inset, 0 10px 30px rgba(0,0,0,0.35);
+    --chart-grid:rgba(255,255,255,0.06);
+  }
+  body.theme-light{
+    --bee-soft:rgba(255,204,0,0.18); --bee-line:rgba(180,140,0,0.45);
+    --shadow:0 1px 2px rgba(17,17,17,0.04), 0 8px 24px rgba(17,17,17,0.06);
+    --chart-grid:rgba(17,17,17,0.07);
+  }
+  body{ font-feature-settings:"tnum" 1, "cv11" 1; }
+  .mono, td.num, .kpi-v, .card-value{ font-variant-numeric:tabular-nums; }
+  ::selection{ background:var(--bee); color:#000; }
+  *::-webkit-scrollbar{ width:10px; height:10px; }
+  *::-webkit-scrollbar-thumb{ background:var(--border); border-radius:10px; border:2px solid var(--bg); }
+  *::-webkit-scrollbar-track{ background:transparent; }
+
+  /* ---------- Login ---------- */
+  .auth-overlay{ background:radial-gradient(1200px 600px at 80% -10%, rgba(255,204,0,0.16), transparent 60%), #0A0A0A; }
+  .auth-card{ background:#121212; border-color:#262626; border-radius:18px; box-shadow:0 30px 80px rgba(0,0,0,0.6); color:#F4F4F4; }
+  .auth-card .auth-sub{ color:#9B9B9B; }
+  .auth-card .auth-input{ background:#1B1B1B; border-color:#2C2C2C; color:#F4F4F4; }
+  .auth-card .auth-input:focus{ border-color:var(--bee); box-shadow:0 0 0 3px rgba(255,204,0,0.18); }
+  .auth-eyebrow{ color:var(--bee) !important; }
+  .auth-btn{ background:var(--bee) !important; color:#000 !important; font-weight:700; border-radius:10px; }
+  .auth-logo{ display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:18px; }
+
+  /* ---------- Estrutura: barra lateral + área principal ---------- */
+  .app-content.unlocked{ display:block; }
+  .sidebar{
+    position:fixed; left:0; top:0; bottom:0; width:var(--sb-w); z-index:40;
+    background:#0A0A0A; color:#EDEDED; border-right:1px solid #1F1F1F;
+    display:flex; flex-direction:column; padding:18px 12px 14px;
+  }
+  .sb-brand{ display:flex; align-items:center; gap:10px; padding:4px 8px 20px; }
+  .sb-logo{ width:36px; height:36px; flex:none; }
+  .sb-brand-txt{ display:flex; flex-direction:column; line-height:1.1; }
+  .sb-brand-txt b{ font-family:'Space Grotesk',sans-serif; font-size:21px; letter-spacing:-0.02em; color:#fff; }
+  .sb-brand-txt span{ font-size:10.5px; letter-spacing:0.12em; text-transform:uppercase; color:#8C8C8C; margin-top:3px; }
+  .sb-sec{ font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:#6B6B6B; padding:14px 12px 6px; }
+  .sb-nav{ display:flex; flex-direction:column; gap:2px; }
+  .nav-item{
+    display:flex; align-items:center; gap:11px; width:100%; text-align:left;
+    background:none; border:none; color:#BDBDBD; font-family:inherit; font-size:13.5px; font-weight:500;
+    padding:10px 12px; border-radius:10px; cursor:pointer; position:relative; transition:background .15s, color .15s;
+  }
+  .nav-item .ic{ width:18px; height:18px; margin:0; stroke-width:1.8; }
+  .nav-item:hover{ background:#161616; color:#fff; }
+  .nav-item.active{ background:var(--bee); color:#000; font-weight:700; }
+  .nav-item.active .ic{ stroke:#000; }
+  .nav-item kbd{
+    margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#6B6B6B;
+    border:1px solid #2A2A2A; border-radius:5px; padding:0 5px; line-height:16px;
+  }
+  .nav-item.active kbd{ color:#000; border-color:rgba(0,0,0,0.25); }
+  .nav-badge{
+    margin-left:auto; background:#E5484D; color:#fff; font-size:10px; font-weight:700;
+    border-radius:10px; padding:1px 7px; line-height:16px;
+  }
+  .nav-badge + kbd{ margin-left:6px; }
+  .nav-item.active .nav-badge{ background:#000; color:var(--bee); }
+  .sb-foot{ margin-top:auto; display:flex; flex-direction:column; gap:8px; padding:12px 6px 0; border-top:1px solid #1F1F1F; }
+  .sb-dados{ font-size:11.5px; color:#9B9B9B; line-height:1.5; padding:0 6px; }
+  .sb-dados b{ color:#fff; font-weight:600; }
+  .sb-dados .versao{ display:block; font-size:10.5px; color:#6B6B6B; }
+  .sb-botoes{ display:flex; gap:6px; }
+  .sidebar .theme-toggle{
+    flex:1; justify-content:center; background:#161616; border:1px solid #262626; color:#DADADA;
+    border-radius:9px; padding:8px 10px; font-size:12px;
+  }
+  .sidebar .theme-toggle:hover{ border-color:var(--bee); color:#fff; }
+
+  .app-main{ margin-left:var(--sb-w); min-height:100vh; }
+  .topbar{
+    position:sticky; top:0; z-index:30; padding:14px 28px 0; border-bottom:1px solid var(--border);
+    background:color-mix(in srgb, var(--bg) 86%, transparent) !important; backdrop-filter:blur(10px);
+  }
+  .tb-linha{ display:flex; align-items:center; gap:16px; min-height:52px; padding-bottom:12px; }
+  .tb-titulo{ min-width:0; }
+  .tb-titulo .eyebrow{ margin:0 0 3px; font-size:10.5px; color:var(--muted); letter-spacing:0.14em; }
+  .tb-titulo .title{ font-size:22px; font-weight:700; letter-spacing:-0.02em; white-space:nowrap; }
+  .tb-dir{ margin-left:auto; display:flex; align-items:center; gap:10px; }
+  .sb-toggle{ display:none; background:var(--surface-alt); border:1px solid var(--border); color:var(--text); border-radius:9px; width:38px; height:38px; cursor:pointer; align-items:center; justify-content:center; }
+  .cmdk-btn{
+    display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border);
+    color:var(--muted); border-radius:10px; padding:8px 10px 8px 12px; font-family:inherit; font-size:13px;
+    cursor:pointer; min-width:250px;
+  }
+  .cmdk-btn:hover{ border-color:var(--bee-line); color:var(--text); }
+  .cmdk-btn .ic{ margin:0; }
+  .cmdk-btn kbd{ margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:10.5px; border:1px solid var(--border); border-radius:5px; padding:1px 6px; background:var(--surface-alt); }
+  .live-pill{
+    display:flex; align-items:center; gap:7px; font-size:11px; font-weight:700; letter-spacing:0.1em;
+    color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:7px 12px;
+  }
+  .live-pill .relogio{ font-family:'IBM Plex Mono',monospace; font-weight:500; letter-spacing:0; color:var(--muted); }
+  .live-dot{ width:8px; height:8px; border-radius:50%; background:#2FC57E; position:relative; flex:none; display:inline-block; }
+  .live-dot::after{ content:''; position:absolute; inset:-4px; border-radius:50%; border:2px solid #2FC57E; opacity:0; animation:live-pulse 1.8s ease-out infinite; }
+  .live-dot.bee{ background:var(--bee); } .live-dot.bee::after{ border-color:var(--bee); }
+  @keyframes live-pulse{ 0%{transform:scale(0.6); opacity:0.9;} 100%{transform:scale(1.7); opacity:0;} }
+  .save-status{ font-size:11.5px; }
+  .topbar .tabs-nav{ margin:0; gap:4px; padding:0; border:none; }
+  .topbar .tabs-nav.oculta{ display:none; }
+  .topbar .tab-btn{
+    border-radius:0; padding:10px 14px 12px; font-size:13px; font-weight:500; color:var(--muted);
+    background:none !important; border-bottom:2px solid transparent; margin-bottom:-1px;
+  }
+  .topbar .tab-btn:hover{ color:var(--text); }
+  .topbar .tab-btn.active{ color:var(--text); border-bottom-color:var(--bee); font-weight:700; }
+  .topbar .tab-btn .ic{ margin-right:7px; }
+  .tab-badge{ background:#E5484D; }
+
+  .container{ max-width:1600px !important; padding:24px 28px 64px; }
+  .tab-panel{ animation:painel-in .28s ease; }
+  @keyframes painel-in{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+  .subtitle{ color:var(--muted); }
+
+  /* ---------- Componentes base revestidos ---------- */
+  .card, .toolbar, .table-wrap, .kpi-linha, .taxa-linha, .kanban-col, .modal-box, .ficha-box, .contatos-stat-chip{
+    border-radius:var(--radius); box-shadow:var(--shadow);
+  }
+  .toolbar{ padding:12px; gap:8px; }
+  .toolbar input[type=text], .toolbar select, .crm-input, .revisao-select, select, input[type=date], textarea{
+    border-radius:9px !important;
+  }
+  .toolbar input[type=text]:focus, .toolbar select:focus, .crm-input:focus, textarea:focus{
+    outline:none; border-color:var(--bee-line); box-shadow:0 0 0 3px var(--bee-soft);
+  }
+  .btn{ border-radius:9px; font-weight:500; transition:border-color .15s, background .15s, transform .08s; }
+  .btn:hover{ border-color:var(--bee-line); }
+  .btn:active{ transform:translateY(1px); }
+  .btn-export, body.theme-light .btn-export{
+    background:var(--bee) !important; color:#000 !important; border-color:var(--bee) !important; font-weight:700;
+  }
+  .btn-export:hover{ filter:brightness(1.06); }
+  .btn-export .ic{ stroke:#000; }
+  .btn.reset{ color:var(--rose); }
+  thead th{ font-size:10.5px; letter-spacing:0.08em; }
+  thead th[data-key][data-sort]{ color:var(--text); }
+  tbody tr{ transition:background .12s; }
+  tbody tr:hover{ background:var(--bee-soft) !important; }
+  body.theme-light tbody tr:hover{ background:rgba(255,204,0,0.10) !important; }
+  .franquia-nome-click{ cursor:pointer; font-weight:600; text-decoration:none !important; border-bottom:1px dashed var(--border); }
+  .franquia-nome-click:hover{ color:var(--amber); border-bottom-color:var(--amber); }
+  .franquia-link{ color:var(--amber) !important; }
+  .fd-row .fd-v a{ color:var(--amber) !important; }
+  .fav-star.active{ color:var(--bee); }
+  .status-select{ border-radius:999px; padding:5px 12px !important; }
+  .st-EM_ABERTO{ background:var(--bee-soft); color:var(--amber); border-color:var(--bee-line); }
+  .count-pill{ border-radius:999px; }
+  .alerta-tab-btn.active .count-pill{ background:var(--bee); color:#000; }
+  .toast{ border-radius:12px; background:#111; color:#fff; border-color:#2A2A2A; }
+  .toast .dot{ background:var(--bee); }
+  .modal-overlay{ background:rgba(0,0,0,0.62); backdrop-filter:blur(3px); }
+  .modal-box{ border-radius:18px; }
+  .modal-tab-btn.active, .ficha-tab.active{ color:var(--text); border-bottom-color:var(--bee); }
+  .kpi-principal{ background:linear-gradient(135deg, var(--bee-soft), transparent 70%); }
+  .kpi-principal .kpi-v{ color:var(--amber); font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(24px,2.2vw,34px); letter-spacing:-0.02em; }
+  @media (min-width:721px){
+    .kpi-apoio .kpi-v{ font-size:16.5px; white-space:nowrap; }
+    .kpi-linha{ grid-template-columns:minmax(260px,1.3fr) repeat(auto-fit, minmax(150px,1fr)); }
+  }
+  @media (max-width:720px){ .kpi-apoio .kpi-v{ font-size:14px; } .kpi-apoio{ min-width:0; } }
+  /* tabela da Carteira mais enxuta para caber ao lado da barra lateral */
+  #tabPainel table{ font-size:12.5px; }
+  #tabPainel thead th, #tabPainel tbody td{ padding:9px 8px; }
+  #tabPainel thead th[data-key]{ padding-right:20px; }
+  #tabPainel td[data-label="Categoria"]{ font-size:11px; letter-spacing:0.02em; color:var(--muted); max-width:120px; }
+  #tabPainel td[data-label="Franqueado"]{ font-size:12px; max-width:130px; }
+  #tabPainel td[data-label="Vencimento"]{ white-space:nowrap; }
+  #tabPainel .status-select{ font-size:11px; padding:4px 10px !important; max-width:118px; }
+  #tabPainel .franquia-badge{ font-size:9.5px; padding:1px 5px; }
+  #tabPainel td.acoes .acao-btn{ padding:3px 4px; }
+  #tabPainel td[data-label="Franquia"]{ max-width:250px; min-width:170px; }
+  #tabPainel td[data-label="Franquia"] .franquia-nome-click{ white-space:normal; }
+  #tabPainel td[data-label="Vencimento"]{ font-size:12px; }
+  .kpi-linha{ margin-bottom:14px; }
+  .health-strip{ margin:0 0 6px; height:8px; border-radius:999px; gap:2px; background:transparent; border:none; }
+  .health-seg{ border-radius:999px; transition:width .6s cubic-bezier(.2,.8,.2,1); }
+  .health-legend{ margin:0 0 16px; }
+  .kanban-col{ border-radius:var(--radius); }
+  .kanban-card{ border-radius:11px; transition:transform .12s, border-color .12s; }
+  .kanban-card:hover{ transform:translateY(-1px); border-color:var(--bee-line); }
+  .kanban-col-total{ color:var(--amber); }
+  .kanban-col.drag-over{ border-color:var(--bee); background:var(--bee-soft); }
+
+  /* Ficha da franquia vira gaveta lateral */
+  #ficha360{ justify-content:flex-end; padding:0; }
+  #ficha360 .ficha-box{
+    max-width:820px; height:100vh; max-height:100vh; border-radius:18px 0 0 18px; border-right:none;
+    animation:gaveta-in .28s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes gaveta-in{ from{ transform:translateX(40px); opacity:0; } to{ transform:none; opacity:1; } }
+  .ficha-topo{ background:linear-gradient(180deg, var(--bee-soft), transparent); }
+  .ficha-saldo-valor{ color:var(--amber); }
+
+  /* ---------- Carteira: barra rápida ---------- */
+  .quickbar{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0 0 12px;
+  }
+  .seg{ display:inline-flex; background:var(--surface); border:1px solid var(--border); border-radius:11px; padding:3px; gap:2px; box-shadow:var(--shadow); }
+  .seg button{
+    background:none; border:none; color:var(--muted); font-family:inherit; font-size:12.5px; font-weight:500;
+    padding:7px 12px; border-radius:8px; cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; gap:6px;
+  }
+  .seg button:hover{ color:var(--text); }
+  .seg button.active{ background:var(--bee); color:#000; font-weight:700; }
+  .seg button .n{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; opacity:0.7; }
+  .seg.desligado button.active{ background:var(--surface-alt); color:var(--muted); font-weight:500; }
+  .chip-filtro{
+    display:inline-flex; align-items:center; gap:6px; background:var(--bee-soft); border:1px solid var(--bee-line);
+    color:var(--text); border-radius:999px; padding:5px 6px 5px 11px; font-size:12px; font-weight:600;
+  }
+  .chip-filtro button{ background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; line-height:1; padding:0 4px; }
+  .chip-filtro button:hover{ color:var(--rose); }
+  .qb-dir{ margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .qb-fav{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); cursor:pointer; }
+  .menu-wrap{ position:relative; }
+  .menu-wrap > .btn .caret{ margin-left:6px; opacity:0.7; font-size:10px; }
+  .menu-pop{
+    position:absolute; right:0; top:calc(100% + 6px); z-index:35; min-width:280px;
+    background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:6px;
+    box-shadow:0 18px 50px rgba(0,0,0,0.35); display:none;
+  }
+  .menu-wrap.aberto .menu-pop{ display:block; animation:painel-in .15s ease; }
+  .menu-pop .btn{
+    display:flex; width:100%; background:none !important; border:none !important; color:var(--text) !important;
+    font-weight:500; justify-content:flex-start; padding:9px 10px; border-radius:8px; text-align:left;
+  }
+  .menu-pop .btn:hover{ background:var(--surface-alt) !important; }
+  .menu-pop .btn .ic{ stroke:currentColor; }
+  .menu-pop .menu-nota{ font-size:11px; color:var(--muted); padding:6px 10px 4px; border-top:1px solid var(--border); margin-top:4px; line-height:1.45; }
+  #visoesBar{ padding:8px 12px; }
+
+  /* Tabela agrupada por franquia */
+  .grp-barra{ height:6px; border-radius:999px; background:var(--surface-alt); overflow:hidden; margin-top:6px; min-width:80px; }
+  .grp-barra span{ display:block; height:100%; background:var(--bee); border-radius:999px; }
+  .grp-cats{ display:flex; gap:4px; flex-wrap:wrap; }
+  .grp-cat{ font-size:10px; padding:2px 6px; border-radius:5px; background:var(--surface-alt); color:var(--muted); white-space:nowrap; }
+  #agrupadoBody tr{ cursor:pointer; }
+
+  /* ---------- Visão Geral ---------- */
+  .vg-head{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+  .vg-head .vg-atualizado{ margin-left:auto; font-size:12px; color:var(--muted); display:flex; align-items:center; gap:8px; }
+  .vg-grid{ display:grid; grid-template-columns:repeat(12, minmax(0,1fr)); gap:16px; }
+  .vg-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px;
+    box-shadow:var(--shadow); min-width:0; position:relative;
+  }
+  .vg-card > header{ display:flex; align-items:baseline; gap:8px; margin-bottom:14px; font-family:'Space Grotesk',sans-serif; font-size:14.5px; font-weight:600; }
+  .vg-card > header small{ font-family:'Inter',sans-serif; font-size:11.5px; font-weight:400; color:var(--muted); }
+  .vg-card > header .vg-link{ margin-left:auto; font-family:'Inter',sans-serif; font-size:12px; font-weight:500; color:var(--amber); cursor:pointer; background:none; border:none; padding:0; }
+  .vg-card > header .vg-link:hover{ text-decoration:underline; }
+  .s12{ grid-column:span 12; } .s8{ grid-column:span 8; } .s7{ grid-column:span 7; } .s6{ grid-column:span 6; }
+  .s5{ grid-column:span 5; } .s4{ grid-column:span 4; } .s3{ grid-column:span 3; }
+
+  .vg-hero{
+    background:
+      radial-gradient(700px 260px at 0% 0%, rgba(255,204,0,0.20), transparent 60%),
+      linear-gradient(135deg, #111 0%, #0B0B0B 100%);
+    color:#F4F4F4; border-color:#2A2A2A; display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); gap:22px; overflow:hidden;
+  }
+  body.theme-light .vg-hero{ border-color:#111; }
+  .vg-hero .vg-k{ display:flex; align-items:center; gap:8px; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#BDBDBD; font-weight:600; }
+  .vg-hero-v{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; color:var(--bee); line-height:1; letter-spacing:-0.03em;
+    font-size:clamp(30px, 2.9vw, 48px); margin:14px 0 6px; white-space:nowrap;
+  }
+  .vg-hero-v .cent{ font-size:0.55em; opacity:0.85; letter-spacing:0; }
+  .vg-hero-sub{ font-size:13px; color:#BDBDBD; }
+  .vg-hero-sub b{ color:#fff; }
+  .vg-hero-meta{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; margin-top:18px; }
+  .vg-mini{ background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:11px; padding:9px 10px; min-width:0; }
+  .vg-mini .k{ font-size:9.5px; letter-spacing:0.06em; white-space:nowrap; text-transform:uppercase; color:#9B9B9B; }
+  .vg-mini .v{ font-family:'IBM Plex Mono',monospace; font-size:13.5px; font-weight:600; color:#fff; margin-top:3px; white-space:nowrap; }
+  .vg-mini .v.up{ color:var(--bee); }
+  .vg-hero-chart{ position:relative; min-height:190px; display:flex; flex-direction:column; }
+  .vg-hero-chart .k{ font-size:11px; color:#9B9B9B; display:flex; justify-content:space-between; gap:10px; }
+  .vg-hero-chart .k b{ color:#fff; font-family:'IBM Plex Mono',monospace; font-weight:600; }
+  .vg-hero-chart .canvas-box{ position:relative; flex:1; min-height:160px; margin-top:6px; }
+
+  .vg-kpis{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .vg-tile{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px;
+    box-shadow:var(--shadow); cursor:pointer; transition:border-color .15s, transform .15s; min-width:0;
+    display:flex; flex-direction:column;
+  }
+  .vg-tile:hover{ border-color:var(--bee-line); transform:translateY(-2px); }
+  .vg-tile .k{ font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); font-weight:600; display:flex; align-items:center; gap:7px; }
+  .vg-tile .k i{ width:8px; height:8px; border-radius:3px; display:inline-block; }
+  .vg-tile .v{ font-family:'Space Grotesk',sans-serif; font-size:clamp(20px,1.7vw,27px); font-weight:700; margin-top:8px; letter-spacing:-0.02em; white-space:nowrap; }
+  .vg-tile .s{ font-size:12px; color:var(--muted); margin-top:3px; }
+  .vg-tile .barra{ height:5px; background:var(--surface-alt); border-radius:999px; margin-top:auto; overflow:hidden; }
+  .vg-tile .barra span{ display:block; height:100%; border-radius:999px; transition:width .9s cubic-bezier(.2,.8,.2,1); }
+  .vg-tile .barra-wrap{ margin-top:12px; }
+
+  .hbar{ display:grid; grid-template-columns:var(--rot,150px) minmax(40px,1fr) 88px; align-items:center; gap:10px; padding:7px 8px; border-radius:9px; cursor:pointer; transition:background .12s; }
+  .hbar:hover{ background:var(--surface-alt); }
+  .hbar .rot{ font-size:12.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .hbar .rot small{ display:block; font-weight:400; font-size:11px; color:var(--muted); }
+  .hbar .trilho{ height:12px; background:var(--surface-alt); border-radius:999px; overflow:hidden; }
+  .hbar .trilho span{ display:block; height:100%; border-radius:999px; width:0; transition:width .9s cubic-bezier(.2,.8,.2,1); }
+  .hbar .val{ font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; white-space:nowrap; text-align:right; }
+  .hbar .val small{ display:block; font-weight:400; font-size:10.5px; color:var(--muted); }
+  .hbar .rot{ min-width:0; }
+  #vgTop{ --rot:210px; } #vgTop .hbar{ grid-template-columns:var(--rot) minmax(40px,1fr) 112px; } #vgCategorias{ --rot:128px; }
+  .top-rank{ font-family:'IBM Plex Mono',monospace; color:var(--muted); font-size:11px; margin-right:6px; }
+
+  .vg-donut-wrap{ position:relative; height:210px; }
+  .vg-donut-centro{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; text-align:center; }
+  .vg-donut-centro .v{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; }
+  .vg-donut-centro .k{ font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); }
+  .vg-legenda{ display:flex; flex-direction:column; gap:6px; margin-top:12px; }
+  .vg-legenda .li{ display:flex; align-items:center; gap:8px; font-size:12px; cursor:pointer; padding:3px 4px; border-radius:6px; }
+  .vg-legenda .li:hover{ background:var(--surface-alt); }
+  .vg-legenda .li i{ width:9px; height:9px; border-radius:3px; flex:none; }
+  .vg-legenda .li b{ margin-left:auto; font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11.5px; }
+  .vg-legenda .li span.p{ color:var(--muted); font-size:11px; width:40px; text-align:right; font-family:'IBM Plex Mono',monospace; }
+  .vg-fluxo-box{ position:relative; height:250px; }
+
+  .feed{ display:flex; flex-direction:column; max-height:330px; overflow-y:auto; margin:-4px -6px; }
+  .feed-item{ display:flex; gap:10px; padding:9px 8px; border-radius:9px; cursor:pointer; }
+  .feed-item:hover{ background:var(--surface-alt); }
+  .feed-item.novo{ animation:feed-novo 2.4s ease; }
+  @keyframes feed-novo{ 0%{ background:var(--bee-soft); transform:translateX(-4px);} 100%{ background:transparent; transform:none; } }
+  .feed-ic{ width:30px; height:30px; flex:none; border-radius:9px; display:flex; align-items:center; justify-content:center; background:var(--surface-alt); color:var(--amber); }
+  .feed-ic .ic{ margin:0; width:15px; height:15px; }
+  .feed-txt{ font-size:12.5px; line-height:1.4; min-width:0; }
+  .feed-txt b{ font-weight:600; }
+  .feed-txt .obs{ color:var(--muted); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .feed-quando{ margin-left:auto; font-size:10.5px; color:var(--muted); white-space:nowrap; font-family:'IBM Plex Mono',monospace; padding-left:6px; }
+  .feed-vazio{ color:var(--muted); font-size:12.5px; padding:14px 6px; }
+
+  .alertas{ display:flex; flex-direction:column; gap:8px; }
+  .alerta{ display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border-radius:11px; border:1px solid var(--border); background:var(--surface-alt); font-size:12.5px; line-height:1.45; cursor:pointer; }
+  .alerta:hover{ border-color:var(--bee-line); }
+  .alerta .sinal{ width:8px; height:8px; border-radius:50%; margin-top:5px; flex:none; }
+  .alerta b{ font-weight:600; }
+  .alerta small{ display:block; color:var(--muted); font-size:11.5px; }
+
+  /* ---------- Paleta de comandos (Ctrl+K) ---------- */
+  .cmdk-overlay{ position:fixed; inset:0; z-index:95; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); display:none; align-items:flex-start; justify-content:center; padding:12vh 16px 16px; }
+  .cmdk-overlay.aberto{ display:flex; }
+  .cmdk-box{ width:100%; max-width:620px; background:var(--surface); border:1px solid var(--border); border-radius:16px; box-shadow:0 30px 90px rgba(0,0,0,0.55); overflow:hidden; animation:painel-in .15s ease; }
+  .cmdk-input{ display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--border); }
+  .cmdk-input input{ flex:1; background:none; border:none; outline:none; color:var(--text); font-size:15.5px; font-family:inherit; }
+  .cmdk-lista{ max-height:52vh; overflow-y:auto; padding:6px; }
+  .cmdk-grupo{ font-size:10.5px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); padding:10px 10px 4px; }
+  .cmdk-item{ display:flex; align-items:center; gap:10px; padding:10px; border-radius:9px; cursor:pointer; font-size:13.5px; }
+  .cmdk-item .ic{ margin:0; color:var(--muted); }
+  .cmdk-item .dir{ margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); white-space:nowrap; }
+  .cmdk-item.sel{ background:var(--bee); color:#000; }
+  .cmdk-item.sel .ic, .cmdk-item.sel .dir{ color:#000; }
+  .cmdk-rodape{ display:flex; gap:14px; padding:9px 14px; border-top:1px solid var(--border); font-size:11px; color:var(--muted); }
+  .cmdk-rodape kbd{ font-family:'IBM Plex Mono',monospace; border:1px solid var(--border); border-radius:4px; padding:0 5px; margin-right:4px; }
+
+  /* ---------- Responsivo ---------- */
+  @media (max-width:1280px){
+    .vg-grid .s7, .vg-grid .s5{ grid-column:span 12; }
+    .vg-grid .s4, .vg-grid .s3{ grid-column:span 6; }
+    .cmdk-btn{ min-width:0; } .cmdk-btn .txt{ display:none; }
+  }
+  @media (max-width:980px){
+    .sidebar{ transform:translateX(-100%); transition:transform .22s ease; box-shadow:20px 0 60px rgba(0,0,0,0.5); }
+    .sidebar.aberta{ transform:none; }
+    .app-main{ margin-left:0; }
+    .sb-toggle{ display:inline-flex; }
+    .live-pill .txt-live{ display:none; }
+    .vg-hero{ grid-template-columns:1fr; }
+  }
+  @media (max-width:720px){
+    .topbar{ padding:10px 14px 0; }
+    .tb-linha{ gap:10px; }
+    .tb-titulo .eyebrow{ display:none; }
+    .tb-titulo .title{ font-size:18px; }
+    .save-status, .live-pill{ display:none; }
+    .container{ padding:14px 14px 48px; }
+    .vg-grid{ gap:12px; }
+    .vg-grid .s4, .vg-grid .s3, .vg-grid .s6, .vg-grid .s8{ grid-column:span 12; }
+    .vg-kpis{ gap:12px; }
+    .vg-hero-meta{ grid-template-columns:1fr 1fr; }
+    .topbar .tabs-nav{ margin:0 -14px; padding:0 14px; }
+    .quickbar .seg{ overflow-x:auto; max-width:100%; scrollbar-width:none; }
+    .qb-dir{ margin-left:0; }
+    .vg-head .seg{ max-width:100%; overflow-x:auto; scrollbar-width:none; }
+    .vg-head .vg-atualizado{ margin-left:0; flex-wrap:wrap; }
+    .vg-hero-v{ font-size:34px; }
+    #ficha360 .ficha-box{ border-radius:0; }
+    #tabPainel td[data-label="Franquia"]{ max-width:none; flex-wrap:wrap; justify-content:flex-start; gap:4px; }
+    #tabPainel td[data-label="Franquia"]::before{ width:100%; }
+  }
 </style>
 </head>
 <body>
@@ -685,13 +1084,16 @@
     <symbol id="ic-raio" viewBox="0 0 24 24"><path d="M13 3 5 14h6l-1 7 8-11h-6z"/></symbol>
     <symbol id="ic-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/></symbol>
     <symbol id="ic-predio" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></symbol>
+    <symbol id="ic-pulso" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></symbol>
+    <symbol id="ic-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
     <symbol id="ic-mapa" viewBox="0 0 24 24"><path d="M12 21s6.5-6 6.5-10.5A6.5 6.5 0 0 0 5.5 10.5C5.5 15 12 21 12 21z"/><circle cx="12" cy="10.4" r="2.3"/></symbol>
   </defs>
 </svg>
 
 <div class="auth-overlay" id="authOverlay">
   <div class="auth-card">
-    <p class="auth-eyebrow">Acesso restrito</p>
+    <div class="auth-logo"><svg viewBox="0 0 40 40" width="44" height="44" aria-hidden="true"><path d="M20 2.5 35.2 11.25v17.5L20 37.5 4.8 28.75v-17.5z" fill="#FFCC00"/><path d="M14.5 13h7.2c3 0 4.8 1.5 4.8 3.8 0 1.5-.8 2.6-2.1 3.1 1.7.4 2.8 1.7 2.8 3.5 0 2.6-2 4.3-5.2 4.3h-7.5z" fill="#0A0A0A"/><path d="M18.3 16v3.2h2.9c1 0 1.6-.6 1.6-1.6s-.6-1.6-1.6-1.6zm0 6v3.5h3.2c1.1 0 1.8-.7 1.8-1.75S22.6 22 21.5 22z" fill="#FFCC00"/></svg></div>
+    <p class="auth-eyebrow">Bee Delivery · Acesso restrito</p>
     <h2 class="auth-title">Painel de Inadimplência</h2>
     <p class="auth-sub">Entre com o e-mail e a senha cadastrados para acessar a carteira.</p>
     <input type="email" id="authEmail" class="auth-input" placeholder="seu-email@empresa.com" autocomplete="off" autocapitalize="off" spellcheck="false" style="text-align:left; letter-spacing:normal; font-family:'Inter',sans-serif; font-size:14px;" autofocus>
@@ -703,46 +1105,145 @@
 
 <div class="app-content" id="appContent">
 
-<div class="topbar">
-  <div class="topbar-row">
-    <div>
-      <p class="eyebrow">Carteira de cobrança &middot; Rede de franquias</p>
-      <h1 class="title">Painel de Inadimplência</h1>
-      <p class="subtitle">Cruzamento Asaas &middot; <span id="totalRegistros">–</span> lançamentos carregados &middot; <span id="painelVersaoLabel" title="Versão do código do painel e data do dataset carregado" style="opacity:0.75;">painel v–</span></p>
+<aside class="sidebar" id="sidebar" aria-label="Navegação principal">
+  <div class="sb-brand">
+    <svg class="sb-logo" viewBox="0 0 40 40" aria-hidden="true">
+      <path d="M20 2.5 35.2 11.25v17.5L20 37.5 4.8 28.75v-17.5z" fill="#FFCC00"/>
+      <path d="M14.5 13h7.2c3 0 4.8 1.5 4.8 3.8 0 1.5-.8 2.6-2.1 3.1 1.7.4 2.8 1.7 2.8 3.5 0 2.6-2 4.3-5.2 4.3h-7.5z" fill="#0A0A0A"/>
+      <path d="M18.3 16v3.2h2.9c1 0 1.6-.6 1.6-1.6s-.6-1.6-1.6-1.6zm0 6v3.5h3.2c1.1 0 1.8-.7 1.8-1.75S22.6 22 21.5 22z" fill="#FFCC00"/>
+    </svg>
+    <div class="sb-brand-txt"><b>bee</b><span>Financeiro</span></div>
+  </div>
+  <div class="sb-sec">Operação</div>
+  <nav class="sb-nav">
+    <button class="nav-item" data-secao="visao" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-pulso"></use></svg><span>Visão Geral</span><kbd>1</kbd></button>
+    <button class="nav-item" data-secao="carteira" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-painel"></use></svg><span>Carteira</span><kbd>2</kbd></button>
+    <button class="nav-item" data-secao="negociacao" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-fluxo"></use></svg><span>Negociação</span><kbd>3</kbd></button>
+    <button class="nav-item" data-secao="franquias" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-contatos"></use></svg><span>Franquias</span><kbd>4</kbd></button>
+  </nav>
+  <div class="sb-sec">Gestão</div>
+  <nav class="sb-nav">
+    <button class="nav-item" data-secao="analises" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-grafico"></use></svg><span>Análises</span><kbd>5</kbd></button>
+    <button class="nav-item" data-secao="controle" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-auditoria"></use></svg><span>Controle</span><span class="nav-badge" id="controleBadge" style="display:none;">0</span><kbd>6</kbd></button>
+  </nav>
+  <div class="sb-foot">
+    <div class="sb-dados">
+      <span class="live-dot bee" style="margin-right:6px;"></span><span id="totalRegistros">–</span> lançamentos
+      <span class="versao" id="painelVersaoLabel" title="Versão do código do painel e data do dataset carregado">painel v–</span>
     </div>
-    <div style="display:flex; align-items:center; gap:14px;">
-      <button class="theme-toggle" id="themeToggle">
-        <span id="themeIcon">&#9789;</span> <span id="themeLabel">Modo claro</span>
-      </button>
-      <button class="theme-toggle" id="logoutBtn">Sair</button>
+    <div class="sb-botoes">
+      <button class="theme-toggle" id="themeToggle" type="button"><span id="themeIcon">&#9789;</span> <span id="themeLabel">Modo claro</span></button>
+      <button class="theme-toggle" id="logoutBtn" type="button" style="flex:0 0 auto;">Sair</button>
+    </div>
+  </div>
+</aside>
+
+<div class="app-main">
+<header class="topbar">
+  <div class="tb-linha">
+    <button class="sb-toggle" id="sbToggle" type="button" aria-label="Abrir menu"><svg class="ic" style="margin:0" aria-hidden="true"><use href="#ic-menu"></use></svg></button>
+    <div class="tb-titulo">
+      <p class="eyebrow" id="secaoEyebrow">Pulso da carteira em tempo real</p>
+      <h1 class="title" id="secaoTitulo">Visão Geral</h1>
+    </div>
+    <div class="tb-dir">
+      <button class="cmdk-btn" id="cmdkBtn" type="button" title="Buscar franquia ou ir para uma seção (Ctrl+K)"><svg class="ic" aria-hidden="true"><use href="#ic-lupa"></use></svg><span class="txt">Buscar franquia, seção ou ação…</span><kbd>Ctrl K</kbd></button>
+      <div class="live-pill" title="Os encargos correm a cada segundo e as ações da equipe chegam sem recarregar a página"><span class="live-dot"></span><span class="txt-live">AO VIVO</span><span class="relogio" id="relogio">--:--:--</span></div>
       <div class="save-status">
         <span class="save-dot" id="saveDot"></span>
         <span id="saveText">Sincronizado</span>
       </div>
     </div>
   </div>
-  <div class="health-strip" id="healthStrip"></div>
-  <div class="health-legend" id="healthLegend"></div>
-  <div class="tabs-nav" id="tabsNav" role="tablist" aria-label="Seções do painel">
-    <button class="tab-btn active" data-tab="painel"><svg class="ic" aria-hidden="true"><use href="#ic-painel"></use></svg>Painel</button>
-    <button class="tab-btn" data-tab="historico"><svg class="ic" aria-hidden="true"><use href="#ic-telefone"></use></svg>Histórico de Cobranças</button>
-    <button class="tab-btn" data-tab="negociacao"><svg class="ic" aria-hidden="true"><use href="#ic-fluxo"></use></svg>Fluxo de Negociação</button>
-    <button class="tab-btn" data-tab="contatos"><svg class="ic" aria-hidden="true"><use href="#ic-contatos"></use></svg>Contatos das Franquias</button>
+  <div class="tabs-nav oculta" id="tabsNav" role="tablist" aria-label="Seções do painel">
+    <button class="tab-btn active" data-tab="visao"><svg class="ic" aria-hidden="true"><use href="#ic-pulso"></use></svg>Visão Geral</button>
+    <button class="tab-btn" data-tab="painel"><svg class="ic" aria-hidden="true"><use href="#ic-painel"></use></svg>Lançamentos</button>
+    <button class="tab-btn" data-tab="negociacao"><svg class="ic" aria-hidden="true"><use href="#ic-fluxo"></use></svg>Quadro de negociação</button>
+    <button class="tab-btn" data-tab="contatos"><svg class="ic" aria-hidden="true"><use href="#ic-contatos"></use></svg>Cadastro e contatos</button>
+    <button class="tab-btn" data-tab="historico"><svg class="ic" aria-hidden="true"><use href="#ic-telefone"></use></svg>Histórico de cobranças</button>
+    <button class="tab-btn" data-tab="dashboard"><svg class="ic" aria-hidden="true"><use href="#ic-grafico"></use></svg>Dashboard executivo</button>
     <button class="tab-btn" data-tab="ranking"><svg class="ic" aria-hidden="true"><use href="#ic-trofeu"></use></svg>Ranking</button>
-    <button class="tab-btn" data-tab="dashboard"><svg class="ic" aria-hidden="true"><use href="#ic-grafico"></use></svg>Dashboard Executivo</button>
-    <button class="tab-btn" data-tab="revisao"><svg class="ic" aria-hidden="true"><use href="#ic-alerta"></use></svg>Revisão de Ajustes<span class="tab-badge" id="revisaoBadge" style="display:none;">0</span></button>
-    <button class="tab-btn" data-tab="auditoria"><svg class="ic" aria-hidden="true"><use href="#ic-auditoria"></use></svg>Auditoria</button>
+    <button class="tab-btn" data-tab="revisao"><svg class="ic" aria-hidden="true"><use href="#ic-alerta"></use></svg>Revisão de ajustes<span class="tab-badge" id="revisaoBadge" style="display:none;">0</span></button>
+    <button class="tab-btn" data-tab="auditoria"><svg class="ic" aria-hidden="true"><use href="#ic-auditoria"></use></svg>Auditoria e backup</button>
   </div>
-</div>
+</header>
 
 <div class="container">
 
-  <div class="tab-panel" id="tabPainel">
+  <!-- ===================== v3.0 — VISÃO GERAL (AO VIVO) ===================== -->
+  <div class="tab-panel" id="tabVisao">
+    <div class="vg-head">
+      <div class="seg" id="vgEscopo" role="group" aria-label="Recorte da visão geral">
+        <button type="button" data-escopo="" class="active">Carteira inteira</button>
+        <button type="button" data-escopo="ativas">Só ativas</button>
+        <button type="button" data-escopo="ativas-franqueadas">Franqueadas ativas</button>
+      </div>
+      <span class="vg-atualizado" id="vgAtualizado"></span>
+    </div>
+
+    <div class="vg-grid">
+      <section class="vg-card vg-hero s7">
+        <div>
+          <div class="vg-k"><span class="live-dot bee"></span>Dívida vencida · correndo agora</div>
+          <div class="vg-hero-v" id="vgHeroValor">R$ 0<span class="cent">,00</span></div>
+          <div class="vg-hero-sub" id="vgHeroSub">—</div>
+          <div class="vg-hero-meta" id="vgHeroMeta"></div>
+        </div>
+        <div class="vg-hero-chart">
+          <div class="k"><span>Juros de mora acumulados hoje</span><b id="vgJurosHoje">R$ 0,00</b></div>
+          <div class="canvas-box"><canvas id="vgChartLive" aria-label="Juros de mora acumulados ao longo do dia"></canvas></div>
+        </div>
+      </section>
+
+      <section class="vg-kpis s5" id="vgKpis"></section>
+
+      <section class="vg-card s5">
+        <header>Idade da dívida <small>clique numa faixa para abrir na Carteira</small></header>
+        <div id="vgAging"></div>
+      </section>
+
+      <section class="vg-card s3">
+        <header>Composição</header>
+        <div class="vg-donut-wrap"><canvas id="vgChartStatus" aria-label="Composição da carteira por status"></canvas><div class="vg-donut-centro" id="vgDonutCentro"></div></div>
+        <div class="vg-legenda" id="vgLegendaStatus"></div>
+      </section>
+
+      <section class="vg-card s4">
+        <header>Pendente por categoria <small>vencido + a vencer</small></header>
+        <div id="vgCategorias"></div>
+      </section>
+
+      <section class="vg-card s12">
+        <header>Vencimentos mês a mês <small>quanto de cada mês foi pago, quanto venceu sem pagar e o que ainda vem</small></header>
+        <div class="vg-fluxo-box"><canvas id="vgChartFluxo" aria-label="Vencimentos por mês e status"></canvas></div>
+      </section>
+
+      <section class="vg-card s5">
+        <header>Maiores devedores <small>clique para abrir a ficha</small><button type="button" class="vg-link" data-ir="ranking">ranking completo →</button></header>
+        <div id="vgTop"></div>
+      </section>
+
+      <section class="vg-card s4">
+        <header><span class="live-dot" style="align-self:center;"></span> Atividade da equipe <small>chega sem recarregar</small></header>
+        <div class="feed" id="vgFeed"><div class="feed-vazio">Conectando ao banco…</div></div>
+      </section>
+
+      <section class="vg-card s3">
+        <header>Pendências do painel</header>
+        <div class="alertas" id="vgAlertas"></div>
+      </section>
+    </div>
+  </div>
+
+
+  <div class="tab-panel" id="tabPainel" style="display:none;">
   <!-- Card "Cobranças de hoje" (agenda do dia: promessas + sem contato há 30 dias) removido
        a pedido do Financeiro em 09/09/2026. O registro de promessa de pagamento continua
        existindo na aba Histórico de Cobranças; só a vitrine no topo do Painel saiu. -->
   <div class="kpi-linha" id="cards"></div>
-  <div id="overrideNotice" style="display:none; font-size:12px; background:rgba(217,164,65,0.12); border:1px solid rgba(217,164,65,0.35); color:var(--text); border-radius:8px; padding:8px 12px; margin:-8px 0 18px;">
+  <div class="health-strip" id="healthStrip"></div>
+  <div class="health-legend" id="healthLegend"></div>
+  <div id="overrideNotice" style="display:none; font-size:12px; background:rgba(255,204,0,0.12); border:1px solid rgba(255,204,0,0.35); color:var(--text); border-radius:8px; padding:8px 12px; margin:-8px 0 18px;">
   </div>
 
   <div class="toolbar">
@@ -805,7 +1306,7 @@
     <button class="btn btn-export" id="exportPdfBtn"><svg class="ic" aria-hidden="true"><use href="#ic-pdf"></use></svg>Exportar Relatório PDF</button>
     <button class="btn" id="resumoBtn"><svg class="ic" aria-hidden="true"><use href="#ic-resumo"></use></svg>Gerar resumo</button>
     <button class="btn" id="mensagemBtn"><svg class="ic" aria-hidden="true"><use href="#ic-email"></use></svg>Gerar mensagem de cobrança</button>
-    <button class="btn" id="notificacaoBtn" style="border-color:rgba(224,99,122,0.4); color:var(--rose);"><svg class="ic" aria-hidden="true"><use href="#ic-balanca"></use></svg>Solicitar Notificação Extrajudicial</button>
+    <button class="btn" id="notificacaoBtn" style="border-color:rgba(229,72,77,0.4); color:var(--rose);"><svg class="ic" aria-hidden="true"><use href="#ic-balanca"></use></svg>Solicitar Notificação Extrajudicial</button>
     <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted);">
       <input type="checkbox" id="filterFavoritos"> Só favoritos
     </label>
@@ -1126,6 +1627,7 @@
 
 </div>
 </div>
+</div>
 
 <div class="toast" id="toast"><span class="dot"></span><span id="toastText">Salvo</span></div>
 
@@ -1439,7 +1941,9 @@ const RAW_ATUALIZADO_EM = '2026-09-28T00:00:00-03:00';
 // marcador, ele é uma versão anterior às 24 melhorias de 04/09/2026 e NÃO deve ser usado
 // como base (foi assim que a atualização de 08/09 desfez as melhorias sem ninguém perceber).
 // 2.0 = as 24 melhorias de 04/09/2026 · 2.1 = exportações no padrão Bee (09/09/2026)
-const PAINEL_VERSAO = '2.1';
+// 3.0 = identidade Bee, navegação lateral em 6 seções, Visão Geral ao vivo, status rápido,
+//       visão por franquia, busca Ctrl+K e sincronização em tempo real (29/09/2026)
+const PAINEL_VERSAO = '3.0';
 
 const STATUS_LABELS = {
   'EM ABERTO': 'Vencido',
@@ -1454,10 +1958,10 @@ const STATUS_CLASS = {
   'A VENCER': 'st-A_VENCER'
 };
 const STATUS_COLOR = {
-  'EM ABERTO': '#D9A441',
-  'BAIXADO': '#4FAE8A',
-  'COBRANÇA INDEVIDA': '#E0637A',
-  'A VENCER': '#9B7FE8'
+  'EM ABERTO': '#FFCC00',
+  'BAIXADO': '#1FA463',
+  'COBRANÇA INDEVIDA': '#E5484D',
+  'A VENCER': '#1E8FD0'
 };
 
 // =====================================================================
@@ -1513,6 +2017,10 @@ let regrasCombinadas = []; // [{categoria:'', status:'', temporal:'TODOS'}] — 
 let sortKey = 'total';
 let sortDir = 'desc';
 let currentPage = 1;
+// v3.0 — recorte rápido por status, faixa de atraso e forma de ver a Carteira
+let filtroStatusRapido = 'pendentes';
+let filtroAging = null; // { min, max, label }
+let modoVisualizacao = lerPrefs().modoCarteira || 'lancamentos';
 let PAGE_SIZE = parseInt(lerPrefs().pageSize) || 40;
 
 const fmtMoney = v => 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
@@ -1539,21 +2047,21 @@ async function loadOverrides(){
     console.error('Erro ao carregar dados do Firebase:', e);
     overrides = {};
     document.getElementById('saveText').textContent = 'Sem conexão com o banco';
-    document.getElementById('saveDot').style.background = '#E0637A';
+    document.getElementById('saveDot').style.background = '#E5484D';
   }
 }
 
 async function persistOverrides(){
-  document.getElementById('saveDot').style.background = '#D9A441';
+  document.getElementById('saveDot').style.background = '#FFCC00';
   document.getElementById('saveText').textContent = 'Salvando...';
   try{
     await overridesDocRef.set({ valores: JSON.stringify(overrides), atualizadoEm: new Date().toISOString() });
-    document.getElementById('saveDot').style.background = '#4FAE8A';
+    document.getElementById('saveDot').style.background = '#1FA463';
     document.getElementById('saveText').textContent = 'Sincronizado';
     showToast('Alteração salva');
   }catch(e){
     console.error('Erro ao salvar no Firebase:', e);
-    document.getElementById('saveDot').style.background = '#E0637A';
+    document.getElementById('saveDot').style.background = '#E5484D';
     document.getElementById('saveText').textContent = 'Falha ao salvar';
     showToast('Não foi possível salvar. Verifique a configuração do Firebase.');
   }
@@ -1621,7 +2129,9 @@ function prepararAcessibilidade(){
     b.addEventListener('keydown', (e)=>{
       if(e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
       e.preventDefault();
-      const prox = abas[(i + (e.key === 'ArrowRight' ? 1 : abas.length - 1)) % abas.length];
+      const vis = abas.filter(x=>x.style.display !== 'none');
+      const j = vis.indexOf(b);
+      const prox = vis[(j + (e.key === 'ArrowRight' ? 1 : vis.length - 1)) % vis.length];
       prox.focus(); prox.click();
     });
   });
@@ -1661,9 +2171,8 @@ document.addEventListener('keydown', (e)=>{
     document.getElementById('searchInput').focus();
     return;
   }
-  if(/^[1-8]$/.test(e.key)){
-    const abas = document.querySelectorAll('.tab-btn');
-    const alvo = abas[parseInt(e.key) - 1];
+  if(/^[1-6]$/.test(e.key)){ // v3.0 — 1..6 = seções da barra lateral
+    const alvo = document.querySelectorAll('.nav-item')[parseInt(e.key) - 1];
     if(alvo){ alvo.click(); alvo.focus(); }
   }
 });
@@ -1780,6 +2289,8 @@ function getFiltered(){
     if(fAtivaInativa && statusFranquiaDe(d.franquia) !== fAtivaInativa) return false;
     if(fPropria && d.operacaoPropria !== fPropria) return false;
     if(somenteFavoritos && !favoritos.includes(d.franquia)) return false;
+    if(regrasCombinadas.length === 0 && !passaStatusRapido(d, filtroStatusRapido)) return false; // v3.0
+    if(filtroAging && !passaAging(d, filtroAging)) return false; // v3.0
     if(regrasCombinadas.length > 0){
       const passaAlguma = regrasCombinadas.some(r => linhaPassaRegra(d, r));
       if(!passaAlguma) return false;
@@ -1995,9 +2506,9 @@ function renderHealthStrip(rows){
   const base = Array.isArray(rows) ? rows : DATA;
   const filtrado = base.length !== DATA.length;
   const metrica = [
-    { key: 'vencido', label: 'Vencido', cor: '#D9A441', count: base.filter(d=>effectiveStatus(d)==='EM ABERTO').length },
-    { key: 'negociacao', label: 'Negociação', cor: '#5B8DEF', count: base.filter(d=>d.categoria==='NEGOCIAÇÃO').length },
-    { key: 'avencer', label: 'A vencer', cor: '#9B7FE8', count: base.filter(d=>effectiveStatus(d)==='A VENCER').length },
+    { key: 'vencido', label: 'Vencido', cor: paleta().amarelo, count: base.filter(d=>effectiveStatus(d)==='EM ABERTO').length },
+    { key: 'negociacao', label: 'Negociação', cor: paleta().laranja, count: base.filter(d=>d.categoria==='NEGOCIAÇÃO').length },
+    { key: 'avencer', label: 'A vencer', cor: paleta().azul, count: base.filter(d=>effectiveStatus(d)==='A VENCER').length },
   ];
   const somaTotal = metrica.reduce((s,m)=>s+m.count, 0);
 
@@ -2074,11 +2585,14 @@ function recalcularEncargosDoDataset(){
 }
 
 function corAtraso(dias){
-  if(dias >= 365) return '#8B2E3C'; // vermelho escuro
-  if(dias >= 180) return '#E0637A'; // vermelho
-  if(dias >= 90) return '#D9A441';  // amber
-  if(dias > 0) return '#8A94AC';    // neutro (atraso leve)
-  return '#4FAE8A';                 // em dia / futuro
+  // v3.0 — mesma escala da "Idade da dívida" da Visão Geral
+  const a = paleta().aging;
+  if(dias > 365) return a[4];
+  if(dias > 180) return a[3];
+  if(dias > 90) return a[2];
+  if(dias > 30) return a[1];
+  if(dias > 0) return a[0];
+  return paleta().verde;            // em dia / futuro
 }
 
 // VIS-03 — encargos somados numa coluna só (multa + juros de mora + correção IGP-M).
@@ -2152,7 +2666,7 @@ function renderTable(rows){
       const st = effectiveStatus(d);
       const frBadge = badgeAtivaInativa(statusFranquiaDe(d.franquia));
       const propriaBadge = d.operacaoPropria === 'PRÓPRIA'
-        ? '<span class="franquia-badge" style="background:rgba(155,127,232,0.16); color:var(--violet);">própria</span>'
+        ? '<span class="franquia-badge" style="background:rgba(30,143,208,0.16); color:var(--violet);">própria</span>'
         : '';
       const isFav = favoritos.includes(d.franquia);
       const dias = diasEmAtraso(d.vencimento);
@@ -2257,7 +2771,9 @@ function estadoAtualFiltros(){
     fav: somenteFavoritos ? 1 : 0,
     rg: regrasCombinadas,
     sk: sortKey,
-    sd: sortDir
+    sd: sortDir,
+    sq: filtroStatusRapido,
+    ag: filtroAging
   };
 }
 
@@ -2274,6 +2790,8 @@ function aplicarEstadoFiltros(e){
   regrasCombinadas = Array.isArray(e.rg) ? e.rg : [];
   if(e.sk) sortKey = e.sk;
   if(e.sd) sortDir = e.sd;
+  filtroStatusRapido = e.sq || 'pendentes';
+  filtroAging = e.ag || null;
   renderRegrasChips();
   atualizarLabelRegras();
   currentPage = 1;
@@ -2281,7 +2799,7 @@ function aplicarEstadoFiltros(e){
 }
 
 function estadoEhVazio(e){
-  return !e.q && !e.fr && !e.fq && !e.st && !e.op && !e.fav && (!e.rg || e.rg.length === 0);
+  return !e.q && !e.fr && !e.fq && !e.st && !e.op && !e.fav && (!e.rg || e.rg.length === 0) && (!e.sq || e.sq === 'pendentes') && !e.ag;
 }
 
 // A URL guarda o recorte em JSON codificado — assim o link abre exatamente a mesma tela.
@@ -4910,7 +5428,7 @@ async function abrirFicha360(franquia){
   document.getElementById('fichaNome').textContent = franquia;
   document.getElementById('fichaSub').innerHTML =
     `${nomeFranqueado} ${badgeAtivaInativa(stFr)}` +
-    (linhas[0] && linhas[0].operacaoPropria === 'PRÓPRIA' ? ' <span class="franquia-badge" style="background:rgba(155,127,232,0.16); color:var(--violet);">própria</span>' : '');
+    (linhas[0] && linhas[0].operacaoPropria === 'PRÓPRIA' ? ' <span class="franquia-badge" style="background:rgba(30,143,208,0.16); color:var(--violet);">própria</span>' : '');
   document.getElementById('fichaSaldo').textContent = saldo > 0 ? fmtMoney(saldo) : 'sem débito';
   document.getElementById('fichaSaldo').style.color = saldo > 0 ? 'var(--amber)' : 'var(--green)';
 
@@ -5066,7 +5584,7 @@ function renderFichaCorpo(){
     const entradas = c.historico.slice().reverse();
     const promessa = c.historico.filter(e=>e.dataPrometida).slice(-1)[0];
     corpo.innerHTML = `
-      ${promessa ? `<div class="ficha-kpi" style="margin-bottom:16px; border-color:rgba(217,164,65,0.4);">
+      ${promessa ? `<div class="ficha-kpi" style="margin-bottom:16px; border-color:rgba(255,204,0,0.4);">
         <div class="ficha-kpi-k">Última promessa de pagamento</div>
         <div class="ficha-kpi-v" style="font-size:15px; color:var(--amber);">${promessa.dataPrometida.split('-').reverse().join('/')}</div>
         <div class="card-sub">${(promessa.observacao||'').replace(/</g,'&lt;')}</div>
@@ -5370,7 +5888,7 @@ function chartTheme(){
   const css = getComputedStyle(document.body);
   return {
     text: css.getPropertyValue('--text').trim() || '#E8ECF4',
-    muted: css.getPropertyValue('--muted').trim() || '#8A94AC',
+    muted: css.getPropertyValue('--muted').trim() || '#8A8A8A',
     surface: css.getPropertyValue('--surface').trim() || '#131B2E',
     surfaceAlt: css.getPropertyValue('--surface-alt').trim() || '#1B2740',
     border: css.getPropertyValue('--border').trim() || '#2A3652',
@@ -5444,7 +5962,7 @@ async function renderDashboard(opts){
     type: 'bar',
     data: {
       labels: dadosCategoria.map(d=>d.categoria),
-      datasets: [{ label: 'Total pendente', data: dadosCategoria.map(d=>d.total), backgroundColor: '#D9A441', borderRadius: 5, borderSkipped: false, maxBarThickness: 30 }]
+      datasets: [{ label: 'Total pendente', data: dadosCategoria.map(d=>d.total), backgroundColor: paleta().amarelo, borderRadius: 6, borderSkipped: false, maxBarThickness: 30 }]
     },
     options: {
       indexAxis: 'y',
@@ -5461,10 +5979,10 @@ async function renderDashboard(opts){
 
   // ---- Aging: faixas de atraso ----
   const faixas = [
-    { label: '0-30 dias', min: 0, max: 30, cor: t.muted },
-    { label: '31-60 dias', min: 31, max: 60, cor: '#D9A441' },
-    { label: '61-90 dias', min: 61, max: 90, cor: '#E0637A' },
-    { label: '90+ dias', min: 91, max: Infinity, cor: '#8B2E3C' },
+    { label: '0-30 dias', min: 0, max: 30, cor: paleta().aging[0] },
+    { label: '31-60 dias', min: 31, max: 60, cor: paleta().aging[1] },
+    { label: '61-90 dias', min: 61, max: 90, cor: paleta().aging[2] },
+    { label: '90+ dias', min: 91, max: Infinity, cor: paleta().aging[4] },
   ];
   const vencidosAging = base.filter(d=>effectiveStatus(d)==='EM ABERTO');
   const totaisAging = faixas.map(f=>
@@ -5506,9 +6024,9 @@ async function renderDashboard(opts){
       data: {
         labels: meses.map(m=>m.mes),
         datasets: [
-          { label: 'Vencido', data: meses.map(m=>m.totalAberto), borderColor: '#D9A441', backgroundColor: 'rgba(217,164,65,0.12)', fill: true, tension: 0.3, borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#D9A441' },
-          { label: 'Negociação', data: meses.map(m=>m.totalNegociacao||0), borderColor: '#5B8DEF', backgroundColor: 'rgba(91,141,239,0.10)', fill: true, tension: 0.3, borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#5B8DEF' },
-          { label: 'Baixado', data: meses.map(m=>m.totalBaixado), borderColor: '#4FAE8A', backgroundColor: 'rgba(79,174,138,0.10)', fill: true, tension: 0.3, borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#4FAE8A' },
+          { label: 'Vencido', data: meses.map(m=>m.totalAberto), borderColor: '#FFCC00', backgroundColor: 'rgba(255,204,0,0.12)', fill: true, tension: 0.3, borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#FFCC00' },
+          { label: 'Negociação', data: meses.map(m=>m.totalNegociacao||0), borderColor: '#E8590C', backgroundColor: 'rgba(232,89,12,0.10)', fill: true, tension: 0.3, borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#E8590C' },
+          { label: 'Baixado', data: meses.map(m=>m.totalBaixado), borderColor: '#1FA463', backgroundColor: 'rgba(31,164,99,0.10)', fill: true, tension: 0.3, borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#1FA463' },
         ]
       },
       options: {
@@ -5617,7 +6135,7 @@ function abrirDetalheFranquiaModal(key){
   document.getElementById('fdTitulo').textContent = c.cidade + (c.uf ? ' / ' + c.uf : '');
   const badge = document.getElementById('fdStatusBadge');
   badge.textContent = c.status || '—';
-  badge.style.background = c.status === 'Operando' ? 'rgba(79,174,138,0.14)' : c.status === 'Startando' ? 'rgba(91,141,239,0.14)' : c.status === 'Distrato' ? 'rgba(224,99,122,0.14)' : c.status === 'Virou Operação Própria' ? 'rgba(155,127,232,0.14)' : 'rgba(138,148,172,0.15)';
+  badge.style.background = c.status === 'Operando' ? 'rgba(31,164,99,0.14)' : c.status === 'Startando' ? 'rgba(232,89,12,0.14)' : c.status === 'Distrato' ? 'rgba(229,72,77,0.14)' : c.status === 'Virou Operação Própria' ? 'rgba(30,143,208,0.14)' : 'rgba(150,150,150,0.15)';
   badge.style.color = STATUS_COR[c.status] || 'var(--muted)';
   document.getElementById('fdFranquiaPainel').textContent = c.franquiaPainel || 'sem lançamento no período';
 
@@ -5676,28 +6194,13 @@ document.getElementById('fdFecharBtn').addEventListener('click', ()=>{
 
 // ===================== NAVEGAÇÃO POR ABAS =====================
 const TAB_PANELS = {
-  painel: 'tabPainel', historico: 'tabHistorico',
+  visao: 'tabVisao', painel: 'tabPainel', historico: 'tabHistorico',
   ranking: 'tabRanking', dashboard: 'tabDashboard', auditoria: 'tabAuditoria',
   negociacao: 'tabNegociacao', contatos: 'tabContatos', revisao: 'tabRevisao'
 };
+// v3.0 — o clique em qualquer subaba passa pela navegação por seções (ativarAba, no fim do arquivo)
 document.querySelectorAll('.tab-btn').forEach(btn=>{
-  btn.addEventListener('click', async ()=>{
-    document.querySelectorAll('.tab-btn').forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
-    btn.classList.add('active');
-    btn.setAttribute('aria-selected','true');
-    Object.values(TAB_PANELS).forEach(id=>document.getElementById(id).style.display = 'none');
-    const tab = btn.dataset.tab;
-    document.getElementById(TAB_PANELS[tab]).style.display = 'block';
-    salvarPref('aba', tab); // INT-06
-
-    if(tab === 'ranking'){ renderRanking(); }
-    else if(tab === 'dashboard'){ await renderDashboard(); }
-    else if(tab === 'auditoria'){ await renderAuditoria(); }
-    else if(tab === 'historico'){ await renderHistorico(document.getElementById('historicoFranquiaSelect').value); }
-    else if(tab === 'negociacao'){ await renderKanban(); }
-    else if(tab === 'contatos'){ renderContatos(); }
-    else if(tab === 'revisao'){ renderRevisao(); }
-  });
+  btn.addEventListener('click', ()=> ativarAba(btn.dataset.tab));
 });
 
 // ===================== IA DE APOIO — "GERAR RESUMO" =====================
@@ -5950,11 +6453,14 @@ async function startApp(){
   await carregarVisoes();   // INT-03
   restaurarPreferencias(); // INT-06
   const estadoURL = lerEstadoDaURL(); // INT-03 — link compartilhado abre no mesmo recorte
-  if(estadoURL) aplicarEstadoFiltros(estadoURL);
+  if(estadoURL){ aplicarEstadoFiltros(estadoURL); ativarAba('painel'); } // link de recorte abre direto na Carteira
   renderAll();
   atualizarContadoresAlerta(); // FUN-03
   salvarSnapshotMensal();
   salvarSnapshotCarteira(); // FUN-05 — foto do saldo por franquia desta carga do RAW
+  V3.pronto = true;
+  if(V3.abaAtual === 'visao') renderVisaoGeral();
+  iniciarTempoRealV3(); // v3.0 — feed da equipe e status sincronizados ao vivo
 }
 
 // INT-06 — devolve o painel ao estado em que ele foi deixado: filtro do ranking e aba aberta.
@@ -5964,11 +6470,905 @@ function restaurarPreferencias(){
     const sel = document.getElementById('rankingFiltroAtiva');
     if(sel) sel.value = p.rankingFiltro;
   }
-  if(p.aba && p.aba !== 'painel'){
-    const btn = document.querySelector(`.tab-btn[data-tab="${p.aba}"]`);
-    if(btn) btn.click();
-  }
+  ativarAba(p.aba || 'visao'); // v3.0
 }
+
+// =====================================================================
+// v3.0 — NOVA NAVEGAÇÃO, VISÃO GERAL AO VIVO E CARTEIRA MAIS DIRETA
+// Tudo aqui se apoia nas funções da v2.1 (getFiltered, effectiveStatus, abrirFicha360,
+// renderDashboard…). Nada do que já existia foi removido: as 8 telas antigas continuam
+// lá, só agrupadas em 6 seções na barra lateral, e ganharam uma Visão Geral na frente.
+// =====================================================================
+const V3 = {
+  escopo: lerPrefs().escopoVisao || '',
+  abaAtual: 'visao',
+  pronto: false,
+  aberturaEm: Date.now(),
+  live: { base: 0, jurosDia: 0 },
+  charts: {},
+};
+
+// ---------- Paleta Bee (dados) — escura e clara, validadas para daltonismo ----------
+function paleta(){
+  const claro = document.body.classList.contains('theme-light');
+  return claro ? {
+    amarelo:'#E0A800', laranja:'#E0620B', azul:'#1E7FC0', verde:'#1E9458', roxo:'#8E4FDB', vermelho:'#D63B40',
+    aging:['#F2CF3A','#E0A800','#E8850C','#DD5320','#C21F33'], cinza:'#C9C9C4',
+  } : {
+    amarelo:'#FFCC00', laranja:'#E8590C', azul:'#1E8FD0', verde:'#1FA463', roxo:'#A15CF0', vermelho:'#E5484D',
+    aging:['#FFE27A','#FFCC00','#FF9F1C','#F2612B','#D7263D'], cinza:'#3A3A3A',
+  };
+}
+function aplicarPaletaStatus(){
+  const p = paleta();
+  STATUS_COLOR['EM ABERTO'] = p.amarelo;
+  STATUS_COLOR['BAIXADO'] = p.verde;
+  STATUS_COLOR['COBRANÇA INDEVIDA'] = p.roxo;
+  STATUS_COLOR['A VENCER'] = p.azul;
+}
+aplicarPaletaStatus();
+
+function fmtCompacto(v){
+  const a = Math.abs(v || 0);
+  if(a >= 1e6) return 'R$ ' + (v/1e6).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' mi';
+  if(a >= 1e4) return 'R$ ' + Math.round(v/1e3).toLocaleString('pt-BR') + ' mil';
+  if(a >= 1e3) return 'R$ ' + (v/1e3).toLocaleString('pt-BR', {maximumFractionDigits:1}) + ' mil';
+  return fmtMoney(v);
+}
+function escHtml(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function semAcento(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+function nomeCurto(email){ return String(email||'alguém').split('@')[0]; }
+function tempoRelativo(ts){
+  const s = Math.round((Date.now() - ts)/1000);
+  if(isNaN(s)) return '';
+  if(s < 45) return 'agora';
+  if(s < 3600) return 'há ' + Math.round(s/60) + ' min';
+  if(s < 86400) return 'há ' + Math.round(s/3600) + ' h';
+  if(s < 172800) return 'ontem';
+  return new Date(ts).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
+}
+const reduzMovimento = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+// ---------- Contagem animada dos números ----------
+const _valoresAnteriores = new Map();
+function lerNumeroBR(txt){
+  const limpo = String(txt).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.');
+  return parseFloat(limpo);
+}
+function animarNumero(el, chave, alvoForcado, formatador){
+  if(!el) return;
+  const alvo = (alvoForcado !== undefined) ? alvoForcado : lerNumeroBR(el.textContent);
+  if(isNaN(alvo)) return;
+  const ehDinheiro = formatador ? false : el.textContent.includes('R$');
+  const fmt = formatador || (ehDinheiro ? fmtMoney : (v=>Math.round(v).toLocaleString('pt-BR')));
+  const de = _valoresAnteriores.has(chave) ? _valoresAnteriores.get(chave) : 0;
+  _valoresAnteriores.set(chave, alvo);
+  if(reduzMovimento || de === alvo){ el.textContent = fmt(alvo); return; }
+  const t0 = performance.now(), dur = 750;
+  const passo = (t)=>{
+    const k = Math.min(1, (t - t0)/dur), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = fmt(de + (alvo - de)*e);
+    if(k < 1) requestAnimationFrame(passo);
+  };
+  requestAnimationFrame(passo);
+}
+
+// =====================================================================
+// NAVEGAÇÃO: 6 seções na barra lateral, subabas só onde há mais de uma tela
+// =====================================================================
+const SECOES = {
+  visao:      { ic:'ic-pulso', titulo:'Visão Geral', eyebrow:'Pulso da carteira em tempo real', abas:['visao'] },
+  carteira:   { ic:'ic-painel', titulo:'Carteira', eyebrow:'Lançamentos, filtros e ações de cobrança', abas:['painel'] },
+  negociacao: { ic:'ic-fluxo', titulo:'Negociação', eyebrow:'Acordos por etapa — arraste os cartões', abas:['negociacao'] },
+  franquias:  { ic:'ic-contatos', titulo:'Franquias', eyebrow:'Cadastro, contatos e histórico de cobrança', abas:['contatos','historico'] },
+  analises:   { ic:'ic-grafico', titulo:'Análises', eyebrow:'Indicadores executivos e rankings', abas:['dashboard','ranking'] },
+  controle:   { ic:'ic-auditoria', titulo:'Controle', eyebrow:'Revisão de ajustes, auditoria e backup', abas:['revisao','auditoria'] },
+};
+const ORDEM_SECOES = ['visao','carteira','negociacao','franquias','analises','controle'];
+const ultimaAbaDaSecao = {};
+function secaoDaAba(tab){ return ORDEM_SECOES.find(s=>SECOES[s].abas.includes(tab)) || 'visao'; }
+
+async function ativarAba(tab){
+  if(!TAB_PANELS[tab]) tab = 'visao';
+  const secao = secaoDaAba(tab);
+  ultimaAbaDaSecao[secao] = tab;
+  V3.abaAtual = tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    const on = b.dataset.tab === tab;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+    b.style.display = SECOES[secao].abas.includes(b.dataset.tab) ? '' : 'none';
+  });
+  document.getElementById('tabsNav').classList.toggle('oculta', SECOES[secao].abas.length < 2);
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.secao === secao));
+  document.getElementById('secaoTitulo').textContent = SECOES[secao].titulo;
+  document.getElementById('secaoEyebrow').textContent = SECOES[secao].eyebrow;
+  document.title = SECOES[secao].titulo + ' · Painel de Inadimplência';
+  Object.values(TAB_PANELS).forEach(id=>{ const el = document.getElementById(id); if(el) el.style.display = 'none'; });
+  document.getElementById(TAB_PANELS[tab]).style.display = 'block';
+  salvarPref('aba', tab); // INT-06
+  document.getElementById('sidebar').classList.remove('aberta');
+  window.scrollTo({ top:0 });
+
+  if(tab === 'visao'){ renderVisaoGeral(); }
+  else if(tab === 'ranking'){ renderRanking(); }
+  else if(tab === 'dashboard'){ await renderDashboard(); }
+  else if(tab === 'auditoria'){ await renderAuditoria(); }
+  else if(tab === 'historico'){ await renderHistorico(document.getElementById('historicoFranquiaSelect').value); }
+  else if(tab === 'negociacao'){ await renderKanban(); }
+  else if(tab === 'contatos'){ renderContatos(); }
+  else if(tab === 'revisao'){ renderRevisao(); }
+}
+function irParaSecao(secao){
+  if(!SECOES[secao]) return;
+  ativarAba(ultimaAbaDaSecao[secao] || SECOES[secao].abas[0]);
+}
+document.querySelectorAll('.nav-item').forEach(n=> n.addEventListener('click', ()=> irParaSecao(n.dataset.secao)));
+document.getElementById('sbToggle').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  document.getElementById('sidebar').classList.toggle('aberta');
+});
+document.addEventListener('click', (e)=>{
+  const sb = document.getElementById('sidebar');
+  if(sb.classList.contains('aberta') && !sb.contains(e.target)) sb.classList.remove('aberta');
+});
+
+// o selo de pendências da Revisão também aparece na seção Controle
+const _atualizarContadoresAlertaV2 = atualizarContadoresAlerta;
+atualizarContadoresAlerta = function(){
+  _atualizarContadoresAlertaV2.apply(this, arguments);
+  const b = document.getElementById('revisaoBadge'), c = document.getElementById('controleBadge');
+  if(b && c){ c.textContent = b.textContent; c.style.display = b.style.display; }
+};
+
+// =====================================================================
+// CARTEIRA: status rápido, faixa de atraso, visão por franquia e menus
+// =====================================================================
+const STATUS_RAPIDOS = [
+  { k:'pendentes',  label:'Pendentes' },
+  { k:'vencidos',   label:'Vencidos' },
+  { k:'avencer',    label:'A vencer' },
+  { k:'negociacao', label:'Em negociação' },
+  { k:'baixados',   label:'Baixados' },
+  { k:'tudo',       label:'Tudo' },
+];
+function passaStatusRapido(d, sq){
+  if(!sq || sq === 'tudo') return true;
+  const st = effectiveStatus(d);
+  if(sq === 'pendentes') return st === 'EM ABERTO' || st === 'A VENCER';
+  if(sq === 'vencidos') return st === 'EM ABERTO';
+  if(sq === 'avencer') return st === 'A VENCER';
+  if(sq === 'negociacao') return d.categoria === 'NEGOCIAÇÃO' && (st === 'EM ABERTO' || st === 'A VENCER');
+  if(sq === 'baixados') return st === 'BAIXADO';
+  return true;
+}
+function passaAging(d, ag){
+  if(!ag) return true;
+  if(effectiveStatus(d) !== 'EM ABERTO') return false;
+  const dd = diasEmAtraso(d.vencimento);
+  return dd >= ag.min && dd <= (ag.max === null ? Infinity : ag.max);
+}
+
+function montarCarteiraV3(){
+  const painel = document.getElementById('tabPainel');
+  const notice = document.getElementById('overrideNotice');
+  const hs = document.getElementById('healthStrip'), hl = document.getElementById('healthLegend');
+  notice.after(hs); hs.after(hl);
+
+  const qb = document.createElement('div');
+  qb.className = 'quickbar'; qb.id = 'quickbar';
+  qb.innerHTML = `
+    <div class="seg" id="qbStatus" role="group" aria-label="Status dos lançamentos">
+      ${STATUS_RAPIDOS.map(s=>`<button type="button" data-sq="${s.k}">${s.label}<span class="n" data-n="${s.k}"></span></button>`).join('')}
+    </div>
+    <span id="qbAgingChip"></span>
+    <div class="seg" id="qbModo" role="group" aria-label="Forma de ver a carteira">
+      <button type="button" data-modo="lancamentos">Por lançamento</button>
+      <button type="button" data-modo="franquias">Por franquia</button>
+    </div>
+    <div class="qb-dir">
+      <div class="menu-wrap" id="menuAcoes">
+        <button class="btn" type="button" aria-haspopup="true"><svg class="ic" aria-hidden="true"><use href="#ic-raio"></use></svg>Ações de cobrança<span class="caret">▾</span></button>
+        <div class="menu-pop" role="menu"></div>
+      </div>
+      <div class="menu-wrap" id="menuExportar">
+        <button class="btn btn-export" type="button" aria-haspopup="true"><svg class="ic" aria-hidden="true"><use href="#ic-download"></use></svg>Exportar<span class="caret">▾</span></button>
+        <div class="menu-pop" role="menu"></div>
+      </div>
+    </div>`;
+  hl.after(qb);
+
+  const popA = qb.querySelector('#menuAcoes .menu-pop');
+  ['resumoBtn','mensagemBtn','notificacaoBtn'].forEach(id=>{ const b = document.getElementById(id); if(b) popA.appendChild(b); });
+  const popE = qb.querySelector('#menuExportar .menu-pop');
+  ['exportExcelBtn','exportPdfBtn'].forEach(id=>{ const b = document.getElementById(id); if(b) popE.appendChild(b); });
+  const favLabel = document.getElementById('filterFavoritos').closest('label');
+  favLabel.className = 'qb-fav'; favLabel.removeAttribute('style');
+  qb.querySelector('.qb-dir').prepend(favLabel);
+  const hint = document.getElementById('exportHint');
+  const velhaBarra = hint.closest('.toolbar');
+  hint.className = 'menu-nota'; hint.textContent = 'Mensagem, resumo, PDF e notificação usam a franquia escolhida no filtro — ou a ficha da unidade.';
+  popA.appendChild(hint);
+  const notaE = document.createElement('div'); notaE.className = 'menu-nota';
+  notaE.textContent = 'Exporta exatamente o recorte na tela (filtros + status rápido).';
+  popE.appendChild(notaE);
+  if(velhaBarra) velhaBarra.remove();
+
+  qb.querySelectorAll('.menu-wrap').forEach(w=>{
+    w.querySelector(':scope > .btn').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const aberto = w.classList.contains('aberto');
+      document.querySelectorAll('.menu-wrap.aberto').forEach(x=>x.classList.remove('aberto'));
+      if(!aberto) w.classList.add('aberto');
+    });
+    w.querySelector('.menu-pop').addEventListener('click', (e)=>{ if(e.target.closest('.btn')) w.classList.remove('aberto'); });
+  });
+  document.addEventListener('click', (e)=>{
+    document.querySelectorAll('.menu-wrap.aberto').forEach(w=>{ if(!w.contains(e.target)) w.classList.remove('aberto'); });
+  });
+
+  qb.querySelector('#qbStatus').addEventListener('click', (e)=>{
+    const b = e.target.closest('button[data-sq]'); if(!b) return;
+    if(regrasCombinadas.length){ showToast('As combinações de Categoria + Status estão no comando — limpe-as para usar o status rápido.', 'aviso'); return; }
+    filtroStatusRapido = b.dataset.sq;
+    if(filtroStatusRapido !== 'vencidos' && filtroStatusRapido !== 'pendentes' && filtroStatusRapido !== 'tudo') filtroAging = null;
+    currentPage = 1; renderAll();
+  });
+  qb.querySelector('#qbModo').addEventListener('click', (e)=>{
+    const b = e.target.closest('button[data-modo]'); if(!b) return;
+    modoVisualizacao = b.dataset.modo; salvarPref('modoCarteira', modoVisualizacao);
+    currentPage = 1; renderAll();
+  });
+
+  const tw = painel.querySelector('.table-wrap');
+  const ag = document.createElement('div');
+  ag.className = 'table-wrap'; ag.id = 'agrupadoWrap'; ag.style.display = 'none';
+  ag.innerHTML = `<table>
+    <thead><tr>
+      <th>Franquia</th><th>Franqueado</th><th>Composição</th>
+      <th style="text-align:right">Títulos</th><th style="text-align:right">Mais antigo</th>
+      <th style="text-align:right">Vencido</th><th style="text-align:right">A vencer</th><th style="text-align:right">Total no recorte</th>
+    </tr></thead><tbody id="agrupadoBody"></tbody></table>`;
+  tw.after(ag);
+  ag.addEventListener('click', (e)=>{
+    const tr = e.target.closest('tr[data-fr]'); if(tr) abrirFicha360(tr.dataset.fr);
+  });
+
+  document.getElementById('clearFilters').addEventListener('click', ()=>{
+    filtroStatusRapido = 'pendentes'; filtroAging = null; currentPage = 1; renderAll();
+  });
+}
+
+function atualizarQuickbar(){
+  const qb = document.getElementById('quickbar'); if(!qb) return;
+  const segSt = qb.querySelector('#qbStatus');
+  const regras = regrasCombinadas.length > 0;
+  segSt.classList.toggle('desligado', regras);
+  segSt.title = regras ? 'As combinações de Categoria + Status estão definindo o recorte' : '';
+  segSt.querySelectorAll('button').forEach(b=> b.classList.toggle('active', b.dataset.sq === filtroStatusRapido));
+  // contagens de cada botão com os demais filtros aplicados
+  const guardaSq = filtroStatusRapido, guardaAg = filtroAging;
+  filtroStatusRapido = 'tudo'; filtroAging = null;
+  let base = [];
+  try{ base = getFiltered(); } finally { filtroStatusRapido = guardaSq; filtroAging = guardaAg; }
+  STATUS_RAPIDOS.forEach(s=>{
+    const n = s.k === 'tudo' ? base.length : base.filter(d=>passaStatusRapido(d, s.k)).length;
+    const el = segSt.querySelector(`[data-n="${s.k}"]`); if(el) el.textContent = n;
+  });
+  qb.querySelectorAll('#qbModo button').forEach(b=> b.classList.toggle('active', b.dataset.modo === modoVisualizacao));
+  const chip = qb.querySelector('#qbAgingChip');
+  chip.innerHTML = filtroAging ? `<span class="chip-filtro">Atraso: ${escHtml(filtroAging.label)}<button type="button" title="Tirar o filtro de atraso" aria-label="Tirar o filtro de atraso">×</button></span>` : '';
+  const x = chip.querySelector('button');
+  if(x) x.onclick = ()=>{ filtroAging = null; currentPage = 1; renderAll(); };
+}
+
+function renderAgrupado(rows){
+  const mapa = {};
+  rows.forEach(d=>{
+    const m = mapa[d.franquia] || (mapa[d.franquia] = { franquia:d.franquia, nome:d.nome, qtd:0, total:0, venc:0, aven:0, maxDias:0, cats:{} });
+    const st = effectiveStatus(d);
+    m.qtd++; m.total += d.total;
+    m.cats[d.categoria] = (m.cats[d.categoria] || 0) + 1;
+    if(st === 'EM ABERTO'){ m.venc += d.total; m.maxDias = Math.max(m.maxDias, diasEmAtraso(d.vencimento)); }
+    if(st === 'A VENCER') m.aven += d.total;
+  });
+  const lista = Object.values(mapa);
+  const chave = { franquia:'franquia', nome:'nome', total:'total', vencimento:'maxDias', valor:'total', encargos:'venc', controle:'venc', categoria:'qtd' }[sortKey] || 'total';
+  lista.sort((a,b)=>{
+    let va = a[chave], vb = b[chave];
+    if(typeof va === 'string'){ va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    if(chave === 'maxDias'){ [va, vb] = [vb, va]; }
+    return (va < vb ? -1 : va > vb ? 1 : 0) * (sortDir === 'asc' ? 1 : -1);
+  });
+  const maxV = Math.max(1, ...lista.map(m=>m.venc));
+  document.getElementById('agrupadoBody').innerHTML = lista.map(m=>`
+    <tr data-fr="${escHtml(m.franquia)}" title="Abrir a ficha de ${escHtml(m.franquia)}">
+      <td data-label="Franquia"><span class="franquia-nome-click">${escHtml(m.franquia)}</span>${badgeAtivaInativa(statusFranquiaDe(m.franquia))}</td>
+      <td data-label="Franqueado">${escHtml(m.nome)}</td>
+      <td data-label="Composição"><div class="grp-cats">${(()=>{ const ord = Object.entries(m.cats).sort((a,b)=>b[1]-a[1]); return ord.slice(0,2).map(([c,n])=>`<span class="grp-cat">${escHtml(c.toLowerCase())} · ${n}</span>`).join('') + (ord.length > 2 ? `<span class="grp-cat" title="${escHtml(ord.slice(2).map(([c,n])=>c.toLowerCase()+' · '+n).join(', '))}">+${ord.length-2}</span>` : ''); })()}</div></td>
+      <td data-label="Títulos" class="num">${m.qtd}</td>
+      <td data-label="Mais antigo" class="num">${m.maxDias ? `<span class="aging-dot" style="background:${corAtraso(m.maxDias)}"></span>${m.maxDias}d` : '—'}</td>
+      <td data-label="Vencido" class="num">${m.venc ? fmtMoney(m.venc) : '—'}<div class="grp-barra"><span style="width:${(m.venc/maxV*100).toFixed(1)}%"></span></div></td>
+      <td data-label="A vencer" class="num">${m.aven ? fmtMoney(m.aven) : '—'}</td>
+      <td data-label="Total no recorte" class="num total">${fmtMoney(m.total)}</td>
+    </tr>`).join('') || `<tr><td colspan="8" class="empty">Nenhuma franquia neste recorte.</td></tr>`;
+  document.getElementById('resultCount').textContent = `${lista.length} franquia${lista.length===1?'':'s'} · ${rows.length} lançamento${rows.length===1?'':'s'}`;
+}
+
+// renderTable passa a respeitar o modo "por franquia"
+const _renderTableV2 = renderTable;
+renderTable = function(rows){
+  const agrupado = modoVisualizacao === 'franquias';
+  const tw = document.querySelector('#tabPainel .table-wrap:not(#agrupadoWrap)');
+  const ag = document.getElementById('agrupadoWrap');
+  if(tw) tw.style.display = agrupado ? 'none' : '';
+  if(ag) ag.style.display = agrupado ? '' : 'none';
+  if(agrupado){
+    renderAgrupado(rows);
+    document.getElementById('pagination').innerHTML = '';
+  } else {
+    _renderTableV2(rows);
+  }
+};
+
+const _renderCardsV2 = renderCards;
+renderCards = function(rows){
+  _renderCardsV2(rows);
+  document.querySelectorAll('#cards .kpi-v').forEach((el, i)=> animarNumero(el, 'card' + i));
+};
+
+const _renderAllV2 = renderAll;
+renderAll = function(){
+  _renderAllV2();
+  atualizarQuickbar();
+  const dv = document.getElementById('painelVersaoLabel');
+  if(dv) dv.textContent = `painel v${PAINEL_VERSAO} · dados de ${RAW_ATUALIZADO_EM.slice(0,10).split('-').reverse().join('/')}`;
+};
+
+// Leva para a Carteira já no recorte certo (usado pelos cliques da Visão Geral)
+function irParaCarteira(o){
+  o = o || {};
+  document.getElementById('searchInput').value = '';
+  const e = V3.escopo;
+  document.getElementById('filterAtivaInativa').value = (e === 'ativas' || e === 'ativas-franqueadas') ? 'ATIVA' : '';
+  document.getElementById('filterPropria').value = e === 'ativas-franqueadas' ? 'FRANQUEADA' : '';
+  atualizarOpcoesFranquiaFranqueado();
+  document.getElementById('filterFranquia').value = o.franquia || '';
+  document.getElementById('filterFranqueado').value = '';
+  somenteFavoritos = false; document.getElementById('filterFavoritos').checked = false;
+  regrasCombinadas = o.categoria ? [
+    { categoria:o.categoria, status:'EM ABERTO', temporal:'TODOS' },
+    { categoria:o.categoria, status:'A VENCER', temporal:'TODOS' },
+  ] : [];
+  renderRegrasChips(); atualizarLabelRegras();
+  filtroStatusRapido = o.sq || 'pendentes';
+  filtroAging = o.ag || null;
+  modoVisualizacao = o.modo || modoVisualizacao;
+  sortKey = 'total'; sortDir = 'desc'; currentPage = 1;
+  ativarAba('painel');
+  renderAll();
+}
+
+// =====================================================================
+// VISÃO GERAL
+// =====================================================================
+function baseVisao(){
+  const e = V3.escopo;
+  if(!e) return DATA;
+  return DATA.filter(d=>{
+    const st = statusFranquiaDe(d.franquia);
+    if(e === 'ativas' && st !== 'ATIVA') return false;
+    if(e === 'ativas-franqueadas' && (st !== 'ATIVA' || d.operacaoPropria !== 'FRANQUEADA')) return false;
+    return true;
+  });
+}
+const FAIXAS_AGING = [
+  { label:'Até 30 dias', min:0, max:30 },
+  { label:'31 a 90 dias', min:31, max:90 },
+  { label:'91 a 180 dias', min:91, max:180 },
+  { label:'181 dias a 1 ano', min:181, max:365 },
+  { label:'Mais de 1 ano', min:366, max:null },
+];
+function destruirGrafico(nome){ if(V3.charts[nome]){ V3.charts[nome].destroy(); V3.charts[nome] = null; } }
+
+function renderVisaoGeral(){
+  if(!document.getElementById('tabVisao')) return;
+  const p = paleta(), t = chartTheme();
+  const base = baseVisao();
+  const venc = [], aven = [], baix = [], indev = [];
+  base.forEach(d=>{
+    const st = effectiveStatus(d);
+    if(st === 'EM ABERTO') venc.push(d); else if(st === 'A VENCER') aven.push(d);
+    else if(st === 'BAIXADO') baix.push(d); else indev.push(d);
+  });
+  const soma = arr => arr.reduce((s,d)=>s + (d.total || 0), 0);
+  const totVenc = soma(venc), totAven = soma(aven), totBaix = soma(baix), totIndev = soma(indev);
+  const faceVenc = venc.reduce((s,d)=>s + (d.valor || 0), 0);
+  const encVenc = Math.max(0, totVenc - faceVenc);
+  const jurosDia = venc.reduce((s,d)=>s + (d.valor || 0) * 0.01 / 30, 0);
+  V3.live = { base: totVenc, jurosDia };
+  const frDev = new Set(venc.map(d=>d.franquia));
+  const frTodas = new Set(base.map(d=>d.franquia));
+
+  document.getElementById('vgEscopo').querySelectorAll('button').forEach(b=>b.classList.toggle('active', b.dataset.escopo === V3.escopo));
+  const diasDados = Math.max(0, diasEntreISO(RAW_ATUALIZADO_EM.slice(0,10), hojeISO()));
+  document.getElementById('vgAtualizado').innerHTML =
+    `<span class="live-dot"></span>Asaas de ${RAW_ATUALIZADO_EM.slice(0,10).split('-').reverse().join('/')} ${diasDados === 0 ? '(hoje)' : `(há ${diasDados} dia${diasDados===1?'':'s'})`} · encargos recalculados agora`;
+
+  // ---- herói ----
+  document.getElementById('vgHeroSub').innerHTML =
+    `<b>${venc.length.toLocaleString('pt-BR')}</b> títulos em <b>${frDev.size}</b> franquias · encargos de <b>${fmtMoney(encVenc)}</b>` +
+    (faceVenc > 0 ? ` <span style="opacity:.75">(+${(encVenc/faceVenc*100).toFixed(1)}% sobre o valor de face)</span>` : '');
+  document.getElementById('vgHeroMeta').innerHTML = `
+    <div class="vg-mini"><div class="k">Juros / dia</div><div class="v up">+${fmtMoney(jurosDia)}</div></div>
+    <div class="vg-mini"><div class="k">Em 30 dias</div><div class="v">+${fmtCompacto(jurosDia*30)}</div></div>
+    <div class="vg-mini"><div class="k">Desde que abriu</div><div class="v up" id="vgDesdeAbertura">+R$ 0,00</div></div>`;
+  tickVisao();
+
+  // ---- indicadores ----
+  const prox30 = aven.filter(d=>{ const dd = diasEmAtraso(d.vencimento); return dd <= 0 && dd >= -30; });
+  const totProx30 = soma(prox30);
+  const negoc = base.filter(d=>d.categoria === 'NEGOCIAÇÃO' && ['EM ABERTO','A VENCER'].includes(effectiveStatus(d)));
+  const totNegoc = soma(negoc);
+  const gerado = totVenc + totAven + totBaix + totIndev;
+  const taxa = gerado > 0 ? totVenc/gerado*100 : 0;
+  const tiles = [
+    { id:'kpiProx', k:'A vencer em 30 dias', cor:p.azul, v:totProx30, fmt:fmtMoney, s:`${prox30.length} títulos · ${fmtCompacto(totAven)} a vencer no total`, barra: totAven ? totProx30/totAven*100 : 0, ir:()=>irParaCarteira({ sq:'avencer' }) },
+    { id:'kpiNeg', k:'Em negociação', cor:p.laranja, v:totNegoc, fmt:fmtMoney, s:`${negoc.length} parcelas de acordo em aberto`, barra: (totVenc+totAven) ? totNegoc/(totVenc+totAven)*100 : 0, ir:()=>irParaCarteira({ sq:'negociacao' }) },
+    { id:'kpiTaxa', k:'Taxa de inadimplência', cor:p.vermelho, v:taxa, fmt:v=>v.toFixed(1).replace('.', ',') + '%', s:'vencido ÷ tudo o que foi gerado no recorte', barra: taxa, ir:()=>ativarAba('dashboard') },
+    { id:'kpiFr', k:'Franquias devedoras', cor:p.amarelo, v:frDev.size, fmt:v=>Math.round(v) + ' de ' + frTodas.size, s:`${frTodas.size ? Math.round(frDev.size/frTodas.size*100) : 0}% da rede no recorte têm título vencido`, barra: frTodas.size ? frDev.size/frTodas.size*100 : 0, ir:()=>ativarAba('ranking') },
+  ];
+  const cont = document.getElementById('vgKpis');
+  if(!cont.children.length){
+    cont.innerHTML = tiles.map(x=>`<div class="vg-tile" id="${x.id}" role="button" tabindex="0">
+      <div class="k"><i></i><span></span></div><div class="v">—</div><div class="s"></div>
+      <div class="barra-wrap"><div class="barra"><span style="width:0"></span></div></div></div>`).join('');
+  }
+  tiles.forEach(x=>{
+    const el = document.getElementById(x.id);
+    el.querySelector('.k i').style.background = x.cor;
+    el.querySelector('.k span').textContent = x.k;
+    el.querySelector('.s').textContent = x.s;
+    const bar = el.querySelector('.barra span');
+    bar.style.background = x.cor;
+    requestAnimationFrame(()=>{ bar.style.width = Math.min(100, Math.max(0, x.barra)).toFixed(1) + '%'; });
+    animarNumero(el.querySelector('.v'), 'vg-' + x.id + V3.escopo, x.v, x.fmt);
+    el.onclick = x.ir;
+    el.onkeydown = (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); x.ir(); } };
+  });
+
+  // ---- idade da dívida ----
+  const ag = FAIXAS_AGING.map((f, i)=>{
+    const itens = venc.filter(d=>{ const dd = diasEmAtraso(d.vencimento); return dd >= f.min && dd <= (f.max === null ? Infinity : f.max); });
+    return { ...f, cor: p.aging[i], total: soma(itens), qtd: itens.length, fr: new Set(itens.map(d=>d.franquia)).size };
+  });
+  const maxAg = Math.max(1, ...ag.map(a=>a.total));
+  const agEl = document.getElementById('vgAging');
+  agEl.innerHTML = ag.map((a, i)=>`
+    <div class="hbar" data-i="${i}" role="button" tabindex="0" title="Abrir na Carteira: vencidos com ${a.label.toLowerCase()} de atraso">
+      <div class="rot">${a.label}<small>${a.qtd} títulos · ${a.fr} franquias</small></div>
+      <div class="trilho"><span data-w="${(a.total/maxAg*100).toFixed(1)}" style="background:${a.cor}"></span></div>
+      <div class="val">${fmtCompacto(a.total)}<small>${totVenc ? (a.total/totVenc*100).toFixed(0) : 0}%</small></div>
+    </div>`).join('');
+  agEl.querySelectorAll('.hbar').forEach(h=>{
+    const a = ag[+h.dataset.i];
+    const ir = ()=> irParaCarteira({ sq:'vencidos', ag:{ min:a.min, max:a.max, label:a.label.toLowerCase() } });
+    h.onclick = ir; h.onkeydown = (e)=>{ if(e.key === 'Enter') ir(); };
+  });
+
+  // ---- categorias ----
+  const pend = [...venc, ...aven];
+  const cats = {};
+  pend.forEach(d=>{ cats[d.categoria] = (cats[d.categoria] || 0) + d.total; });
+  const listaCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const maxCat = Math.max(1, ...listaCats.map(c=>c[1]));
+  const totPend = totVenc + totAven;
+  const catEl = document.getElementById('vgCategorias');
+  catEl.innerHTML = listaCats.map(([c, v])=>`
+    <div class="hbar" data-cat="${escHtml(c)}" role="button" tabindex="0" title="Abrir na Carteira: ${escHtml(c)} pendente">
+      <div class="rot" >${escHtml(c.charAt(0) + c.slice(1).toLowerCase())}<small>${totPend ? (v/totPend*100).toFixed(1) : 0}% do pendente</small></div>
+      <div class="trilho"><span data-w="${(v/maxCat*100).toFixed(1)}" style="background:${p.amarelo}"></span></div>
+      <div class="val">${fmtCompacto(v)}</div>
+    </div>`).join('') || '<div class="feed-vazio">Nada pendente neste recorte.</div>';
+  catEl.querySelectorAll('.hbar').forEach(h=>{ h.onclick = ()=> irParaCarteira({ categoria:h.dataset.cat }); });
+
+  // ---- maiores devedores ----
+  const porFr = {};
+  venc.forEach(d=>{
+    const m = porFr[d.franquia] || (porFr[d.franquia] = { franquia:d.franquia, nome:d.nome, total:0, qtd:0, maxDias:0 });
+    m.total += d.total; m.qtd++; m.maxDias = Math.max(m.maxDias, diasEmAtraso(d.vencimento));
+  });
+  const top = Object.values(porFr).sort((a,b)=>b.total-a.total).slice(0, 8);
+  const maxTop = Math.max(1, ...top.map(x=>x.total));
+  const topEl = document.getElementById('vgTop');
+  topEl.innerHTML = top.map((x, i)=>`
+    <div class="hbar" data-fr="${escHtml(x.franquia)}" role="button" tabindex="0">
+      <div class="rot" ><span class="top-rank">${String(i+1).padStart(2,'0')}</span>${escHtml(x.franquia)}<small>${escHtml(x.nome)} · ${x.qtd} títulos</small></div>
+      <div class="trilho"><span data-w="${(x.total/maxTop*100).toFixed(1)}" style="background:${corAtraso(x.maxDias)}"></span></div>
+      <div class="val">${fmtCompacto(x.total)}<small>mais antigo ${x.maxDias}d</small></div>
+    </div>`).join('') || '<div class="feed-vazio">Nenhuma franquia com título vencido. 🎉</div>';
+  topEl.querySelectorAll('.hbar').forEach(h=>{ h.onclick = ()=> abrirFicha360(h.dataset.fr); });
+
+  // barras crescem depois de desenhadas
+  requestAnimationFrame(()=> requestAnimationFrame(()=>{
+    document.querySelectorAll('#tabVisao .trilho span[data-w]').forEach(s=>{ s.style.width = s.dataset.w + '%'; });
+  }));
+
+  renderAlertasVisao(venc);
+  if(typeof Chart === 'undefined') return;
+
+  // ---- composição (rosca) ----
+  const comp = [
+    { k:'vencidos', label:'Vencido', v:totVenc, cor:p.amarelo },
+    { k:'avencer', label:'A vencer', v:totAven, cor:p.azul },
+    { k:'baixados', label:'Baixado', v:totBaix, cor:p.verde },
+  ];
+  if(totIndev > 0) comp.push({ k:'tudo', label:'Cobrança indevida', v:totIndev, cor:p.roxo });
+  destruirGrafico('status');
+  V3.charts.status = new Chart(document.getElementById('vgChartStatus'), {
+    type:'doughnut',
+    data:{ labels: comp.map(c=>c.label), datasets:[{ data: comp.map(c=>c.v), backgroundColor: comp.map(c=>c.cor), borderColor: t.surface, borderWidth: 3, hoverOffset: 6 }] },
+    options:{
+      maintainAspectRatio:false, cutout:'74%',
+      animation:{ animateRotate: !reduzMovimento, duration: 900 },
+      plugins:{ legend:{ display:false }, tooltip:{ ...tooltipStyle(t), callbacks:{ label:(c)=>` ${c.label}: ${fmtMoney(c.parsed)} (${gerado ? (c.parsed/gerado*100).toFixed(1) : 0}%)` } } },
+      onClick:(ev, els)=>{ if(els.length) irParaCarteira({ sq: comp[els[0].index].k }); },
+      onHover:(ev, els)=>{ ev.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+    }
+  });
+  document.getElementById('vgDonutCentro').innerHTML = `<div class="v">${taxa.toFixed(1).replace('.', ',')}%</div><div class="k">inadimplência</div>`;
+  document.getElementById('vgLegendaStatus').innerHTML = comp.map(c=>`
+    <div class="li" data-sq="${c.k}"><i style="background:${c.cor}"></i>${c.label}<b>${fmtCompacto(c.v)}</b><span class="p">${gerado ? (c.v/gerado*100).toFixed(0) : 0}%</span></div>`).join('');
+  document.querySelectorAll('#vgLegendaStatus .li').forEach(li=>{ li.onclick = ()=> irParaCarteira({ sq: li.dataset.sq }); });
+
+  // ---- vencimentos mês a mês ----
+  const hoje = new Date();
+  const meses = [];
+  for(let i = -11; i <= 3; i++){
+    const dt = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
+    meses.push(`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`);
+  }
+  const idxMes = {}; meses.forEach((m, i)=> idxMes[m] = i);
+  const serie = { baix: meses.map(()=>0), venc: meses.map(()=>0), aven: meses.map(()=>0) };
+  base.forEach(d=>{
+    const i = idxMes[(d.vencimento || '').slice(0,7)];
+    if(i === undefined) return;
+    const st = effectiveStatus(d);
+    if(st === 'BAIXADO') serie.baix[i] += d.total;
+    else if(st === 'EM ABERTO') serie.venc[i] += d.total;
+    else if(st === 'A VENCER') serie.aven[i] += d.total;
+  });
+  const NOMES_MES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+  const rotulos = meses.map(m=>{ const [a, mm] = m.split('-'); return NOMES_MES[+mm-1] + '/' + a.slice(2) + (m === mesAtual ? ' •' : ''); });
+  destruirGrafico('fluxo');
+  V3.charts.fluxo = new Chart(document.getElementById('vgChartFluxo'), {
+    type:'bar',
+    data:{ labels: rotulos, datasets:[
+      { label:'Pago (baixado)', data: serie.baix, backgroundColor: p.verde, borderColor: t.surface, borderWidth: 1, borderRadius: 4, maxBarThickness: 38, stack:'s' },
+      { label:'Vencido sem pagar', data: serie.venc, backgroundColor: p.amarelo, borderColor: t.surface, borderWidth: 1, borderRadius: 4, maxBarThickness: 38, stack:'s' },
+      { label:'A vencer', data: serie.aven, backgroundColor: p.azul, borderColor: t.surface, borderWidth: 1, borderRadius: 4, maxBarThickness: 38, stack:'s' },
+    ]},
+    options:{
+      maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      animation:{ duration: reduzMovimento ? 0 : 800 },
+      plugins:{
+        legend:{ position:'top', align:'end', labels:{ color:t.text, usePointStyle:true, pointStyle:'rectRounded', padding:14, boxWidth:10 } },
+        tooltip:{ ...tooltipStyle(t), callbacks:{
+          label:(c)=>` ${c.dataset.label}: ${fmtMoney(c.parsed.y)}`,
+          footer:(items)=>{
+            const i = items[0].dataIndex; const tot = serie.baix[i] + serie.venc[i] + serie.aven[i];
+            const vencido = serie.baix[i] + serie.venc[i];
+            return `Total do mês: ${fmtMoney(tot)}` + (vencido ? `\nPago do que já venceu: ${(serie.baix[i]/vencido*100).toFixed(0)}%` : '');
+          },
+        } },
+      },
+      scales:{
+        x:{ stacked:true, grid:{ display:false }, ticks:{ color:t.muted } },
+        y:{ stacked:true, grid:{ color:t.border }, border:{ display:false }, ticks:{ color:t.muted, maxTicksLimit:6, callback:v=>fmtCompacto(v) } },
+      },
+    }
+  });
+
+  renderGraficoAoVivo();
+}
+
+// ---- gráfico ao vivo: juros de mora do dia correndo em tempo real ----
+function pontosJurosHoje(){
+  const agora = new Date();
+  const ini = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate()).getTime();
+  const passo = 15 * 60 * 1000, labels = [], real = [], proj = [];
+  const fracAgora = (agora.getTime() - ini) / 86400000;
+  for(let i = 0; i <= 96; i++){
+    const frac = i / 96;
+    const hh = Math.floor(i/4), mm = (i%4)*15;
+    labels.push(`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`);
+    const v = V3.live.jurosDia * frac;
+    real.push(frac <= fracAgora ? v : null);
+    proj.push(frac >= fracAgora - 1/96 ? v : null);
+  }
+  // último ponto real exatamente no "agora", para a linha terminar no presente
+  const iAgora = Math.min(96, Math.floor(fracAgora * 96));
+  real[iAgora] = V3.live.jurosDia * fracAgora;
+  return { labels, real, proj, iAgora };
+}
+function renderGraficoAoVivo(){
+  if(typeof Chart === 'undefined') return;
+  const cv = document.getElementById('vgChartLive'); if(!cv) return;
+  const p = paleta();
+  const d = pontosJurosHoje();
+  destruirGrafico('live');
+  const ctx = cv.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 200);
+  grad.addColorStop(0, 'rgba(255,204,0,0.42)'); grad.addColorStop(1, 'rgba(255,204,0,0)');
+  V3.charts.live = new Chart(cv, {
+    type:'line',
+    data:{ labels:d.labels, datasets:[
+      { label:'Juros acumulados', data:d.real, borderColor:'#FFCC00', backgroundColor:grad, fill:true, borderWidth:2, tension:0,
+        pointRadius:(c)=> c.dataIndex === d.iAgora ? 5 : 0, pointBackgroundColor:'#FFCC00', pointBorderColor:'#0A0A0A', pointBorderWidth:2, spanGaps:false },
+      { label:'Projeção até meia-noite', data:d.proj, borderColor:'rgba(255,255,255,0.28)', borderDash:[4,4], borderWidth:1.5, pointRadius:0, fill:false, tension:0 },
+    ]},
+    options:{
+      maintainAspectRatio:false, animation:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{ legend:{ display:false }, tooltip:{ ...tooltipStyle({ surfaceAlt:'#1C1C1C', text:'#F4F4F4', border:'#2A2A2A' }),
+        filter:(it)=> it.parsed.y !== null && (it.datasetIndex === 0 || it.dataIndex > d.iAgora),
+        callbacks:{ title:(it)=> it[0].label + (it[0].dataIndex > d.iAgora ? ' (projeção)' : ''), label:(c)=> ' ' + fmtMoney(c.parsed.y) } } },
+      scales:{
+        x:{ grid:{ display:false }, border:{ display:false }, ticks:{ color:'#8C8C8C', maxRotation:0, autoSkip:false, callback:(v, i)=> i % 24 === 0 ? d.labels[i].slice(0,2) + 'h' : '' } },
+        y:{ beginAtZero:true, grid:{ color:'rgba(255,255,255,0.06)' }, border:{ display:false }, ticks:{ color:'#8C8C8C', maxTicksLimit:4, callback:v=>'R$ ' + Math.round(v).toLocaleString('pt-BR') } },
+      },
+    }
+  });
+}
+function atualizarGraficoAoVivo(){
+  const ch = V3.charts.live; if(!ch) return;
+  const d = pontosJurosHoje();
+  ch.data.datasets[0].data = d.real;
+  ch.data.datasets[1].data = d.proj;
+  ch.data.datasets[0].pointRadius = (c)=> c.dataIndex === d.iAgora ? 5 : 0;
+  ch.update('none');
+}
+
+// relógio + contador do herói (roda sempre; é barato)
+function tickVisao(){
+  const agora = new Date();
+  const rel = document.getElementById('relogio');
+  if(rel) rel.textContent = agora.toLocaleTimeString('pt-BR');
+  const heroi = document.getElementById('vgHeroValor');
+  if(!heroi || V3.abaAtual !== 'visao') return;
+  const ini = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate()).getTime();
+  const frac = (agora.getTime() - ini) / 86400000;
+  const valor = V3.live.base + V3.live.jurosDia * frac;
+  const txt = fmtMoney(valor);
+  const i = txt.lastIndexOf(',');
+  heroi.innerHTML = `${txt.slice(0, i)}<span class="cent">${txt.slice(i)}</span>`;
+  const jh = document.getElementById('vgJurosHoje');
+  if(jh) jh.textContent = fmtMoney(V3.live.jurosDia * frac);
+  const da = document.getElementById('vgDesdeAbertura');
+  if(da) da.textContent = '+' + fmtMoney(V3.live.jurosDia * (Date.now() - V3.aberturaEm) / 86400000);
+}
+setInterval(tickVisao, 250);
+setInterval(()=>{ if(V3.abaAtual === 'visao') atualizarGraficoAoVivo(); }, 15000);
+
+document.getElementById('vgEscopo').addEventListener('click', (e)=>{
+  const b = e.target.closest('button[data-escopo]'); if(!b) return;
+  V3.escopo = b.dataset.escopo; salvarPref('escopoVisao', V3.escopo);
+  renderVisaoGeral();
+});
+document.querySelector('#tabVisao [data-ir="ranking"]').addEventListener('click', ()=> ativarAba('ranking'));
+
+// ---- pendências do painel ----
+function renderAlertasVisao(venc){
+  const p = paleta();
+  const itens = [];
+  const nRev = parseInt((document.getElementById('revisaoBadge') || {}).textContent) || 0;
+  if(nRev > 0) itens.push({ cor:p.vermelho, t:`<b>${nRev}</b> ajustes manuais esperando revisão`, s:'Ficam fora do BI e dos disparos do Yungas até serem reclassificados.', ir:()=>ativarAba('revisao') });
+  const velhos = venc.filter(d=>diasEmAtraso(d.vencimento) > 365);
+  if(velhos.length) itens.push({ cor:p.aging[4], t:`<b>${velhos.length}</b> títulos com mais de 1 ano`, s:`${fmtMoney(velhos.reduce((s,d)=>s+d.total,0))} — candidatos a notificação extrajudicial.`, ir:()=>irParaCarteira({ sq:'vencidos', ag:{ min:366, max:null, label:'mais de 1 ano' } }) });
+  let obsoletos = 0;
+  try{ obsoletos = DATA.filter(d=>isOverrideObsoleto(d)).length; }catch(e){}
+  if(obsoletos) itens.push({ cor:p.laranja, t:`<b>${obsoletos}</b> status manuais anteriores à última carga`, s:'Vale conferir se ainda batem com o Asaas.', ir:()=>irParaCarteira({ sq:'tudo' }) });
+  const [ay, am] = ULTIMO_MES_IGPM_PUBLICADO.split('-').map(Number);
+  const hoje = new Date();
+  const atraso = (hoje.getFullYear() - ay) * 12 + (hoje.getMonth() + 1 - am);
+  itens.push({ cor: atraso >= 2 ? p.laranja : p.verde,
+    t: `IGP-M publicado até <b>${String(am).padStart(2,'0')}/${ay}</b>`,
+    s: atraso >= 2 ? 'Há mês sem índice — a correção está levemente subestimada.' : 'Tabela em dia com a FGV.' });
+  const diasDados = diasEntreISO(RAW_ATUALIZADO_EM.slice(0,10), hojeISO());
+  itens.push({ cor: diasDados > 35 ? p.vermelho : p.verde,
+    t: `Carga do Asaas de <b>${RAW_ATUALIZADO_EM.slice(0,10).split('-').reverse().join('/')}</b>`,
+    s: diasDados > 35 ? `Já são ${diasDados} dias — hora da atualização mensal.` : `Há ${diasDados} dia${diasDados===1?'':'s'}. Baixas feitas depois disso só aparecem na próxima carga.` });
+  const el = document.getElementById('vgAlertas');
+  el.innerHTML = itens.map((a, i)=>`<div class="alerta" data-i="${i}" ${a.ir ? 'role="button" tabindex="0"' : 'style="cursor:default"'}><span class="sinal" style="background:${a.cor}"></span><div>${a.t}<small>${a.s}</small></div></div>`).join('');
+  el.querySelectorAll('.alerta').forEach(n=>{ const a = itens[+n.dataset.i]; if(a.ir) n.onclick = a.ir; });
+}
+
+// =====================================================================
+// TEMPO REAL — atividade da equipe e status alterados por outras pessoas
+// =====================================================================
+function iniciarTempoRealV3(){
+  const mapaKey = {};
+  [...new Set(DATA.map(d=>d.franquia))].forEach(f=>{ mapaKey[franquiaKey(f)] = f; });
+  const eu = (auth.currentUser && auth.currentUser.email) || '';
+  let hist = [], aud = [], carregouH = false, carregouA = false;
+  const vistos = new Set();
+  const CANAL_IC = { 'WhatsApp':'ic-telefone', 'Telefone':'ic-telefone', 'E-mail':'ic-email', 'Yungas':'ic-nota' };
+
+  const desenhar = ()=>{
+    const el = document.getElementById('vgFeed'); if(!el) return;
+    const itens = [...hist, ...aud].filter(x=>!isNaN(x.ts)).sort((a,b)=>b.ts - a.ts).slice(0, 14);
+    const prontos = carregouH && carregouA;
+    if(!itens.length){ el.innerHTML = `<div class="feed-vazio">${prontos ? 'Nenhuma atividade registrada ainda.' : 'Conectando ao banco…'}</div>`; return; }
+    el.innerHTML = itens.map(x=>{
+      const novo = prontos && V3.feedInicializado && !vistos.has(x.id);
+      const txt = x.tipo === 'contato'
+        ? `<b>${escHtml(nomeCurto(x.quem))}</b> registrou contato por ${escHtml(x.canal || '—')} com <b>${escHtml(x.franquia)}</b>${x.obs ? `<span class="obs">${escHtml(x.obs)}</span>` : ''}${x.prometida ? `<span class="obs">prometeu pagar em ${escHtml(x.prometida.split('-').reverse().join('/'))}</span>` : ''}`
+        : `<b>${escHtml(nomeCurto(x.quem))}</b> mudou um título de <b>${escHtml(x.franquia)}</b><span class="obs">${escHtml(x.antes)} → ${escHtml(x.depois)}</span>`;
+      return `<div class="feed-item${novo ? ' novo' : ''}" data-fr="${escHtml(x.franquia)}" title="Abrir a ficha de ${escHtml(x.franquia)}">
+        <div class="feed-ic"><svg class="ic" aria-hidden="true"><use href="#${x.tipo === 'contato' ? (CANAL_IC[x.canal] || 'ic-nota') : 'ic-refresh'}"></use></svg></div>
+        <div class="feed-txt">${txt}</div><div class="feed-quando" data-ts="${x.ts}">${tempoRelativo(x.ts)}</div></div>`;
+    }).join('');
+    if(prontos){
+      const novos = itens.filter(x=>V3.feedInicializado && !vistos.has(x.id) && x.quem !== eu);
+      if(novos.length) showToast(`${nomeCurto(novos[0].quem)} acabou de ${novos[0].tipo === 'contato' ? 'registrar um contato com' : 'alterar um título de'} ${novos[0].franquia}`);
+      itens.forEach(x=>vistos.add(x.id));
+      V3.feedInicializado = true;
+    }
+    el.querySelectorAll('.feed-item').forEach(n=>{ n.onclick = ()=>{ if(DATA.some(d=>d.franquia === n.dataset.fr)) abrirFicha360(n.dataset.fr); }; });
+  };
+  const falhou = (e)=>{
+    console.warn('Feed ao vivo indisponível:', e);
+    const el = document.getElementById('vgFeed');
+    if(el) el.innerHTML = '<div class="feed-vazio">Não foi possível ouvir o banco em tempo real agora.</div>';
+  };
+  try{
+    historicoCollection.onSnapshot(snap=>{
+      hist = [];
+      snap.forEach(doc=>{
+        const fr = mapaKey[doc.id] || doc.id;
+        const ent = (doc.data() && doc.data().entradas) || [];
+        ent.slice(-6).forEach(en=> hist.push({ id:'h|' + doc.id + '|' + en.data, ts:Date.parse(en.data), tipo:'contato', franquia:fr, quem:en.quem, canal:en.canal, obs:en.observacao, prometida:en.dataPrometida }));
+      });
+      carregouH = true; desenhar();
+    }, falhou);
+    auditoriaCollection.orderBy('quando', 'desc').limit(15).onSnapshot(snap=>{
+      aud = snap.docs.map(doc=>{ const a = doc.data(); return { id:'a|' + doc.id, ts:Date.parse(a.quando), tipo:'status', franquia:a.franquia, quem:a.quem, antes:a.antes, depois:a.depois }; });
+      carregouA = true; desenhar();
+    }, falhou);
+  }catch(e){ falhou(e); }
+  setInterval(()=>{ document.querySelectorAll('.feed-quando[data-ts]').forEach(n=>{ n.textContent = tempoRelativo(+n.dataset.ts); }); }, 30000);
+
+  // status alterado em outra máquina: o painel se recalcula sozinho
+  try{
+    overridesDocRef.onSnapshot(doc=>{
+      if(doc.metadata && doc.metadata.hasPendingWrites) return;
+      const novo = (doc.exists && doc.data().valores) ? doc.data().valores : '{}';
+      if(novo === JSON.stringify(overrides)) return;
+      try{ overrides = JSON.parse(novo) || {}; }catch(e){ return; }
+      recalcularEncargosDoDataset();
+      renderAll();
+      if(V3.abaAtual === 'visao') renderVisaoGeral();
+      showToast('Status atualizado por outra pessoa da equipe — números recalculados.');
+    }, (e)=> console.warn('Sincronização de status em tempo real indisponível:', e));
+  }catch(e){ console.warn(e); }
+}
+
+// =====================================================================
+// BUSCA RÁPIDA (Ctrl+K) — franquias, seções e ações num lugar só
+// =====================================================================
+function montarPaletaComandos(){
+  const ov = document.createElement('div');
+  ov.className = 'cmdk-overlay'; ov.id = 'cmdk';
+  ov.innerHTML = `<div class="cmdk-box" role="dialog" aria-label="Busca rápida">
+    <div class="cmdk-input"><svg class="ic" style="margin:0" aria-hidden="true"><use href="#ic-lupa"></use></svg>
+      <input type="text" id="cmdkInput" placeholder="Digite uma franquia, franqueado, seção ou ação…" autocomplete="off" spellcheck="false"></div>
+    <div class="cmdk-lista" id="cmdkLista"></div>
+    <div class="cmdk-rodape"><span><kbd>↑</kbd><kbd>↓</kbd>navegar</span><span><kbd>Enter</kbd>abrir</span><span><kbd>Esc</kbd>fechar</span></div>
+  </div>`;
+  document.body.appendChild(ov);
+  const input = ov.querySelector('#cmdkInput'), lista = ov.querySelector('#cmdkLista');
+  let itens = [], sel = 0;
+
+  const acoes = () => [
+    ...ORDEM_SECOES.map(s=>({ g:'Ir para', ic:SECOES[s].ic, t:SECOES[s].titulo, dir:SECOES[s].eyebrow, run:()=>irParaSecao(s) })),
+    { g:'Ações', ic:'ic-planilha', t:'Exportar a carteira em Excel', run:()=>document.getElementById('exportExcelBtn').click() },
+    { g:'Ações', ic:'ic-upload', t:'Registrar contatos em lote', run:()=>ativarAba('historico') },
+    { g:'Ações', ic:'ic-alerta', t:'Ver só vencidos há mais de 1 ano', run:()=>irParaCarteira({ sq:'vencidos', ag:{ min:366, max:null, label:'mais de 1 ano' } }) },
+    { g:'Ações', ic:'ic-salvar', t:'Baixar backup completo (.json)', run:()=>document.getElementById('exportarBackupBtn').click() },
+    { g:'Ações', ic:'ic-refresh', t:'Alternar modo claro / escuro', run:()=>document.getElementById('themeToggle').click() },
+  ];
+  const franquias = () => {
+    const m = {};
+    DATA.forEach(d=>{
+      const x = m[d.franquia] || (m[d.franquia] = { f:d.franquia, n:d.nome, v:0 });
+      if(effectiveStatus(d) === 'EM ABERTO') x.v += d.total;
+    });
+    return Object.values(m).sort((a,b)=>b.v - a.v).map(x=>({ g:'Franquias', ic:'ic-predio', t:x.f, sub:x.n, dir: x.v ? fmtMoney(x.v) : 'sem vencido', run:()=>abrirFicha360(x.f), busca: semAcento(x.f + ' ' + x.n) }));
+  };
+  const desenhar = ()=>{
+    const q = semAcento(input.value.trim());
+    const fr = franquias().filter(x=>!q || x.busca.includes(q)).slice(0, q ? 12 : 6);
+    const ac = acoes().filter(x=>!q || semAcento(x.t + ' ' + (x.dir || '')).includes(q));
+    itens = q ? [...fr, ...ac] : [...ac.slice(0, 6), ...fr, ...ac.slice(6)];
+    sel = Math.min(sel, Math.max(0, itens.length - 1));
+    let grupo = '';
+    lista.innerHTML = itens.map((x, i)=>{
+      const cab = x.g !== grupo ? `<div class="cmdk-grupo">${x.g}</div>` : ''; grupo = x.g;
+      return `${cab}<div class="cmdk-item${i === sel ? ' sel' : ''}" data-i="${i}"><svg class="ic" aria-hidden="true"><use href="#${x.ic}"></use></svg><span>${escHtml(x.t)}${x.sub ? ` <span style="opacity:.6;font-size:12px">· ${escHtml(x.sub)}</span>` : ''}</span><span class="dir">${escHtml(x.dir || '')}</span></div>`;
+    }).join('') || '<div class="feed-vazio" style="padding:18px">Nada encontrado.</div>';
+    const s = lista.querySelector('.cmdk-item.sel'); if(s) s.scrollIntoView({ block:'nearest' });
+  };
+  const abrir = ()=>{ ov.classList.add('aberto'); input.value = ''; sel = 0; desenhar(); setTimeout(()=>input.focus(), 10); };
+  const fechar = ()=> ov.classList.remove('aberto');
+  const executar = (i)=>{ const x = itens[i]; if(!x) return; fechar(); x.run(); };
+  input.addEventListener('input', ()=>{ sel = 0; desenhar(); });
+  input.addEventListener('keydown', (e)=>{
+    if(e.key === 'ArrowDown'){ e.preventDefault(); sel = Math.min(itens.length - 1, sel + 1); desenhar(); }
+    else if(e.key === 'ArrowUp'){ e.preventDefault(); sel = Math.max(0, sel - 1); desenhar(); }
+    else if(e.key === 'Enter'){ e.preventDefault(); executar(sel); }
+    else if(e.key === 'Escape'){ fechar(); }
+  });
+  lista.addEventListener('click', (e)=>{ const it = e.target.closest('.cmdk-item'); if(it) executar(+it.dataset.i); });
+  ov.addEventListener('click', (e)=>{ if(e.target === ov) fechar(); });
+  document.getElementById('cmdkBtn').addEventListener('click', abrir);
+  document.addEventListener('keydown', (e)=>{
+    if((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')){
+      if(!document.getElementById('appContent').classList.contains('unlocked')) return;
+      e.preventDefault(); ov.classList.contains('aberto') ? fechar() : abrir();
+    }
+  });
+}
+
+// ---------- tema: gráficos e cores acompanham a troca ----------
+const _applyThemeV2 = applyTheme;
+applyTheme = function(isLight){
+  _applyThemeV2(isLight);
+  aplicarPaletaStatus();
+  if(!V3.pronto) return;
+  renderAll();
+  if(V3.abaAtual === 'visao') renderVisaoGeral();
+  else if(V3.abaAtual === 'dashboard') renderDashboard();
+};
+// o Dashboard antigo tinha as cores do tema escuro fixas no código: no claro, troca pelos tons legíveis
+const _renderDashboardV2 = renderDashboard;
+// os gráficos do Dashboard ficam com altura fixa (antes a rosca crescia com a largura da tela)
+[['chartStatus',300],['chartCategoria',300],['chartAging',230],['chartEvolucao',280]].forEach(([id, h])=>{
+  const cv = document.getElementById(id); if(!cv) return;
+  const box = document.createElement('div'); box.style.cssText = `position:relative; height:${h}px;`;
+  cv.parentNode.insertBefore(box, cv); box.appendChild(cv);
+});
+renderDashboard = async function(opts){
+  await _renderDashboardV2(opts);
+  [chartStatusInstance, chartCategoriaInstance, chartAgingInstance, chartEvolucaoInstance].forEach(ch=>{
+    if(ch && ch.options.maintainAspectRatio !== false){ ch.options.maintainAspectRatio = false; ch.resize(); }
+  });
+  if(!document.body.classList.contains('theme-light')) return;
+  const e = paleta();
+  const mapa = { '#FFCC00':e.amarelo, '#E8590C':e.laranja, '#1E8FD0':e.azul, '#1FA463':e.verde, '#E5484D':e.vermelho };
+  [chartStatusInstance, chartCategoriaInstance, chartAgingInstance, chartEvolucaoInstance].forEach(ch=>{
+    if(!ch) return;
+    ch.data.datasets.forEach(ds=>{
+      ['backgroundColor','borderColor','pointBackgroundColor'].forEach(k=>{
+        if(Array.isArray(ds[k])) ds[k] = ds[k].map(c=>mapa[c] || c);
+        else if(typeof ds[k] === 'string' && mapa[ds[k]]) ds[k] = mapa[ds[k]];
+      });
+    });
+    ch.update('none');
+  });
+};
+
+// ---------- montagem (roda uma vez, ao carregar o arquivo) ----------
+// preferências lidas aqui porque, no topo do script, PREFS_KEY ainda não existia (o
+// tamanho de página nunca era lembrado por isso)
+modoVisualizacao = lerPrefs().modoCarteira || 'lancamentos';
+PAGE_SIZE = parseInt(lerPrefs().pageSize) || PAGE_SIZE;
+montarCarteiraV3();
+montarPaletaComandos();
+document.querySelectorAll('.tab-btn').forEach(b=>{ b.style.display = SECOES.visao.abas.includes(b.dataset.tab) ? '' : 'none'; });
+document.querySelector('.nav-item[data-secao="visao"]').classList.add('active');
+tickVisao();
 </script>
 </body>
 </html>
