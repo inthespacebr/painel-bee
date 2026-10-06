@@ -1119,12 +1119,13 @@
     <button class="nav-item" data-secao="visao" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-pulso"></use></svg><span>Visão Geral</span><kbd>1</kbd></button>
     <button class="nav-item" data-secao="carteira" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-painel"></use></svg><span>Carteira</span><kbd>2</kbd></button>
     <button class="nav-item" data-secao="negociacao" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-fluxo"></use></svg><span>Negociação</span><kbd>3</kbd></button>
-    <button class="nav-item" data-secao="franquias" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-contatos"></use></svg><span>Franquias</span><kbd>4</kbd></button>
+    <button class="nav-item" data-secao="retencoes" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-dinheiro"></use></svg><span>Retenções</span><kbd>4</kbd></button>
+    <button class="nav-item" data-secao="franquias" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-contatos"></use></svg><span>Franquias</span><kbd>5</kbd></button>
   </nav>
   <div class="sb-sec">Gestão</div>
   <nav class="sb-nav">
-    <button class="nav-item" data-secao="analises" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-grafico"></use></svg><span>Análises</span><kbd>5</kbd></button>
-    <button class="nav-item" data-secao="controle" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-auditoria"></use></svg><span>Controle</span><span class="nav-badge" id="controleBadge" style="display:none;">0</span><kbd>6</kbd></button>
+    <button class="nav-item" data-secao="analises" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-grafico"></use></svg><span>Análises</span><kbd>6</kbd></button>
+    <button class="nav-item" data-secao="controle" type="button"><svg class="ic" aria-hidden="true"><use href="#ic-auditoria"></use></svg><span>Controle</span><span class="nav-badge" id="controleBadge" style="display:none;">0</span><kbd>7</kbd></button>
   </nav>
   <div class="sb-foot">
     <div class="sb-dados">
@@ -1426,6 +1427,72 @@
       </div>
     </div>
     <div class="empty" id="historicoSemFranquia">Selecione uma franquia acima para ver e registrar o histórico de cobranças.</div>
+  </div>
+
+  <!-- ===================== ABA: RETENÇÕES E ABATIMENTOS ===================== -->
+  <div class="tab-panel" id="tabRetencoes" style="display:none;">
+    <p class="subtitle" style="margin-bottom:14px;">Registro dos valores retidos de repasses das unidades e usados para abater débitos. O abatimento é sempre sobre o <b>valor original do boleto</b>, sem encargos — multa, juros e IGP-M continuam sendo calculados pelo painel sobre o que sobrar.</p>
+
+    <div class="cards" id="retCards"></div>
+
+    <div class="card" style="margin-bottom:22px;">
+      <div class="card-label"><svg class="ic" aria-hidden="true"><use href="#ic-dinheiro"></use></svg>Registrar abatimento por retenção</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin-top:12px;">
+        <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted);">Unidade
+          <select id="retFranquia" style="width:100%;"><option value="">Selecione a unidade...</option></select>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted);">Boleto abatido
+          <select id="retBoleto" style="width:100%;"><option value="">Selecione a unidade primeiro</option></select>
+        </label>
+      </div>
+
+      <div id="retBoletoInfo" style="margin-top:12px;"></div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin-top:12px;">
+        <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted);">Valor abatido (R$)
+          <input type="number" step="0.01" min="0" id="retValor" class="crm-input" placeholder="0,00">
+        </label>
+        <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted);">Data da retenção
+          <input type="date" id="retData" class="crm-input">
+        </label>
+        <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted);">Origem da retenção
+          <select id="retOrigem" style="width:100%;"></select>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted);">Detalhe da origem
+          <input type="text" id="retOrigemDetalhe" class="crm-input" placeholder="Ex.: RD Saúde, FIDC RD Saúde">
+        </label>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:14px;">
+        <button class="btn btn-export" id="retSalvarBtn"><svg class="ic" aria-hidden="true"><use href="#ic-salvar"></use></svg>Registrar abatimento</button>
+      </div>
+    </div>
+
+    <div class="toolbar" style="margin-bottom:14px;">
+      <select id="retFiltroFranquia"><option value="">Todas as unidades</option></select>
+      <select id="retFiltroOrigem"><option value="">Todas as origens</option></select>
+      <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); white-space:nowrap;">Retido de
+        <input type="date" id="retFiltroDe" style="background:var(--surface-alt); border:1px solid var(--border); color:var(--text); border-radius:7px; padding:8px 10px; font-family:inherit; font-size:12.5px;">
+      </label>
+      <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); white-space:nowrap;">até
+        <input type="date" id="retFiltroAte" style="background:var(--surface-alt); border:1px solid var(--border); color:var(--text); border-radius:7px; padding:8px 10px; font-family:inherit; font-size:12.5px;">
+      </label>
+      <button class="btn" id="retLimparFiltroBtn">Limpar filtros</button>
+      <button class="btn btn-export" id="retExportBtn"><svg class="ic" aria-hidden="true"><use href="#ic-planilha"></use></svg>Exportar Excel</button>
+      <span class="count" id="retContagem"></span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Data da retenção</th><th>Unidade</th><th>Categoria</th><th>Vencimento</th>
+          <th class="num">Valor original</th><th class="num">Valor abatido</th><th class="num">Saldo do boleto</th>
+          <th>Origem</th><th>Registrado por</th><th></th>
+        </tr></thead>
+        <tbody id="retBody"></tbody>
+      </table>
+      <div class="empty" id="retEmpty" style="display:none;">Nenhum abatimento registrado com os filtros atuais.</div>
+    </div>
   </div>
 
   <!-- ===================== ABA: RANKING ===================== -->
@@ -1943,7 +2010,9 @@ const RAW_ATUALIZADO_EM = '2026-09-28T00:00:00-03:00';
 // 2.0 = as 24 melhorias de 04/09/2026 · 2.1 = exportações no padrão Bee (09/09/2026)
 // 3.0 = identidade Bee, navegação lateral em 6 seções, Visão Geral ao vivo, status rápido,
 //       visão por franquia, busca Ctrl+K e sincronização em tempo real (29/09/2026)
-const PAINEL_VERSAO = '3.0';
+// 3.1 = seção Retenções: registro dos valores retidos de repasse abatidos em boletos,
+//       com exportação no padrão Bee (06/10/2026)
+const PAINEL_VERSAO = '3.1';
 
 const STATUS_LABELS = {
   'EM ABERTO': 'Vencido',
@@ -2171,7 +2240,7 @@ document.addEventListener('keydown', (e)=>{
     document.getElementById('searchInput').focus();
     return;
   }
-  if(/^[1-6]$/.test(e.key)){ // v3.0 — 1..6 = seções da barra lateral
+  if(/^[1-7]$/.test(e.key)){ // v3.0 — 1..7 = seções da barra lateral
     const alvo = document.querySelectorAll('.nav-item')[parseInt(e.key) - 1];
     if(alvo){ alvo.click(); alvo.focus(); }
   }
@@ -6194,7 +6263,7 @@ document.getElementById('fdFecharBtn').addEventListener('click', ()=>{
 
 // ===================== NAVEGAÇÃO POR ABAS =====================
 const TAB_PANELS = {
-  visao: 'tabVisao', painel: 'tabPainel', historico: 'tabHistorico',
+  visao: 'tabVisao', painel: 'tabPainel', historico: 'tabHistorico', retencoes: 'tabRetencoes',
   ranking: 'tabRanking', dashboard: 'tabDashboard', auditoria: 'tabAuditoria',
   negociacao: 'tabNegociacao', contatos: 'tabContatos', revisao: 'tabRevisao'
 };
@@ -6436,6 +6505,353 @@ auth.onAuthStateChanged((user)=>{
   }
 });
 
+// =====================================================================
+// RETENÇÕES E ABATIMENTOS — seção própria na barra lateral (v3.1, 06/10/2026)
+// Registra os valores retidos de repasses das unidades (grande conta, lucro do Asaas,
+// repasse de entregadores) e usados para abater débitos. O abatimento é SEMPRE sobre o
+// VALOR ORIGINAL do boleto (campo `valor`), nunca sobre o total com encargos — regra do
+// Financeiro. Multa/juros/IGP-M seguem sendo calculados pelo painel sobre o que sobrar.
+//
+// Persistência: documento único `painel-inadimplencia/retencoes`, no mesmo molde dos
+// overrides (JSON serializado em `valores`). Nenhuma coleção nova no Firestore — assim o
+// backup completo e as regras de segurança existentes continuam valendo sem alteração.
+//
+// Chave do boleto: `d.id` (hash de franquia|nome|categoria|vencimento|valor), o mesmo
+// identificador que os overrides de status já usam. Como o hash não muda entre cargas
+// mensais do RAW, o registro sobrevive à atualização mensal.
+// =====================================================================
+const retencoesDocRef = db.collection('painel-inadimplencia').doc('retencoes');
+let retencoes = []; // [{id, boletoId, franquia, franqueado, categoria, vencimento, valorOriginal, valorAbatido, dataRetencao, origem, origemDetalhe, quem, quando}]
+
+const RET_ORIGENS = ['Grande conta', 'Lucro Asaas', 'Repasse de entregadores', 'Outro'];
+const RET_TOLERANCIA = 0.005; // centavo de folga nas comparações de saldo
+
+async function loadRetencoes(){
+  try{
+    const doc = await retencoesDocRef.get();
+    retencoes = (doc.exists && doc.data().valores) ? JSON.parse(doc.data().valores) : [];
+    if(!Array.isArray(retencoes)) retencoes = [];
+  }catch(e){
+    console.error('Erro ao carregar retenções:', e);
+    retencoes = [];
+  }
+}
+
+async function persistRetencoes(){
+  document.getElementById('saveDot').style.background = '#FFCC00';
+  document.getElementById('saveText').textContent = 'Salvando...';
+  try{
+    await retencoesDocRef.set({ valores: JSON.stringify(retencoes), atualizadoEm: new Date().toISOString() });
+    document.getElementById('saveDot').style.background = '#1FA463';
+    document.getElementById('saveText').textContent = 'Sincronizado';
+    return true;
+  }catch(e){
+    console.error('Erro ao salvar retenções:', e);
+    document.getElementById('saveDot').style.background = '#E5484D';
+    document.getElementById('saveText').textContent = 'Falha ao salvar';
+    showToast('Não foi possível salvar o abatimento. Verifique a conexão.', 'erro');
+    return false;
+  }
+}
+
+function abatidoDoBoleto(boletoId, ignorarRegistroId){
+  return retencoes
+    .filter(r => r.boletoId === boletoId && r.id !== ignorarRegistroId)
+    .reduce((s, r) => s + (Number(r.valorAbatido) || 0), 0);
+}
+
+function saldoOriginalDoBoleto(d){
+  return Math.max(0, (d.valor || 0) - abatidoDoBoleto(d.id));
+}
+
+function novoIdRetencao(){
+  return 'ret-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+}
+
+function usuarioLogadoEmail(){
+  return (auth.currentUser && auth.currentUser.email) ? auth.currentUser.email : 'desconhecido';
+}
+
+// ---------- montagem dos selects ----------
+function populateRetencoesSelects(){
+  const franquias = [...new Set(DATA.map(d => d.franquia))].sort();
+  const selFranquia = document.getElementById('retFranquia');
+  const selFiltro = document.getElementById('retFiltroFranquia');
+  franquias.forEach(f => {
+    const a = document.createElement('option'); a.value = f; a.textContent = f; selFranquia.appendChild(a);
+    const b = document.createElement('option'); b.value = f; b.textContent = f; selFiltro.appendChild(b);
+  });
+  const selOrigem = document.getElementById('retOrigem');
+  const selFiltroOrigem = document.getElementById('retFiltroOrigem');
+  RET_ORIGENS.forEach(o => {
+    const a = document.createElement('option'); a.value = o; a.textContent = o; selOrigem.appendChild(a);
+    const b = document.createElement('option'); b.value = o; b.textContent = o; selFiltroOrigem.appendChild(b);
+  });
+  document.getElementById('retData').value = hojeISO();
+}
+
+function boletosAbativeisDa(franquia){
+  return DATA
+    .filter(d => d.franquia === franquia)
+    .filter(d => { const st = effectiveStatus(d); return st === 'EM ABERTO' || st === 'A VENCER'; })
+    .filter(d => saldoOriginalDoBoleto(d) > RET_TOLERANCIA)
+    .sort((a, b) => a.vencimento.localeCompare(b.vencimento));
+}
+
+function atualizarRetBoletos(){
+  const franquia = document.getElementById('retFranquia').value;
+  const sel = document.getElementById('retBoleto');
+  document.getElementById('retBoletoInfo').innerHTML = '';
+  document.getElementById('retValor').value = '';
+  if(!franquia){
+    sel.innerHTML = '<option value="">Selecione a unidade primeiro</option>';
+    return;
+  }
+  const lista = boletosAbativeisDa(franquia);
+  if(lista.length === 0){
+    sel.innerHTML = '<option value="">Nenhum boleto em aberto com saldo nesta unidade</option>';
+    return;
+  }
+  sel.innerHTML = '<option value="">Selecione o boleto...</option>';
+  lista.forEach(d => {
+    const o = document.createElement('option');
+    o.value = d.id;
+    const st = effectiveStatus(d) === 'A VENCER' ? 'a vencer' : 'vencido';
+    const saldo = saldoOriginalDoBoleto(d);
+    const parcial = saldo < (d.valor || 0) - RET_TOLERANCIA ? ` · saldo ${fmtMoney(saldo)}` : '';
+    o.textContent = `${fmtDate(d.vencimento)} · ${d.categoria} · ${fmtMoney(d.valor)} (${st})${parcial}`;
+    sel.appendChild(o);
+  });
+}
+
+function atualizarRetBoletoInfo(){
+  const box = document.getElementById('retBoletoInfo');
+  const id = document.getElementById('retBoleto').value;
+  const d = DATA.find(x => x.id === id);
+  if(!d){ box.innerHTML = ''; document.getElementById('retValor').value = ''; return; }
+  const jaAbatido = abatidoDoBoleto(d.id);
+  const saldo = saldoOriginalDoBoleto(d);
+  const linha = (rot, val, destaque) =>
+    `<div><span style="display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted);">${rot}</span>
+     <b style="font-family:'IBM Plex Mono',monospace; font-size:13.5px; ${destaque ? 'color:var(--bee);' : ''}">${val}</b></div>`;
+  box.innerHTML = `
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; padding:12px 14px; background:var(--surface-alt); border:1px solid var(--border); border-radius:8px;">
+      ${linha('Categoria', d.categoria)}
+      ${linha('Vencimento', fmtDate(d.vencimento))}
+      ${linha('Valor original', fmtMoney(d.valor))}
+      ${linha('Encargos hoje', fmtMoney(encargosDe(d)))}
+      ${linha('Já abatido', fmtMoney(jaAbatido))}
+      ${linha('Saldo original', fmtMoney(saldo), true)}
+    </div>
+    <p style="font-size:11.5px; color:var(--muted); margin:8px 0 0;">O abatimento considera só o valor original. Os ${fmtMoney(encargosDe(d))} de encargos não entram nessa conta.</p>`;
+  document.getElementById('retValor').value = saldo.toFixed(2);
+}
+
+// ---------- registro ----------
+async function registrarAbatimento(){
+  const franquia = document.getElementById('retFranquia').value;
+  const boletoId = document.getElementById('retBoleto').value;
+  const valor = parseFloat(String(document.getElementById('retValor').value).replace(',', '.'));
+  const dataRetencao = document.getElementById('retData').value;
+  const origem = document.getElementById('retOrigem').value;
+  const origemDetalhe = document.getElementById('retOrigemDetalhe').value.trim();
+
+  if(!franquia){ showToast('Escolha a unidade.', 'aviso'); return; }
+  if(!boletoId){ showToast('Escolha o boleto que foi abatido.', 'aviso'); return; }
+  if(!dataRetencao){ showToast('Informe a data da retenção.', 'aviso'); return; }
+  if(!(valor > 0)){ showToast('Informe um valor abatido maior que zero.', 'aviso'); return; }
+
+  const d = DATA.find(x => x.id === boletoId);
+  if(!d){ showToast('Boleto não encontrado no dataset atual.', 'erro'); return; }
+
+  const saldoAntes = saldoOriginalDoBoleto(d);
+  if(valor > saldoAntes + RET_TOLERANCIA){
+    const ok = await confirmarAcao(
+      `O valor informado (${fmtMoney(valor)}) é maior que o saldo original do boleto (${fmtMoney(saldoAntes)}). Registrar mesmo assim?`,
+      { titulo: 'Valor acima do saldo' });
+    if(!ok) return;
+  }
+
+  const registro = {
+    id: novoIdRetencao(),
+    boletoId: d.id,
+    franquia: d.franquia,
+    franqueado: d.nome,
+    categoria: d.categoria,
+    vencimento: d.vencimento,
+    valorOriginal: d.valor,
+    valorAbatido: Math.round(valor * 100) / 100,
+    dataRetencao,
+    origem: origem || 'Outro',
+    origemDetalhe,
+    quem: usuarioLogadoEmail(),
+    quando: new Date().toISOString()
+  };
+
+  retencoes.push(registro);
+  const salvou = await persistRetencoes();
+  if(!salvou){ retencoes = retencoes.filter(r => r.id !== registro.id); return; }
+  showToast(`Abatimento de ${fmtMoney(registro.valorAbatido)} registrado em ${d.franquia}`);
+
+  // Abateu o saldo inteiro? Oferece marcar o boleto como Baixado no painel.
+  const saldoDepois = saldoOriginalDoBoleto(d);
+  const statusAtual = effectiveStatus(d);
+  if(saldoDepois <= RET_TOLERANCIA && statusAtual !== 'BAIXADO'){
+    const marcar = await confirmarAcao(
+      `O valor original deste boleto (${fmtMoney(d.valor)}) foi totalmente abatido. Marcar o boleto como Baixado no painel?`,
+      { titulo: 'Marcar como Baixado' });
+    if(marcar){
+      setOverride(d.id, 'BAIXADO');
+      await persistOverrides();
+      await registrarAuditoria(d, statusAtual, 'BAIXADO');
+      recalcularEncargosDoDataset();
+      renderAll();
+      atualizarContadoresAlerta();
+    }
+  }
+
+  document.getElementById('retOrigemDetalhe').value = '';
+  atualizarRetBoletos();
+  renderRetencoes();
+}
+
+// ---------- listagem ----------
+function retencoesFiltradas(){
+  const f = document.getElementById('retFiltroFranquia').value;
+  const o = document.getElementById('retFiltroOrigem').value;
+  const de = document.getElementById('retFiltroDe').value;
+  const ate = document.getElementById('retFiltroAte').value;
+  return retencoes
+    .filter(r => !f || r.franquia === f)
+    .filter(r => !o || r.origem === o)
+    .filter(r => !de || (r.dataRetencao || '') >= de)
+    .filter(r => !ate || (r.dataRetencao || '') <= ate)
+    .slice()
+    .sort((a, b) => (b.dataRetencao || '').localeCompare(a.dataRetencao || '') || (b.quando || '').localeCompare(a.quando || ''));
+}
+
+function renderRetencoes(){
+  const lista = retencoesFiltradas();
+  const total = lista.reduce((s, r) => s + (Number(r.valorAbatido) || 0), 0);
+  const mesAtual = hojeISO().slice(0, 7);
+  const totalMes = retencoes
+    .filter(r => (r.dataRetencao || '').slice(0, 7) === mesAtual)
+    .reduce((s, r) => s + (Number(r.valorAbatido) || 0), 0);
+
+  const card = (label, valor, sub) =>
+    `<div class="card"><div class="card-label">${label}</div><div class="card-value">${valor}</div><div class="card-sub">${sub}</div></div>`;
+  document.getElementById('retCards').innerHTML = [
+    card('Abatido no recorte', fmtMoney(total), `${lista.length} registro(s)`),
+    card('Abatido no mês', fmtMoney(totalMes), new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })),
+    card('Boletos abatidos', String(new Set(lista.map(r => r.boletoId)).size), 'no recorte atual'),
+    card('Unidades', String(new Set(lista.map(r => r.franquia)).size), 'com retenção registrada')
+  ].join('');
+
+  const tbody = document.getElementById('retBody');
+  const empty = document.getElementById('retEmpty');
+  document.getElementById('retContagem').textContent = `${lista.length} de ${retencoes.length} registro(s)`;
+
+  if(lista.length === 0){
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  tbody.innerHTML = lista.map(r => {
+    const d = DATA.find(x => x.id === r.boletoId);
+    const saldo = d ? saldoOriginalDoBoleto(d) : Math.max(0, (r.valorOriginal || 0) - abatidoDoBoleto(r.boletoId));
+    const origemTxt = r.origemDetalhe ? `${r.origem} · ${r.origemDetalhe}` : r.origem;
+    return `<tr>
+      <td>${fmtDate(r.dataRetencao)}</td>
+      <td>${r.franquia}${d ? '' : ' <span class="franquia-badge fr-inativa" title="Boleto não existe mais no dataset carregado">fora do dataset</span>'}</td>
+      <td>${r.categoria}</td>
+      <td>${fmtDate(r.vencimento)}</td>
+      <td class="num">${fmtMoney(r.valorOriginal)}</td>
+      <td class="num"><b>${fmtMoney(r.valorAbatido)}</b></td>
+      <td class="num">${fmtMoney(saldo)}</td>
+      <td>${origemTxt}</td>
+      <td style="font-size:11.5px; color:var(--muted);">${r.quem || '—'}</td>
+      <td><button class="btn" data-ret-del="${r.id}" style="font-size:11.5px; padding:4px 9px;">Excluir</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ---------- exportação (padrão Bee) ----------
+const COLUNAS_RETENCOES = [
+  { cabecalho: 'Data da Retenção',   largura: 18, alinhar: 'center' },
+  { cabecalho: 'Unidade',            largura: 25 },
+  { cabecalho: 'Franqueado',         largura: 33.4 },
+  { cabecalho: 'Categoria',          largura: 25 },
+  { cabecalho: 'Vencimento',         largura: 17.5, alinhar: 'center' },
+  { cabecalho: 'Valor Original',     largura: 20, moeda: true },
+  { cabecalho: 'Valor Abatido',      largura: 20, moeda: true, negrito: true },
+  { cabecalho: 'Saldo do Boleto',    largura: 20, moeda: true },
+  { cabecalho: 'Origem',             largura: 24 },
+  { cabecalho: 'Detalhe da Origem',  largura: 28 },
+  { cabecalho: 'Registrado por',     largura: 28 },
+  { cabecalho: 'Registrado em',      largura: 20, alinhar: 'center' },
+];
+
+function exportarRetencoesExcel(){
+  const lista = retencoesFiltradas();
+  if(lista.length === 0){
+    showToast('Nenhum abatimento para exportar com os filtros atuais.', 'aviso');
+    return;
+  }
+  const linhas = lista.map(r => {
+    const d = DATA.find(x => x.id === r.boletoId);
+    const saldo = d ? saldoOriginalDoBoleto(d) : Math.max(0, (r.valorOriginal || 0) - abatidoDoBoleto(r.boletoId));
+    return [
+      fmtDate(r.dataRetencao),
+      r.franquia,
+      r.franqueado || '',
+      r.categoria,
+      fmtDate(r.vencimento),
+      r.valorOriginal,
+      r.valorAbatido,
+      saldo,
+      r.origem,
+      r.origemDetalhe || '',
+      r.quem || '',
+      r.quando ? new Date(r.quando).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''
+    ];
+  });
+  const franquiaSel = document.getElementById('retFiltroFranquia').value;
+  const arquivo = franquiaSel ? `retencoes-${nomeArquivoLimpo(franquiaSel)}` : 'retencoes-abatimentos';
+  exportarPlanilhaBee(arquivo, [{ nome: 'Abatimentos', colunas: COLUNAS_RETENCOES, linhas }]);
+}
+
+// ---------- eventos ----------
+document.getElementById('retFranquia').addEventListener('change', atualizarRetBoletos);
+document.getElementById('retBoleto').addEventListener('change', atualizarRetBoletoInfo);
+document.getElementById('retSalvarBtn').addEventListener('click', registrarAbatimento);
+['retFiltroFranquia', 'retFiltroOrigem', 'retFiltroDe', 'retFiltroAte'].forEach(id => {
+  document.getElementById(id).addEventListener('change', renderRetencoes);
+});
+document.getElementById('retLimparFiltroBtn').addEventListener('click', () => {
+  ['retFiltroFranquia', 'retFiltroOrigem', 'retFiltroDe', 'retFiltroAte'].forEach(id => { document.getElementById(id).value = ''; });
+  renderRetencoes();
+});
+document.getElementById('retExportBtn').addEventListener('click', exportarRetencoesExcel);
+document.getElementById('retBody').addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-ret-del]');
+  if(!btn) return;
+  const id = btn.dataset.retDel;
+  const r = retencoes.find(x => x.id === id);
+  if(!r) return;
+  const ok = await confirmarAcao(
+    `Excluir o abatimento de ${fmtMoney(r.valorAbatido)} em ${r.franquia} (boleto de ${fmtDate(r.vencimento)})? Se o boleto tiver sido marcado como Baixado, o status não volta sozinho — ajuste na Carteira se precisar.`,
+    { titulo: 'Excluir abatimento' });
+  if(!ok) return;
+  const backup = retencoes.slice();
+  retencoes = retencoes.filter(x => x.id !== id);
+  const salvou = await persistRetencoes();
+  if(!salvou){ retencoes = backup; return; }
+  showToast('Abatimento excluído');
+  atualizarRetBoletos();
+  renderRetencoes();
+});
+
 // ===================== INIT =====================
 async function startApp(){
   prepararAcessibilidade(); // INT-07
@@ -6443,6 +6859,7 @@ async function startApp(){
   renderSkeleton(10); // VIS-05 — mostra a estrutura enquanto o Firebase responde
   populateFilterOptions();
   populateHistoricoSelect();
+  populateRetencoesSelects();
   await loadOverrides();
   await loadStatusFranquiaOverrides();
   await loadFavoritos();
@@ -6450,11 +6867,13 @@ async function startApp(){
   await loadRevisaoAjustes(); // FUN-03 — reclassificações entram antes de qualquer render
   recalcularEncargosDoDataset();
   await loadCrmData();      // FUN-04 — telefones prontos para as ações da linha
+  await loadRetencoes();    // v3.1 — abatimentos por retenção de repasse
   await carregarVisoes();   // INT-03
   restaurarPreferencias(); // INT-06
   const estadoURL = lerEstadoDaURL(); // INT-03 — link compartilhado abre no mesmo recorte
   if(estadoURL){ aplicarEstadoFiltros(estadoURL); ativarAba('painel'); } // link de recorte abre direto na Carteira
   renderAll();
+  renderRetencoes();        // v3.1
   atualizarContadoresAlerta(); // FUN-03
   salvarSnapshotMensal();
   salvarSnapshotCarteira(); // FUN-05 — foto do saldo por franquia desta carga do RAW
@@ -6560,11 +6979,12 @@ const SECOES = {
   visao:      { ic:'ic-pulso', titulo:'Visão Geral', eyebrow:'Pulso da carteira em tempo real', abas:['visao'] },
   carteira:   { ic:'ic-painel', titulo:'Carteira', eyebrow:'Lançamentos, filtros e ações de cobrança', abas:['painel'] },
   negociacao: { ic:'ic-fluxo', titulo:'Negociação', eyebrow:'Acordos por etapa — arraste os cartões', abas:['negociacao'] },
+  retencoes:  { ic:'ic-dinheiro', titulo:'Retenções', eyebrow:'Valores retidos de repasses abatidos em débitos', abas:['retencoes'] },
   franquias:  { ic:'ic-contatos', titulo:'Franquias', eyebrow:'Cadastro, contatos e histórico de cobrança', abas:['contatos','historico'] },
   analises:   { ic:'ic-grafico', titulo:'Análises', eyebrow:'Indicadores executivos e rankings', abas:['dashboard','ranking'] },
   controle:   { ic:'ic-auditoria', titulo:'Controle', eyebrow:'Revisão de ajustes, auditoria e backup', abas:['revisao','auditoria'] },
 };
-const ORDEM_SECOES = ['visao','carteira','negociacao','franquias','analises','controle'];
+const ORDEM_SECOES = ['visao','carteira','negociacao','retencoes','franquias','analises','controle'];
 const ultimaAbaDaSecao = {};
 function secaoDaAba(tab){ return ORDEM_SECOES.find(s=>SECOES[s].abas.includes(tab)) || 'visao'; }
 
@@ -6597,6 +7017,7 @@ async function ativarAba(tab){
   else if(tab === 'historico'){ await renderHistorico(document.getElementById('historicoFranquiaSelect').value); }
   else if(tab === 'negociacao'){ await renderKanban(); }
   else if(tab === 'contatos'){ renderContatos(); }
+  else if(tab === 'retencoes'){ renderRetencoes(); }
   else if(tab === 'revisao'){ renderRevisao(); }
 }
 function irParaSecao(secao){
